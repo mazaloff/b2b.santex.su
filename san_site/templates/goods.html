@@ -1,0 +1,20 @@
+<div id="goods-table">
+    <table>
+      <tr>
+          <th>Артикул</th>
+          <th>Наименование товара</th>
+          <th>Остаток</th>
+          <th>Цена</th>
+          <th>Валюта</th>
+      </tr>
+      {% for goods in goods_list %}
+      <tr>
+          <td>{{ goods.code }}</td>
+          <td>{{ goods.name }}</td>
+          <td>{{ goods.quantity }}</td>
+          <td>{{ goods.price }}</td>
+          <td>{{ goods.currency }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+</div>

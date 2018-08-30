@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Santex system of orders</title>
+    <link rel="stylesheet" href="{% static 'css/css.css' %}">
+    <link rel="stylesheet" href="{% static 'vendor/style.min.css' %}">
+</head>
+<body>
+<div class="container">
+        <h1>
+            <a href="#">Santex system of order</a>
+        </h1>
+    <div id="categories" class="column categories">
+    </div>
+    <div id="products" class="column">
+        <div id="goods">
+            Список товаров
+        </div><BR><BR>
+        <div id="goods-table">
+        </div>
+     </div>
+</div>
+
+<script src="{% static 'vendor/jquery.min.js' %}" type="text/javascript"></script>
+<script src="{% static 'vendor/jstree.min.js' %}" type="text/javascript"></script>
+<script src="{% static 'js/main.js' %}" type="text/javascript"></script>
+<script src="{% static 'js/index.js' %}" type="text/javascript"></script>
+
+</body>
+</html>
