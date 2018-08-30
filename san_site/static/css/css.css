@@ -1,0 +1,23 @@
+body {
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.container {
+    position: relative;
+    width: 960px;
+    margin: 0 auto;
+}
+
+.column {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.categories {
+    width: 30%;
+}
+
+.jstree-anchor {
+    width: 960px;
+}
