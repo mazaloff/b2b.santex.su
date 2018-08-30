@@ -1,0 +1,25 @@
+# создание проекта
+django-admin startproject mysite
+
+# создание приложения
+django-admin startapp blog
+
+# миграция БД
+python manage.py migrate
+
+# создание миграции БД
+python manage.py makemigrations app_name
+python manage.py makemigrations shop --name "add_translation_model"
+
+# запуск сервера для разработки
+python manage.py runserver
+python manage.py runserver --settings mysite.settings
+
+# создание суперпользователя
+python manage.py createsuperuser
+
+# создать файлы локализации
+python manage.py makemessages
+
+# скомпилировать файлы локализации
+python manage.py compilemessages
