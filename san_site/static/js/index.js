@@ -11,6 +11,16 @@ class Index {
         let path = event.target.href; // забираем путь
         let guid = window.getGUID(path);
 
+        $('#goods-table-th-1 div').stop().animate({width: 0});
+        $('#goods-table-th-2 div').stop().animate({width: 0});
+        $('#goods-table-th-3 div').stop().animate({width: 0});
+        $('#goods-table-th-4 div').stop().animate({width: 0});
+        $('#goods-table-th-5 div').stop().animate({width: 0});
+
+        jQuery("#goods-table").replaceWith("<div id=\"goods-table\"></div>");
+
+        jQuery("#categories ul li a").addClass('disabled');
+
         if (typeof guid !== 'undefined') {
             jQuery.ajax({
                 url: "ajax/get_goods",
@@ -22,10 +32,12 @@ class Index {
                     // Если запрос прошёл успешно и сайт вернул результат
                     if (json.result)
                     {
-                        window.history.pushState({route: path}, "EVILEG", path); // устанавливаем URL в строку браузера
-                        jQuery("#goods-table").replaceWith(json.content); // Заменяем div со списком статей на новый
+                        jQuery("#goods-table").replaceWith(json.content); // Заменяем div
                         jQuery(window).scrollTop(0); // Скроллим страницу в начало
+                        updateTable();
+                        widthHeadTable();
                     }
+                    jQuery("#categories ul li a").removeClass('disabled');
                 }
             });
         }

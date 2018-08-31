@@ -8,11 +8,10 @@ import json
 
 def get_categories(request):
     sections = Section.objects.all().order_by('sort', 'name')
-    sections_guid_id = {element_list.guid: element_list.id for element_list in sections}
     data_for = []
     for obj in sections:
-        parent = '#' if obj.parent_guid == '---' else sections_guid_id.get(obj.parent_guid)
-        data_for.append({'id': sections_guid_id.get(obj.guid), 'parent': parent, 'text': obj.name, 'href': obj.guid})
+        parent = '#' if obj.parent_guid == '---' else obj.parent_guid
+        data_for.append({'id': obj.guid, 'parent': parent, 'text': obj.name, 'href': obj.guid})
     str_json = json.dumps({'code': 'success', 'result': data_for})
     return HttpResponse(str_json, content_type="application/json", status=200)
 
@@ -36,6 +35,7 @@ def get_goods_list(guid):
     products = Product.objects.filter(section__in=list_sections).order_by('code')\
         .prefetch_related('product_inventories', 'product_prices')
     currencis_dict = {elem_.id: elem_.name for elem_ in Currency.objects.all()}
+
     list_res = []
     for value_product in products:
         quantity_sum = 0
@@ -45,11 +45,11 @@ def get_goods_list(guid):
         currency_name = ''
         for product_prices in value_product.product_prices.all():
             price_value = product_prices.value
-            currency_name = currencis_dict.get(product_prices.currency_id)
+            currency_name = currencis_dict.get(product_prices.currency_id, '')
         list_res.append({'code': value_product.code,
                          'name': value_product.name,
-                         'quantity': quantity_sum,
-                         'price': price_value,
+                         'quantity': '>10' if quantity_sum > 10 else '' if quantity_sum == 0 else quantity_sum,
+                         'price': '' if price_value ==0 else price_value,
                          'currency': currency_name})
 
     return list_res

@@ -10,6 +10,11 @@ var app = (function($) {
             $goods: $('#goods')
         };
 
+    $(window).resize(function() {
+        updateTable();
+        widthHeadTable()
+    });
+
     // Инициализация дерева категорий с помощью jstree
     function _initTree(data) {
         var category;
@@ -34,6 +39,16 @@ var app = (function($) {
 
             var guid = data.node.original.href;
 
+            $('#goods-table-th-1 div').stop().animate({width: 0});
+            $('#goods-table-th-2 div').stop().animate({width: 0});
+            $('#goods-table-th-3 div').stop().animate({width: 0});
+            $('#goods-table-th-4 div').stop().animate({width: 0});
+            $('#goods-table-th-5 div').stop().animate({width: 0});
+
+            jQuery("#goods-table").replaceWith("<div id=\"goods-table\"></div>");
+
+            jQuery("#categories ul li a").addClass('disabled');
+
             jQuery.ajax({
                 url: "ajax/get_goods",
                 type: 'GET',
@@ -44,10 +59,12 @@ var app = (function($) {
                     // Если запрос прошёл успешно и сайт вернул результат
                     if (json.result)
                     {
-                        //window.history.pushState({route: path}, "EVILEG", path); // устанавливаем URL в строку браузера
-                        jQuery("#goods-table").replaceWith(json.content); // Заменяем div со списком статей на новый
-                        jQuery(window).scrollTop(0); // Скроллим страницу в начало
+                        jQuery("#goods-table").replaceWith(json.content); // Заменяем div
+                        jQuery(window).scrollTop(0);
+                        updateTable();
+                        widthHeadTable();
                     }
+                    jQuery("#categories ul li a").removeClass('disabled');
                 }
             });
         });
@@ -81,7 +98,11 @@ var app = (function($) {
     // Инициализация приложения
     function init() {
         _loadData();
+        updateTable();
+        fixedId();
     }
+
+    $("html,body").css("overflow","hidden");
 
     // Экспортируем наружу
     return {
@@ -89,5 +110,34 @@ var app = (function($) {
     }
 
 })(jQuery);
+
+function updateTable() {
+    var clientHeight = ($(window).height() - $('#head').height());
+    $('#goods-table').stop().animate({height: clientHeight - 68});
+    $('#categories').stop().animate({height: clientHeight - 28});
+}
+
+function widthHeadTable() {
+    $('#goods-table-th-1 div').stop().animate({width: $('#goods-table-th-1').width() + 5});
+    $('#goods-table-th-2 div').stop().animate({width: $('#goods-table-th-2').width() + 5});
+    $('#goods-table-th-3 div').stop().animate({width: $('#goods-table-th-3').width() + 5});
+    $('#goods-table-th-4 div').stop().animate({width: $('#goods-table-th-4').width() + 5});
+    $('#goods-table-th-5 div').stop().animate({width: $('#goods-table-th-5').width() + 3});
+}
+
+function fixedId() {
+    return;
+    var topPadding = 0;
+    var offset = $('#categories').offset();
+    $(window).scroll(function() {
+        if ($(window).scrollTop() > offset.top) {
+            var marginTop = $(window).scrollTop() - offset.top + topPadding;
+            $('#categories').stop().animate({marginTop: marginTop});
+        }
+        else {
+            $('#categories').stop().animate({marginTop: 0});
+        }
+    });
+}
 
 jQuery(document).ready(app.init);

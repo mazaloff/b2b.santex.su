@@ -9,7 +9,7 @@ import json
 @csrf_exempt
 def api_upsert(request):
 
-    value_response = {'success': True, 'result': [], 'errors': []}
+    value_response = {'success': True, 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
 
     try:
         json_str = request.body.decode()
@@ -62,20 +62,20 @@ def api_upsert(request):
                   message='json is not currencys', description='')
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
-
     update_section(dict_load['sections'])
     update_product(dict_load['products'])
     update_store(dict_load['stores'])
     update_price(dict_load['priceTypes'])
     update_currency(dict_load['currencys'])
 
+    value_response['time']['end'] = timezone.now().ctime()
     return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
 
 @csrf_exempt
 def api_inventories(request):
 
-    value_response = {'success': True, 'result': [], 'errors': []}
+    value_response = {'success': True, 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
 
     try:
         json_str = request.body.decode()
@@ -110,13 +110,14 @@ def api_inventories(request):
 
     update_inventories(dict_load['inventories'], value_response)
 
+    value_response['time']['end'] = timezone.now().ctime()
     return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
 
 @csrf_exempt
 def api_prices(request):
 
-    value_response = {'success': True, 'result': [], 'errors': []}
+    value_response = {'success': True, 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
 
     try:
         json_str = request.body.decode()
@@ -151,6 +152,7 @@ def api_prices(request):
 
     update_prices(dict_load['prices'], value_response)
 
+    value_response['time']['end'] = timezone.now().ctime()
     return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
 
@@ -403,3 +405,4 @@ def update_prices(load_list, value_response):
 def add_error(value_respons, **kwargs):
     value_respons['success'] = False
     value_respons['errors'].append(kwargs)
+    value_respons['time']['end'] = timezone.now().ctime()
