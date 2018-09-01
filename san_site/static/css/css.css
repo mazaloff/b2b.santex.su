@@ -16,7 +16,6 @@ body {
     flex: 2 2 230px;
     display: block;
     border: 1px solid #ccc;
-    border-radius: 5px;
     padding: 8px;
     margin-right: -1px;
 }
@@ -48,6 +47,8 @@ a.disabled {
 #goods-table tr {border-bottom: 1px solid #e8e9eb;}
 #goods-table tbody tr:hover {background: #e7f4f9;}
 #goods-table th#goods-table-th-1 div {margin-left: -1px;}
-#goods-table th#goods-table-th-3 {width: 80px}
-#goods-table th#goods-table-th-4 {width: 110px}
-#goods-table th#goods-table-th-5 {width: 90px}
+#goods-table th#goods-table-th-1 {min-width: 100px;}
+#goods-table th#goods-table-th-2 {min-width: 450px;}
+#goods-table th#goods-table-th-3 {width: 70px; min-width: 60px;}
+#goods-table th#goods-table-th-4 {width: 110px; min-width: 60px;}
+#goods-table th#goods-table-th-5 {width: 70px; min-width: 40px;}

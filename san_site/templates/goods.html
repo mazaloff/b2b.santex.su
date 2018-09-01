@@ -20,9 +20,9 @@
             <tr>
                 <td>{{ goods.code }}</td>
                 <td>{{ goods.name }}</td>
-                <td align=center>{{ goods.quantity }}</td>
-                <td align=center>{{ goods.price|format:"{0:.2f}" }}</td>
-                <td align=center>{{ goods.currency }}</td>
+                <td align=right>{{ goods.quantity }}</td>
+                <td align=right>{{ goods.price|format:"{0:.2f}" }}</td>
+                <td align=left>{{ goods.currency }}</td>
             </tr>
             {% endfor %}
         </tr>
