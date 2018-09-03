@@ -8,47 +8,58 @@ body {
     margin:0 auto; /* Центрируем блоки */
 }
 
-#head {
+#header {
     display: flex;
+}
+
+#header #user-tools{
+    position: absolute;
+    right: 20px;
 }
 
 .categories  {
     flex: 2 2 230px;
     display: block;
     border: 1px solid #ccc;
-    padding: 8px;
+    padding: 2px 10px 10px 2px;
     margin-right: -1px;
 }
 .products {
     flex: 10 10 800px;
     display: block;
-    padding: 0px 8px 8px 8px;
+    padding: 0 8px 8px 8px;
 }
 
 a.disabled {
-  opacity: 0.5;
-  pointer-events: none;
-  cursor: default;
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: default;
 }
 
-#goods {padding-bottom: 5px}
+#goods {
+    padding-bottom: 5px;
+    margin-left: 10px;}
 
-/* Фиксация таблицы */
-#goods-table { margin-top: 20px; height: 100%; overflow: auto; }
-#goods-table table { border-collapse: collapse; }
-#goods-table th div { position: absolute; margin-top: -20px; background: #beebff; }
+#accounts_login {
+    margin-left: 10px;
+}
+
+#goods_table { height: 100%; overflow: auto; }
+#goods_table table { border-collapse: collapse; }
+#goods_table th div { position: absolute; margin-top: -20px; background: #beebff; }
 
 #categories { height: 100%; overflow-x: hidden; overflow-y: auto}
 #categories { border-collapse: collapse; }
 
-/* Оформление */
-#goods-table {border-collapse: collapse;}
-#goods-table td {padding: 4px 12px 6px 8px;}
-#goods-table tr {border-bottom: 1px solid #e8e9eb;}
-#goods-table tbody tr:hover {background: #e7f4f9;}
-#goods-table th#goods-table-th-1 div {margin-left: -1px;}
-#goods-table th#goods-table-th-1 {min-width: 100px;}
-#goods-table th#goods-table-th-2 {min-width: 450px;}
-#goods-table th#goods-table-th-3 {width: 70px; min-width: 60px;}
-#goods-table th#goods-table-th-4 {width: 110px; min-width: 60px;}
-#goods-table th#goods-table-th-5 {width: 70px; min-width: 40px;}
+#goods_table {margin-top: 20px; border-collapse: collapse;}
+#goods_table td {padding: 4px 12px 6px 8px;}
+#goods_table tr {border-bottom: 1px solid #e8e9eb;}
+#goods_table tbody tr:hover {background: #e7f4f9;}
+#goods_table th#goods_table_1 div {margin-left: -1px;}
+#goods_table th#goods_table_1 {min-width: 100px; max-width: 140px;}
+#goods_table th#goods_table_2 {min-width: 450px;}
+#goods_table th#goods_table_3 {width: 70px; min-width: 60px;}
+#goods_table th#goods_table_4 {width: 110px; min-width: 60px;}
+#goods_table th#goods_table_5 {width: 70px; min-width: 40px;}
+
+#goods_table a#cart_add {text-decoration: none;}

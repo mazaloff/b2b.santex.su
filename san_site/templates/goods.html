@@ -1,30 +1,14 @@
-{% load format %}
-<div id="goods-table">
-    <table>
-    <colgroup>
-        <col style="background:#beebff;">
-        <col>
-        <col style = "background:#beebff">
-    </colgroup>
-        <thead style="background: #ffffff;">
-            <tr>
-                <th id="goods-table-th-1"><div>Артикул</div></th>
-                <th id="goods-table-th-2"><div>Наименование товара</div></th>
-                <th align=center id="goods-table-th-3"><div>Остаток</div></th>
-                <th align=center id="goods-table-th-4"><div>Цена</div></th>
-                <th align=center id="goods-table-th-5"><div>Вал.</div></th>
-            </tr>
-        </thead>
-        <tr>
-            {% for goods in goods_list %}
-            <tr>
-                <td>{{ goods.code }}</td>
-                <td>{{ goods.name }}</td>
-                <td align=right>{{ goods.quantity }}</td>
-                <td align=right>{{ goods.price|format:"{0:.2f}" }}</td>
-                <td align=left>{{ goods.currency }}</td>
-            </tr>
-            {% endfor %}
-        </tr>
-    </table>
-</div>
+{% extends "base.html" %}
+
+{% block title %}
+    {{ block.super }}
+{% endblock %}
+
+{% block head %}
+{% include "header.html" %}
+{% endblock %}
+
+{% block content %}
+    <div id="goods">Выберите категорию товаров...</div>
+    <div id="goods_table"><div id="td_good"></div></div>
+{% endblock %}

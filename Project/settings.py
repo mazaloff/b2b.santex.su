@@ -49,14 +49,17 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
 ]
 
 ROOT_URLCONF = 'Project.urls'
 
+CART_SESSION_ID = 'cart'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': []
+        'DIRS': ['./templates',]
         ,
         'APP_DIRS': True,
         'OPTIONS': {
@@ -128,3 +131,10 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2147483648
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = '' # mail service smtp
+EMAIL_HOST_USER = '' # email id
+EMAIL_HOST_PASSWORD = '' #password
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True

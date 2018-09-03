@@ -39,18 +39,19 @@ var app = (function($) {
 
             var guid = data.node.original.href;
 
-            $('#goods-table-th-1 div').stop().animate({width: 0});
-            $('#goods-table-th-2 div').stop().animate({width: 0});
-            $('#goods-table-th-3 div').stop().animate({width: 0});
-            $('#goods-table-th-4 div').stop().animate({width: 0});
-            $('#goods-table-th-5 div').stop().animate({width: 0});
+            $('th#goods_table_1 div').stop().animate({width: 0});
+            $('th#goods_table_2 div').stop().animate({width: 0});
+            $('th#goods_table_3 div').stop().animate({width: 0});
+            $('th#goods_table_4 div').stop().animate({width: 0});
+            $('th#goods_table_5 div').stop().animate({width: 0});
+            $('th#goods_table_6 div').stop().animate({width: 0});
 
-            jQuery("#goods-table").replaceWith("<div id=\"goods-table\"></div>");
+            jQuery("#goods_table").replaceWith("<div id=\"goods_table\"></div>");
 
             jQuery("#categories ul li a").addClass('disabled');
 
             jQuery.ajax({
-                url: "ajax/get_goods",
+                url: "ajax/get_goods/",
                 type: 'GET',
                 data: {'guid': guid},
                 dataType: 'json', // забираем номер страницы, которую нужно отобразить
@@ -59,12 +60,14 @@ var app = (function($) {
                     // Если запрос прошёл успешно и сайт вернул результат
                     if (json.result)
                     {
-                        jQuery("#goods-table").replaceWith(json.content); // Заменяем div
+                        jQuery("#goods_table").replaceWith(json.content); // Заменяем div
                         jQuery(window).scrollTop(0);
                         updateTable();
                         widthHeadTable();
                     }
                     jQuery("#categories ul li a").removeClass('disabled');
+                    document.body.querySelectorAll('#cart_add')
+                        .forEach( link => link.addEventListener('click', Index._clickAddCart) );
                 }
             });
         });
@@ -79,7 +82,6 @@ var app = (function($) {
         $.ajax({
             url: ajaxUrl,
             method: 'GET',
-            data: params,
             dataType: 'json',
             success: function(resp) {
                 // Инициализируем дерево категорий
@@ -112,17 +114,18 @@ var app = (function($) {
 })(jQuery);
 
 function updateTable() {
-    var clientHeight = ($(window).height() - $('#head').height());
-    $('#goods-table').stop().animate({height: clientHeight - 68});
+    var clientHeight = ($(window).height() - $('#header').height());
+    $('#goods_table').stop().animate({height: clientHeight - 60});
     $('#categories').stop().animate({height: clientHeight - 28});
 }
 
 function widthHeadTable() {
-    $('#goods-table-th-1 div').stop().animate({width: $('#goods-table-th-1').width() + 5});
-    $('#goods-table-th-2 div').stop().animate({width: $('#goods-table-th-2').width() + 5});
-    $('#goods-table-th-3 div').stop().animate({width: $('#goods-table-th-3').width() + 5});
-    $('#goods-table-th-4 div').stop().animate({width: $('#goods-table-th-4').width() + 5});
-    $('#goods-table-th-5 div').stop().animate({width: $('#goods-table-th-5').width() + 3});
+    $('th#goods_table_1 div').stop().animate({width: $('#goods_table_1').width() + 5});
+    $('th#goods_table_2 div').stop().animate({width: $('#goods_table_2').width() + 5});
+    $('th#goods_table_3 div').stop().animate({width: $('#goods_table_3').width() + 5});
+    $('th#goods_table_4 div').stop().animate({width: $('#goods_table_4').width() + 5});
+    $('th#goods_table_5 div').stop().animate({width: $('#goods_table_5').width() + 5});
+    $('th#goods_table_6 div').stop().animate({width: $('#goods_table_6').width() + 5});
 }
 
 function fixedId() {

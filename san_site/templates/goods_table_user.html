@@ -1,0 +1,46 @@
+{% load format %}
+<div id="goods_table">
+    <table>
+    <colgroup>
+        <col style="background:#beebff;">
+        <col>
+        <col style = "background:#beebff">
+    </colgroup>
+        <thead style="background: #ffffff;">
+            <tr>
+                <th id="goods_table_1"><div>Артикул</div></th>
+                <th id="goods_table_2"><div>Наименование товара</div></th>
+                <th align=center id="goods_table_3"><div>Остаток</div></th>
+                <th align=center id="goods_table_4"><div>Цена</div></th>
+                <th align=center id="goods_table_5"><div>Вал.</div></th>
+                <th align=center id="goods_table_6"><div>%</div></th>
+            </tr>
+        </thead>
+        <tr>
+            {% for goods in goods_list %}
+            <tr>
+                <td id="goods_table_1">{{ goods.code }}</td>
+                <td id="goods_table_2">{{ goods.name }}</td>
+                <td id="goods_table_3" align=right>
+                    {% if goods.quantity == '' %}
+                        <div id="td_good">
+                            <a id="cart_add" href={{ goods.product.url_add_cart }}>
+                                &nbsp;&nbsp;&nbsp;
+                            </a>
+                        </div>
+                    {% else %}
+                        <div id="td_good">
+                            <a id="cart_add" href={{ goods.product.url_add_cart }}>
+                                {{ goods.quantity }}
+                            </a>
+                        </div>
+                    {% endif %}
+                </td>
+                <td id="goods_table_4" align=right>{{ goods.price|format:"{0:.2f}" }}</td>
+                <td id="goods_table_5" align=left>{{ goods.currency }}</td>
+                <td id="goods_table_6" align=left>{{ goods.percent|format:"{0:.2f}" }}</td>
+            </tr>
+            {% endfor %}
+        </tr>
+    </table>
+</div>

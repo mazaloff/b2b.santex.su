@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ block.super }}
+{% endblock %}
+
+{% block head %}
+{% include "header.html" %}
+{% endblock %}
+
+{% block content %}
+
+<div id="goods_table">
+    <div id="accounts_login">
+
+        {% if errors %}
+        <p>Имя пользователя и пароль не совпадают. Попробуйте еще раз.</p>
+        {% endif %}
+
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="{{ message.tags }}">
+                        {{ message|safe }}
+                        <a href="#" class="close">✖</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if next %}
+            {% if user.is_authenticated %}
+            <p>У Вашей учетной записи нет доступа к этой странице.</p>
+            {% else %}
+            <p>Пожалуйста, войдите, чтобы увидеть эту страницу.</p>
+            {% endif %}
+        {% endif %}
+
+        <form action="{% url 'account_login' %}" method="post">
+            {% csrf_token %}
+            <p>Авторизуйтесь, чтобы видеть ваши цены и делать заказы...</p>
+            {{ form.as_p }}
+            <div>
+              <input type="submit" value="Войти" />
+              <input type="hidden" name="next" value="{{ next }}" />
+            </div>
+        </form>
+
+        <p><a href="{% url 'account_password_reset' %}">Забыли пароль?</a></p>
+
+    </div>
+</div>
+
+{% endblock %}
+

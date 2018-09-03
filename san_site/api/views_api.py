@@ -1,14 +1,16 @@
-from san_site.models import Section, Product, Store, Price, Currency, Inventories, Prices
-from django.http import HttpResponse, HttpResponseBadRequest
+from san_site.models import \
+    Customer, Person, Section, Product, Store, Price, Currency, Inventories, Prices, CustomersPrices, Courses
+from django.contrib.auth.models import User
+from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.db import connection
+import datetime
 import json
 
 
 @csrf_exempt
 def api_upsert(request):
-
     value_response = {'success': True, 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
 
     try:
@@ -24,7 +26,7 @@ def api_upsert(request):
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
     try:
-        list_load = json.loads(json_str[8+json_str.find('&params', 0, 500):])
+        list_load = json.loads(json_str[8 + json_str.find('&params', 0, 500):])
     except ValueError:
         add_error(value_response, code='json.ValueError',
                   message='error json loads', description='')
@@ -74,7 +76,6 @@ def api_upsert(request):
 
 @csrf_exempt
 def api_inventories(request):
-
     value_response = {'success': True, 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
 
     try:
@@ -90,7 +91,7 @@ def api_inventories(request):
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
     try:
-        list_load = json.loads(json_str[8+json_str.find('&params', 0, 500):])
+        list_load = json.loads(json_str[8 + json_str.find('&params', 0, 500):])
     except ValueError:
         add_error(value_response, code='json.ValueError',
                   message='error json loads', description='')
@@ -103,12 +104,7 @@ def api_inventories(request):
 
     dict_load = list_load[0]
 
-    if 'inventories' not in dict_load is None:
-        add_error(value_response, code='json.ValueError',
-                  message='json is not inventories', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
-
-    update_inventories(dict_load['inventories'], value_response)
+    update_inventories(dict_load, value_response)
 
     value_response['time']['end'] = timezone.now().ctime()
     return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
@@ -116,7 +112,6 @@ def api_inventories(request):
 
 @csrf_exempt
 def api_prices(request):
-
     value_response = {'success': True, 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
 
     try:
@@ -132,7 +127,42 @@ def api_prices(request):
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
     try:
-        list_load = json.loads(json_str[8+json_str.find('&params', 0, 500):])
+        list_load = json.loads(json_str[8 + json_str.find('&params', 0, 500):])
+    except ValueError:
+        add_error(value_response, code='json.ValueError',
+                  message='error json loads', description='')
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+    if len(list_load) < 1:
+        add_error(value_response, code='json.ValueError',
+                  message='json is not params', description='')
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+    dict_load = list_load[0]
+    update_prices(dict_load, value_response)
+
+    value_response['time']['end'] = timezone.now().ctime()
+    return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+
+@csrf_exempt
+def api_users(request):
+    value_response = {'success': True, 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
+
+    try:
+        json_str = request.body.decode()
+    except UnicodeError:
+        add_error(value_response, code='decode.UnicodeError',
+                  message='error body decode', description='')
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+    if json_str is None:
+        add_error(value_response, code='json.ValueError',
+                  message='json is empty', description='')
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+    try:
+        list_load = json.loads(json_str[8 + json_str.find('&params', 0, 500):])
     except ValueError:
         add_error(value_response, code='json.ValueError',
                   message='error json loads', description='')
@@ -145,19 +175,85 @@ def api_prices(request):
 
     dict_load = list_load[0]
 
-    if 'prices' not in dict_load is None:
-        add_error(value_response, code='json.ValueError',
-                  message='json is not prices', description='')
+    update_users(dict_load)
+
+    value_response['time']['end'] = timezone.now().ctime()
+    return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+
+@csrf_exempt
+def api_users_prices(request):
+    value_response = {'success': True, 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
+
+    try:
+        json_str = request.body.decode()
+    except UnicodeError:
+        add_error(value_response, code='decode.UnicodeError',
+                  message='error body decode', description='')
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
-    update_prices(dict_load['prices'], value_response)
+    if json_str is None:
+        add_error(value_response, code='json.ValueError',
+                  message='json is empty', description='')
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+    try:
+        list_load = json.loads(json_str[8 + json_str.find('&params', 0, 500):])
+    except ValueError:
+        add_error(value_response, code='json.ValueError',
+                  message='error json loads', description='')
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+    if len(list_load) < 1:
+        add_error(value_response, code='json.ValueError',
+                  message='json is not params', description='')
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+    dict_load = list_load[0]
+
+    users_prices(dict_load, value_response)
+
+    value_response['time']['end'] = timezone.now().ctime()
+    return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+
+@csrf_exempt
+def api_courses(request):
+    value_response = {'success': True, 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
+
+    try:
+        json_str = request.body.decode()
+    except UnicodeError:
+        add_error(value_response, code='decode.UnicodeError',
+                  message='error body decode', description='')
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+    if json_str is None:
+        add_error(value_response, code='json.ValueError',
+                  message='json is empty', description='')
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+    try:
+        list_load = json.loads(json_str[8 + json_str.find('&params', 0, 500):])
+    except ValueError:
+        add_error(value_response, code='json.ValueError',
+                  message='error json loads', description='')
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+    if len(list_load) < 1:
+        add_error(value_response, code='json.ValueError',
+                  message='json is not params', description='')
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+    dict_load = list_load[0]
+
+    update_courses(dict_load, value_response)
 
     value_response['time']['end'] = timezone.now().ctime()
     return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
 
 def update_section(load_list):
-
     filter_guid = [element_list['guid'] for element_list in load_list]
     filter_object = {t.guid: t for t in Section.objects.filter(guid__in=filter_guid)}
 
@@ -183,6 +279,7 @@ def update_section(load_list):
                                                 )
             new_object.created_date = timezone.now()
             new_object.save()
+            filter_object[element_list['guid']] = new_object
             continue
 
         new_object.name = element_list['name']
@@ -194,7 +291,6 @@ def update_section(load_list):
 
 
 def update_product(load_list):
-
     filter_guid = [element_list['guid'] for element_list in load_list]
     filter_object = {t.guid: t for t in Product.objects.filter(guid__in=filter_guid).select_related('section')}
 
@@ -224,6 +320,7 @@ def update_product(load_list):
                                                 )
             new_object.created_date = timezone.now()
             new_object.save()
+            filter_object[element_list['guid']] = new_object
             continue
 
         if new_object.section.guid != element_list['sectionGuid']:
@@ -241,7 +338,6 @@ def update_product(load_list):
 
 
 def update_store(load_list):
-
     filter_guid = [element_list['guid'] for element_list in load_list]
     filter_object = {t.guid: t for t in Store.objects.filter(guid__in=filter_guid)}
 
@@ -249,7 +345,18 @@ def update_store(load_list):
 
         new_object = filter_object.get(element_list['guid'], None)
         if new_object:
-            pass
+            if new_object.name == element_list['name'] \
+                    and new_object.code == element_list['code'] \
+                    and new_object.sort == int(element_list['sort']) \
+                    and new_object.is_deleted == element_list['is_deleted']:
+                pass
+            else:
+                new_object.name = element_list['name']
+                new_object.code = element_list['code']
+                new_object.sort = int(element_list['sort'])
+                new_object.is_deleted = element_list['is_deleted']
+                new_object.save()
+            filter_object[element_list['guid']] = new_object
         else:
             new_object = Store.objects.create(guid=element_list['guid'],
                                               name=element_list['name'],
@@ -258,16 +365,11 @@ def update_store(load_list):
                                               is_deleted=element_list['is_deleted'],
                                               )
             new_object.created_date = timezone.now()
-
-        new_object.name = element_list['name']
-        new_object.code = element_list['code']
-        new_object.sort = int(element_list['sort'])
-        new_object.is_deleted = element_list['is_deleted']
-        new_object.save()
+            new_object.save()
+            filter_object[element_list['guid']] = new_object
 
 
 def update_price(load_list):
-
     filter_guid = [element_list['guid'] for element_list in load_list]
     filter_object = {t.guid: t for t in Price.objects.filter(guid__in=filter_guid)}
 
@@ -275,7 +377,18 @@ def update_price(load_list):
 
         new_object = filter_object.get(element_list['guid'], None)
         if new_object:
-            pass
+            if new_object.name == element_list['name'] \
+                    and new_object.code == element_list['code'] \
+                    and new_object.sort == int(element_list['sort']) \
+                    and new_object.is_deleted == element_list['is_deleted']:
+                pass
+            else:
+                new_object.name = element_list['name']
+                new_object.code = element_list['code']
+                new_object.sort = int(element_list['sort'])
+                new_object.is_deleted = element_list['is_deleted']
+                new_object.save()
+            filter_object[element_list['guid']] = new_object
         else:
             new_object = Price.objects.create(guid=element_list['guid'],
                                               name=element_list['name'],
@@ -284,16 +397,11 @@ def update_price(load_list):
                                               is_deleted=element_list['is_deleted'],
                                               )
             new_object.created_date = timezone.now()
-
-        new_object.name = element_list['name']
-        new_object.code = element_list['code']
-        new_object.sort = int(element_list['sort'])
-        new_object.is_deleted = element_list['is_deleted']
-        new_object.save()
+            new_object.save()
+            filter_object[element_list['guid']] = new_object
 
 
 def update_currency(load_list):
-
     filter_guid = [element_list['guid'] for element_list in load_list]
     filter_object = {t.guid: t for t in Currency.objects.filter(guid__in=filter_guid)}
 
@@ -301,7 +409,17 @@ def update_currency(load_list):
 
         new_object = filter_object.get(element_list['guid'], None)
         if new_object:
-            pass
+            if new_object.name == element_list['name'] \
+                    and new_object.code == element_list['code'] \
+                    and new_object.sort == int(element_list['sort']) \
+                    and new_object.is_deleted == element_list['is_deleted']:
+                pass
+            else:
+                new_object.name = element_list['name']
+                new_object.code = element_list['code']
+                new_object.sort = int(element_list['sort'])
+                new_object.is_deleted = element_list['is_deleted']
+                new_object.save()
         else:
             new_object = Currency.objects.create(guid=element_list['guid'],
                                                  name=element_list['name'],
@@ -310,16 +428,130 @@ def update_currency(load_list):
                                                  is_deleted=element_list['is_deleted'],
                                                  )
             new_object.created_date = timezone.now()
+            new_object.save()
+            filter_object[element_list['guid']] = new_object
 
-        new_object.name = element_list['name']
-        new_object.code = element_list['code']
-        new_object.sort = int(element_list['sort'])
-        new_object.is_deleted = element_list['is_deleted']
-        new_object.save()
+
+def update_courses(load_list, value_response):
+    filter_guid = [element_list['guid'] for element_list in load_list]
+    filter_object = {t.guid: t for t in Currency.objects.filter(guid__in=filter_guid)}
+
+    for element_list in load_list:
+
+        obj_currency = filter_object.get(element_list['guid'], None)
+        if not obj_currency:
+            add_error(value_response, code='Currency.DoesNotExist',
+                      message='no get currency', description=element_list)
+            continue
+
+        load_list_courses = element_list['courses']
+        filter_date = [datetime.date(
+                            int(element_list['year']),
+                            int(element_list['month']),
+                            int(element_list['day'])) for element_list in load_list_courses]
+
+        Courses.objects.filter(currency=obj_currency).filter(date__in=filter_date).delete()
+
+        for element_list_course in load_list_courses:
+            new_object = Courses.objects.create(currency=obj_currency,
+                                                date=datetime.date(
+                                                        int(element_list_course['year']),
+                                                        int(element_list_course['month']),
+                                                        int(element_list_course['day'])),
+                                                course=element_list_course['course'],
+                                                multiplicity=element_list_course['multiplicity'])
+            new_object.save()
+
+
+def update_users(load_list):
+    filter_username = [element_list['username'] for element_list in load_list]
+    filter_object = {t.username: t for t in User.objects.filter(username__in=filter_username)}
+
+    filter_guid = [element_list['guid'] for element_list in load_list]
+    filter_object_person = {t.guid: t for t in Person.objects.filter(guid__in=filter_guid)}
+
+    filter_guid = [element_list['guidCustomer'] for element_list in load_list]
+    filter_object_customer = {t.guid: t for t in Customer.objects.filter(guid__in=filter_guid)}
+
+    for element_list in load_list:
+
+        new_object = filter_object.get(element_list['username'], None)
+        if new_object:
+            if new_object.first_name == element_list['first_name'] \
+                    and new_object.last_name == element_list['last_name'] \
+                    and new_object.email == element_list['email'] \
+                    and new_object.is_active == element_list['is_active']:
+                pass
+            else:
+                new_object.first_name = element_list['first_name']
+                new_object.last_name = element_list['last_name']
+                new_object.email = element_list['email']
+                new_object.is_active = element_list['is_active']
+                new_object.save()
+        else:
+            new_object = User.objects.create(username=element_list['username'],
+                                             first_name=element_list['first_name'],
+                                             last_name=element_list['last_name'],
+                                             email=element_list['email'],
+                                             is_active=element_list['is_active'],
+                                             )
+            new_object.created_date = timezone.now()
+            new_object.save()
+            new_object.set_password(element_list['password'])
+            filter_object[element_list['username']] = new_object
+
+        new_object_customer = filter_object_customer.get(element_list['guidCustomer'], None)
+        if new_object_customer:
+            if new_object_customer.name == element_list['nameCustomer'] \
+                    and new_object_customer.code == element_list['codeCustomer'] \
+                    and new_object_customer.sort == int(element_list['sortCustomer']) \
+                    and new_object_customer.is_deleted == element_list['is_deletedCustomer']:
+                pass
+            else:
+                new_object_customer.name = element_list['nameCustomer']
+                new_object_customer.code = element_list['codeCustomer']
+                new_object_customer.sort = int(element_list['sortCustomer'])
+                new_object_customer.is_deleted = element_list['is_deletedCustomer']
+                new_object_customer.save()
+        else:
+            new_object_customer = Customer.objects.create(guid=element_list['guidCustomer'],
+                                                          name=element_list['nameCustomer'],
+                                                          code=element_list['codeCustomer'],
+                                                          sort=int(element_list['sortCustomer']),
+                                                          is_deleted=element_list['is_deletedCustomer'],
+                                                          )
+            new_object_customer.created_date = timezone.now()
+            new_object_customer.save()
+            filter_object_customer[element_list['guidCustomer']] = new_object_customer
+
+        new_object_person = filter_object_person.get(element_list['guid'], None)
+        if new_object_person:
+            if new_object_person.name == element_list['nameCustomer'] \
+                    and new_object_person.code == element_list['codeCustomer'] \
+                    and new_object_person.sort == int(element_list['sortCustomer']) \
+                    and new_object_person.is_deleted == element_list['is_deletedCustomer']:
+                pass
+            else:
+                new_object_person.name = element_list['name']
+                new_object_person.code = element_list['code']
+                new_object_person.sort = int(element_list['sort'])
+                new_object_person.is_deleted = element_list['is_deleted']
+                new_object_person.save()
+        else:
+            new_object_person = Person.objects.create(guid=element_list['guid'],
+                                                      name=element_list['name'],
+                                                      user=new_object,
+                                                      customer=new_object_customer,
+                                                      code=element_list['code'],
+                                                      sort=int(element_list['sort']),
+                                                      is_deleted=element_list['is_deleted'],
+                                                      )
+            new_object_person.created_date = timezone.now()
+            new_object_person.save()
+            filter_object_person[element_list['guid']] = new_object_person
 
 
 def update_inventories(load_list, value_response):
-
     Inventories.objects.all().delete()
 
     filter_guid = [element_list['productGuid'] for element_list in load_list]
@@ -340,7 +572,7 @@ def update_inventories(load_list, value_response):
             obj_store = filter_object_stores.get(element_list_stores['storeGuid'], None)
             if not obj_store:
                 add_error(value_response, code='Store.DoesNotExist',
-                        message='no get store', description=element_list)
+                          message='no get store', description=element_list)
                 continue
 
             try:
@@ -357,7 +589,6 @@ def update_inventories(load_list, value_response):
 
 
 def update_prices(load_list, value_response):
-
     Prices.objects.all().delete()
 
     filter_guid = [element_list['productGuid'] for element_list in load_list]
@@ -399,6 +630,72 @@ def update_prices(load_list, value_response):
                                                price=obj_price,
                                                currency=obj_currency,
                                                value=value_price)
+            new_object.save()
+
+
+def users_prices(load_list, value_response):
+    filter_guid = [element_list['guid'] for element_list in load_list]
+    filter_object = {t.guid: t for t in Customer.objects.filter(guid__in=filter_guid)}
+
+    filter_object_currency = {t.guid: t for t in Currency.objects.all()}
+
+    for element_list in load_list:
+
+        obj_customer = filter_object.get(element_list['guid'], None)
+        if not obj_customer:
+            add_error(value_response, code='Customer.DoesNotExist',
+                      message='no get customer', description=element_list)
+            continue
+
+        load_list_prices = element_list['price']
+
+        filter_guid = [element_list['productGuid'] for element_list in load_list_prices]
+        filter_object_product = {t.guid: t for t in Product.objects.filter(guid__in=filter_guid)}
+
+        CustomersPrices.objects.filter(customer=obj_customer) \
+            .filter(product__in=[t for guid, t in filter_object_product.items()]).delete()
+
+        for element_list_price in load_list_prices:
+
+            obj_product = filter_object_product.get(element_list_price['productGuid'], None)
+            if not obj_product:
+                add_error(value_response, code='Product.DoesNotExist',
+                          message='no get product', description=element_list)
+                continue
+
+            obj_currency = filter_object_currency.get(element_list_price['currencyGuid'], None)
+            if not obj_currency:
+                add_error(value_response, code='Currency.DoesNotExist',
+                          message='no get currency', description=element_list)
+                continue
+
+            try:
+                value_price = float(element_list_price['value'])
+            except ValueError:
+                add_error(value_response, code='Prices.ValueError',
+                          message='no float value price', description=element_list)
+                continue
+
+            try:
+                value_discount = float(element_list_price['discount'])
+            except ValueError:
+                add_error(value_response, code='Prices.ValueError',
+                          message='no float discount', description=element_list)
+                continue
+
+            try:
+                value_percent = float(element_list_price['percent'])
+            except ValueError:
+                add_error(value_response, code='Prices.ValueError',
+                          message='no float percent', description=element_list)
+                continue
+
+            new_object = CustomersPrices.objects.create(customer=obj_customer,
+                                                        product=obj_product,
+                                                        currency=obj_currency,
+                                                        value=value_price,
+                                                        discount=value_discount,
+                                                        percent=value_percent)
             new_object.save()
 
 

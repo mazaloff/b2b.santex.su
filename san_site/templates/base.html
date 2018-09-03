@@ -3,25 +3,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Santex system of orders</title>
+    <title>{% block title %}Облачная система заказов{% endblock %}</title>
+    {% block extrahead %}{% endblock %}
     <link rel="stylesheet" href="{% static 'css/css.css' %}">
     <link rel="stylesheet" href="{% static 'vendor/style.min.css' %}">
 </head>
 <body>
-<div id="head">
-    <h1>
-        <a href="/">Santex system of order</a>
-    </h1>
-</div>
+{% block head %}{% endblock %}
 <div class="main">
     <div id="categories" class="column categories">
     </div>
     <div id="products" class="column products">
-        <div id="goods">
-            Выберите категорию товаров...
-        </div>
-        <div id="goods-table">
-        </div>
+        {% block content %}{% endblock %}
      </div>
 </div>
 
