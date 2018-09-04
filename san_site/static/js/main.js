@@ -1,7 +1,8 @@
 'use strict';
 
 // Модуль приложения
-var app = (function($) {
+var main_goods_height = 0,
+    app = (function($) {
 
     // Инициализируем нужные переменные
     var ajaxUrl = 'ajax/get_categories',
@@ -11,13 +12,13 @@ var app = (function($) {
         };
 
     $(window).resize(function() {
-        updateTable();
-        widthHeadTable()
+        updateTables();
+        widthHeadGoods()
     });
 
     // Инициализация дерева категорий с помощью jstree
     function _initTree(data) {
-        var category;
+        var category, str_category, guid;
         ui.$categories.jstree({
             core: {
                 check_callback: true,
@@ -33,11 +34,11 @@ var app = (function($) {
         }).bind('changed.jstree', function(e, data) {
 
             category = data.node.text;
-            var str_html = 'Товары из категории ' + category;
-            ui.$goods.html(str_html.link('?sections=' + data.node.original.href));
-            console.log('changed node: ', data);
+            str_category = 'Товары из категории ' + category;
+            guid = data.node.original.href;
 
-            var guid = data.node.original.href;
+            ui.$goods.html(str_category.link('?sections=' + data.node.original.href));
+            console.log('changed node: ', data);
 
             $('th#goods_table_1 div').stop().animate({width: 0});
             $('th#goods_table_2 div').stop().animate({width: 0});
@@ -46,7 +47,15 @@ var app = (function($) {
             $('th#goods_table_5 div').stop().animate({width: 0});
             $('th#goods_table_6 div').stop().animate({width: 0});
 
+            $('th#cart_table_1 div').stop().animate({width: 0});
+            $('th#cart_table_2 div').stop().animate({width: 0});
+            $('th#cart_table_3 div').stop().animate({width: 0});
+            $('th#cart_table_4 div').stop().animate({width: 0});
+            $('th#cart_table_5 div').stop().animate({width: 0});
+
             jQuery("#goods_table").replaceWith("<div id=\"goods_table\"></div>");
+            jQuery("#header_cart").replaceWith("<div id=\"header_cart\"></div>");
+            jQuery("#goods_cart").replaceWith("<div id=\"goods_cart\"></div>");
 
             jQuery("#categories ul li a").addClass('disabled');
 
@@ -60,10 +69,15 @@ var app = (function($) {
                     // Если запрос прошёл успешно и сайт вернул результат
                     if (json.result)
                     {
-                        jQuery("#goods_table").replaceWith(json.content); // Заменяем div
+                        jQuery("#goods_table").replaceWith(json.goods_table);
+                        jQuery("#header_cart").replaceWith(json.header_cart);
+                        jQuery("#goods_cart").replaceWith(json.goods_cart);
+
                         jQuery(window).scrollTop(0);
-                        updateTable();
-                        widthHeadTable();
+
+                        updateTables(Number(json.cart_height), Number(json.goods_height));
+                        widthHeadGoods();
+                        widthHeadCart();
                     }
                     jQuery("#categories ul li a").removeClass('disabled');
                     document.body.querySelectorAll('#cart_add')
@@ -100,8 +114,6 @@ var app = (function($) {
     // Инициализация приложения
     function init() {
         _loadData();
-        updateTable();
-        fixedId();
     }
 
     $("html,body").css("overflow","hidden");
@@ -113,34 +125,51 @@ var app = (function($) {
 
 })(jQuery);
 
-function updateTable() {
-    var clientHeight = ($(window).height() - $('#header').height());
-    $('#goods_table').stop().animate({height: clientHeight - 60});
-    $('#categories').stop().animate({height: clientHeight - 28});
+function updateTables(cart_height=undefined, goods_height=undefined) {
+
+    var window_height = $(window).height(),
+        header_height = $('#header').height(),
+        header_cart_height = $('#header_cart').height(),
+        categories_height = window_height - header_height - 28,
+        goods_table_height = 0;
+
+    cart_height = (cart_height === undefined) ? $('#goods_cart').height() : cart_height;
+    cart_height = (cart_height === 0) ? 0 : cart_height;
+
+    goods_height = (goods_height === undefined) ? window.main_goods_height : goods_height;
+    goods_height = (goods_height === undefined) ? 999999999 : goods_height;
+
+    goods_table_height = (window_height -
+                            header_cart_height -
+                            ((cart_height === 0) ? 0 : cart_height + 24)
+                            - header_height) - 60;
+    window.main_goods_height = goods_height;
+
+    $('#goods_table').stop().animate({height: Math.min(goods_table_height, goods_height)});
+    $('#categories').stop().animate({height: categories_height});
+
+    if (cart_height !== undefined && cart_height !== 0) {
+        $('#goods_cart').stop().animate({height: (cart_height +
+            Math.max(0, goods_table_height - goods_height - 60))});
+    }
+
 }
 
-function widthHeadTable() {
+function widthHeadCart() {
+    $('th#cart_table_1 div').stop().animate({width: $('#cart_table_1').width() + 5});
+    $('th#cart_table_2 div').stop().animate({width: $('#cart_table_2').width() + 5});
+    $('th#cart_table_3 div').stop().animate({width: $('#cart_table_3').width() + 5});
+    $('th#cart_table_4 div').stop().animate({width: $('#cart_table_4').width() + 5});
+    $('th#cart_table_5 div').stop().animate({width: $('#cart_table_5').width() + 5});
+}
+
+function widthHeadGoods() {
     $('th#goods_table_1 div').stop().animate({width: $('#goods_table_1').width() + 5});
     $('th#goods_table_2 div').stop().animate({width: $('#goods_table_2').width() + 5});
     $('th#goods_table_3 div').stop().animate({width: $('#goods_table_3').width() + 5});
     $('th#goods_table_4 div').stop().animate({width: $('#goods_table_4').width() + 5});
     $('th#goods_table_5 div').stop().animate({width: $('#goods_table_5').width() + 5});
     $('th#goods_table_6 div').stop().animate({width: $('#goods_table_6').width() + 5});
-}
-
-function fixedId() {
-    return;
-    var topPadding = 0;
-    var offset = $('#categories').offset();
-    $(window).scroll(function() {
-        if ($(window).scrollTop() > offset.top) {
-            var marginTop = $(window).scrollTop() - offset.top + topPadding;
-            $('#categories').stop().animate({marginTop: marginTop});
-        }
-        else {
-            $('#categories').stop().animate({marginTop: 0});
-        }
-    });
 }
 
 jQuery(document).ready(app.init);

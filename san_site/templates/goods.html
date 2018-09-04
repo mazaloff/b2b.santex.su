@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load format %}
+
 {% block title %}
     {{ block.super }}
 {% endblock %}
@@ -10,5 +12,7 @@
 
 {% block content %}
     <div id="goods">Выберите категорию товаров...</div>
-    <div id="goods_table"><div id="td_good"></div></div>
+    <div id="goods_table"></div>
+    <div id="header_cart"></div>
+    <div id="goods_cart"></div>
 {% endblock %}

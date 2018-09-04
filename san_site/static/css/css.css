@@ -10,11 +10,16 @@ body {
 
 #header {
     display: flex;
+    height: 60px;
 }
 
 #header #user-tools{
     position: absolute;
     right: 20px;
+}
+
+#header #header_cart{
+    margin-left: 100px;
 }
 
 .categories  {
@@ -48,18 +53,40 @@ a.disabled {
 #goods_table table { border-collapse: collapse; }
 #goods_table th div { position: absolute; margin-top: -20px; background: #beebff; }
 
+#goods_cart { height: 0; overflow: auto; }
+#goods_cart table { border-collapse: collapse; }
+#goods_cart th div { position: absolute; margin-top: -20px; background: #beebff; }
+
 #categories { height: 100%; overflow-x: hidden; overflow-y: auto}
 #categories { border-collapse: collapse; }
 
-#goods_table {margin-top: 20px; border-collapse: collapse;}
-#goods_table td {padding: 4px 12px 6px 8px;}
-#goods_table tr {border-bottom: 1px solid #e8e9eb;}
-#goods_table tbody tr:hover {background: #e7f4f9;}
-#goods_table th#goods_table_1 div {margin-left: -1px;}
-#goods_table th#goods_table_1 {min-width: 100px; max-width: 140px;}
-#goods_table th#goods_table_2 {min-width: 450px;}
-#goods_table th#goods_table_3 {width: 70px; min-width: 60px;}
-#goods_table th#goods_table_4 {width: 110px; min-width: 60px;}
-#goods_table th#goods_table_5 {width: 70px; min-width: 40px;}
+#goods_table { margin-top: 20px; border-collapse: collapse; }
+#goods_table td { padding: 4px 12px 6px 8px; }
+#goods_table tr { border-bottom: 1px solid #e8e9eb; }
+#goods_table tbody tr:hover { background: #e7f4f9; }
+#goods_table th#goods_table_1 div { margin-left: -1px; }
+#goods_table th#goods_table_1 { min-width: 100px; max-width: 140px; }
+#goods_table th#goods_table_2 { min-width: 450px; }
+#goods_table th#goods_table_3 { width: 70px; min-width: 60px; }
+#goods_table th#goods_table_4 { width: 110px; min-width: 60px; }
+#goods_table th#goods_table_5 { width: 70px; min-width: 40px; }
 
-#goods_table a#cart_add {text-decoration: none;}
+#goods_cart { margin-top: 20px; border-collapse: collapse; }
+#goods_cart td { padding: 4px 12px 6px 8px; }
+#goods_cart tr { border-bottom: 1px solid #e8e9eb; }
+#goods_cart tbody tr:hover { background: #e7f4f9; }
+#goods_cart th#cart_table_1 div { margin-left: -1px; }
+#goods_cart th#cart_table_1 { min-width: 100px; max-width: 140px; }
+#goods_cart th#cart_table_2 { min-width: 450px; }
+#goods_cart th#cart_table_3 { width: 70px; min-width: 60px; }
+#goods_cart th#cart_table_4 { width: 110px; min-width: 60px; }
+#goods_cart th#cart_table_5 { width: 120px; min-width: 70px; }
+
+#goods_table a#cart_add {
+    text-decoration: none;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+#header_cart { margin-top: 5px; }

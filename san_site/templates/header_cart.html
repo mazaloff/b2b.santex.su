@@ -1,0 +1,12 @@
+{% load format %}
+
+<div id="header_cart">
+    {% with total_items=cart|length %}
+        {% if cart|length > 0 %}
+            Ваш текущий заказ:
+            <a href="">{{ cart.get_total_quantity|units }} {{ cart.get_total_price }} руб.</a>
+        {% else %}
+            Текущий заказ пустой.
+        {% endif %}
+    {% endwith %}
+</div>

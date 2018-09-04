@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from san_site.models import Section, Product
 from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
 from django.template.loader import render_to_string
-from san_site.forms import CartAddProductForm
 from san_site.cart.cart import Cart
 import json
 
@@ -29,9 +28,20 @@ def get_goods(request):
         raise HttpResponseBadRequest
 
     template_goods_td = 'goods_table_user.html' if request.user.is_authenticated else 'goods_table.html'
+    cart = Cart(request)
+    goods_list = obj_Section.get_goods_list(request.user)
+
     return JsonResponse({
         "result": True,
-        'content': render_to_string(template_goods_td, {'goods_list': obj_Section.get_goods_list(request.user)})
+        'goods_table':
+            render_to_string(template_goods_td, {'goods_list': goods_list}),
+        'header_cart':
+            render_to_string('header_cart.html', {'cart': Cart(request)}),
+        'goods_cart':
+            render_to_string('goods_cart_user.html',
+                             {'goods_list': cart.get_cart_list()}),
+        'goods_height': len(goods_list) * 34,
+        'cart_height': cart.cart_height
     })
 
 
@@ -43,10 +53,15 @@ def cart_add(request):
 
     cart = Cart(request)
     product = get_object_or_404(Product, guid=guid)
-    cart.add(product=product,
-                 quantity=1)
+    cart.add(product=product, quantity=1)
     return JsonResponse({
         "result": True,
+        'goods_cart':
+            render_to_string('goods_cart_user.html',
+                             {'goods_list': cart.get_cart_list()}),
+        'header_cart':
+            render_to_string('header_cart.html', {'cart': Cart(request)}),
+        'cart_height': cart.cart_height
     })
 
 
