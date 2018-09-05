@@ -1,4 +1,4 @@
-from .cart import Cart
+from san_site.cart.cart import Cart
 
 
 def cart(request):

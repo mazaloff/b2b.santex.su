@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.db.models import Prefetch
 from django.db import connection
 
+# connection.queries
 
 class SectionManager(models.Manager):
     pass
@@ -81,17 +82,16 @@ class Section(models.Model):
 
         if user.is_authenticated:
 
-            set_person = Person.objects.filter(user=user).select_related('customer').only('customer')
-            if len(set_person) == 0:
+            current_customer = get_customer(user)
+            if current_customer is None:
                 return list_res_
-            curent_customer = set_person[0].customer
 
             products = Product.objects.filter(section__in=list_sections).order_by('code') \
                 .prefetch_related(
                 Prefetch('product_inventories',
                     queryset=Inventories.objects.all()),
                 Prefetch('product_customers_prices',
-                    queryset=CustomersPrices.objects.filter(customer=curent_customer)))
+                    queryset=CustomersPrices.objects.filter(customer=current_customer)))
             for value_product in products:
                 quantity_sum = 0
                 for product_inventories in value_product.product_inventories.all():
@@ -104,13 +104,15 @@ class Section(models.Model):
                     price_percent = product_prices.percent
                     currency_name = currency_dict.get(product_prices.currency_id, '')
                 list_res_.append({'product': value_product,
+                                'guid': value_product.guid,
                                 'code': value_product.code,
                                 'name': value_product.name,
                                 'quantity': '>10' if quantity_sum > 10 else '' if quantity_sum == 0 else quantity_sum,
                                 'price': '' if price_discount == 0 else price_discount,
                                 'discount': '' if price_value == 0 else price_value,
                                 'currency': currency_name,
-                                'percent': '' if price_percent == 0 else price_percent})
+                                'percent': '' if price_percent == 0 else price_percent,
+                                'url_tr_good': 'tr_good' + value_product.guid})
 
         else:
             products = Product.objects.filter(section__in=list_sections).order_by('code') \
@@ -125,6 +127,7 @@ class Section(models.Model):
                     price_value = product_prices.value
                     currency_name = currency_dict.get(product_prices.currency_id, '')
                 list_res_.append({'product': value_product,
+                                'guid': value_product.guid,
                                 'code': value_product.code,
                                 'name': value_product.name,
                                 'quantity': '>10' if quantity_sum > 10 else '' if quantity_sum == 0 else quantity_sum,
@@ -155,9 +158,21 @@ class Product(models.Model):
     def url_add_cart(self):
         return 'cart/add/?product=' + self.guid
 
-    @property
-    def price(self):
-        return 999
+    def get_price(self, user):
+
+        current_customer = get_customer(user)
+        if current_customer is None:
+            return dict(price=0, price_ruble=0, currency='')
+
+        query_set_price = CustomersPrices.objects.\
+            filter(customer=current_customer, product=self).select_related('currency')
+        if len(query_set_price):
+            currency = query_set_price[0].currency
+            currency_name = query_set_price[0].currency.name
+            price = query_set_price[0].discount
+            price_ruble = currency.change_ruble(price)
+            return dict(price=price, price_ruble=price_ruble, currency=currency_name)
+        return dict(price=0, price_ruble=0, currency='')
 
 
 class Store(models.Model):
@@ -207,6 +222,19 @@ class Currency(models.Model):
     def __str__(self):
         return self.name
 
+    def get_today_course(self):
+        from django.db.models import Max
+        dict_max_date = Courses.objects.filter(currency=self).aggregate(max_date=Max('date'))
+        if not dict_max_date['max_date'] is None:
+            set_course = Courses.objects.filter(currency=self).filter(date=dict_max_date['max_date'])
+            if len(set_course) > 0:
+                return {'course': set_course[0].course, 'multiplicity': set_course[0].multiplicity}
+        return {'course': 1, 'multiplicity': 1}
+
+    def change_ruble(self, value):
+        course = self.get_today_course()
+        return round(value * course['course'] / course['multiplicity'], 2)
+
 
 class Inventories(models.Model):
     product = models.ForeignKey(Product, related_name='product_inventories', null=True, db_index=True, on_delete=models.DO_NOTHING)
@@ -233,3 +261,9 @@ class Courses(models.Model):
     currency = models.ForeignKey(Currency, null=False, db_index=True, on_delete=models.DO_NOTHING)
     course = models.FloatField(null=False, default=0)
     multiplicity = models.IntegerField(null=False, default=1)
+
+
+def get_customer(user):
+    set_person = Person.objects.filter(user=user).select_related('customer').only('customer')
+    if len(set_person) > 0:
+        return set_person[0].customer

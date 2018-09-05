@@ -23,3 +23,6 @@ python manage.py makemessages
 
 # скомпилировать файлы локализации
 python manage.py compilemessages
+
+queryset = User.objects.annotate(username_index=ExpressionWrapper(Func(F('username'), Value('(\d+)'),
+ function='substring'), output_field=IntegerField()))).filter(username__iregex=r'^[A-Z]{2}\d+$').values_list('username_index', flat=True)

@@ -7,22 +7,18 @@
             <col style = "background:#beebff">
         </colgroup>
         <thead style="background: #ffffff;">
-            <tr>
-                <th id="cart_table_1"><div>Артикул</div></th>
-                <th id="cart_table_2"><div>Наименование товара</div></th>
+            <tr id="tr_cart_head">
+                <th align=left id="cart_table_1"><div>Артикул</div></th>
+                <th align=left id="cart_table_2"><div>Наименование товара</div></th>
                 <th align=left id="cart_table_3"><div>Кол-во</div></th>
-                <th align=center id="cart_table_4"><div>Цена</div></th>
-                <th align=center id="cart_table_5"><div>Сумма</div></th>
+                <th align=left id="cart_table_4"><div>Цена</div></th>
+                <th align=left id="cart_table_5"><div>Сумма</div></th>
+                <th align=left id="cart_table_6"><div>Вал.</div></th>
+                <th align=left id="cart_table_7"><div>Всего руб.</div></th>
             </tr>
         </thead>
         {% for goods in goods_list %}
-            <tr>
-                <td id="cart_table_1">{{ goods.code }}</td>
-                <td id="cart_table_2">{{ goods.name }}</td>
-                <td id="cart_table_3" align=right>{{ goods.quantity }}</td>
-                <td id="cart_table_4" align=right>{{ goods.price|format:"{0:.2f}" }}</td>
-                <td id="cart_table_5" align=right>{{ goods.total_price|format:"{0:.2f}" }}</td>
-            </tr>
+            {% include "tr_cart.html" %}
         {% endfor %}
     </table>
 </div>
