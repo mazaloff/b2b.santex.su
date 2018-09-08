@@ -17,11 +17,13 @@ class Cart(object):
         product_guid = str(product.guid)
         if product_guid not in self.cart:
             dict_price = product.get_price(self.user)
-            self.cart[product_guid] = {'quantity': 0,
-                                    'price': dict_price['price'],
-                                    'currency_id': dict_price['currency_id'],
-                                    'currency_name': dict_price['currency_name'],
-                                    'price_ruble': dict_price['price_ruble']}
+            self.cart[product_guid] = {
+                'quantity': 0,
+                'price': dict_price['price'],
+                'currency_id': dict_price['currency_id'],
+                'currency_name': dict_price['currency_name'],
+                'price_ruble': dict_price['price_ruble']
+            }
         if update_quantity:
             self.cart[product_guid]['quantity'] = quantity
         else:
@@ -57,10 +59,10 @@ class Cart(object):
         return len(self.cart)
 
     def get_total_cost(self):
-        return round(sum(item['total_price_ruble'] for item in self.cart.values()), 2)
+        return round(sum(item['total_price_ruble'] for item in self.get_cart_list()), 2)
 
     def get_total_quantity(self):
-        return sum(item['quantity'] for item in self.cart.values())
+        return sum(item['quantity'] for item in self.get_cart_list())
 
     def clear(self):
         del self.session[settings.CART_SESSION_ID]
