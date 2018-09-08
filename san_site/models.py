@@ -270,17 +270,16 @@ class Courses(models.Model):
 
 
 class Order(models.Model):
-    date = models.DateField(db_index=True)
+    date = models.DateField(auto_now_add=True, db_index=True)
     person = models.ForeignKey(Person, null=False, db_index=True, on_delete=models.PROTECT)
-    created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     delivery = models.DateTimeField(null=True)
-    shipment = models.IntegerField(choices=settings.SHIPMENT_TYPE, null=True)
-    payment = models.IntegerField(choices=settings.PAYMENT_FORM, null=True)
+    shipment = models.CharField(max_length=50, choices=settings.SHIPMENT_TYPE, null=True)
+    payment = models.CharField(max_length=50, choices=settings.PAYMENT_FORM, null=True)
     comment = models.TextField(null=True)
 
     class Meta:
-        ordering = ('-created',)
+        ordering = ('-date',)
 
     def __str__(self):
         return 'Order {}'.format(self.id)
@@ -288,11 +287,39 @@ class Order(models.Model):
     def get_total_cost(self):
         return sum(item.get_cost() for item in self.items.all())
 
+    def get_total_quantity(self):
+        return sum(item.quantity for item in self.items.all())
+
+    def __iter__(self):
+        for item in self.items.all():
+            dict_ = dict(
+                        product=item.product,
+                        code=item.product.code,
+                        guid=item.product.guid,
+                        name=item.product.name,
+                        price=item.price,
+                        currency=item.currency,
+                        price_ruble=item.price_ruble,
+                        quantity=item.quantity
+                    )
+            dict_['total_price'] = round(item.price * item.quantity, 2)
+            dict_['total_price_ruble'] = round(item.price_ruble * item.quantity, 2)
+
+            yield dict_
+
+    def get_order_list(self):
+        list_res_ = []
+        for element in self:
+            list_res_.append(element)
+        return list_res_
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.PROTECT)
     product = models.ForeignKey(Product, related_name='order_items', on_delete=models.PROTECT)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.ForeignKey(Currency, null=False, on_delete=models.PROTECT)
+    price_ruble = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField(default=1)
 
     def __str__(self):

@@ -42,6 +42,7 @@ class Cart(object):
         product_guids = self.cart.keys()
         products = Product.objects.filter(guid__in=product_guids)
         for product in products:
+            self.cart[str(product.guid)]['product'] = product
             self.cart[str(product.guid)]['code'] = product.code
             self.cart[str(product.guid)]['name'] = product.name
             self.cart[str(product.guid)]['guid'] = product.guid
@@ -50,11 +51,12 @@ class Cart(object):
             item['total_price'] = round(item['price'] * item['quantity'], 2)
             item['total_price_ruble'] = round(item['price_ruble'] * item['quantity'], 2)
             yield item
+            del item['product']
 
     def __len__(self):
         return len(self.cart)
 
-    def get_total_price(self):
+    def get_total_cost(self):
         return round(sum(item['total_price_ruble'] for item in self.cart.values()), 2)
 
     def get_total_quantity(self):

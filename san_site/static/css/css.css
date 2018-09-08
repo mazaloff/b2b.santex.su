@@ -103,7 +103,8 @@ a.disabled {
     display: block;
 }
 
-#header_cart { margin-top: 5px; margin-left: 10px}
+#header_cart { height: 20px; margin-top: 5px; margin-left: 10px}
+#header_order{ margin-left: 10px}
 
 #cart_link_add {
     text-decoration: none;
@@ -124,6 +125,8 @@ a.disabled {
 
 .cart_table_3_box_quantity { flex: 5 5; }
 
-#header_cart { height: 20px }
-
 .control-group { padding-bottom: 7px }
+
+div.control-group.has-errors label { color: orangered }
+
+ul.errorlist { margin: 0; color: orangered }

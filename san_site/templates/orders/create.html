@@ -20,10 +20,10 @@
         {% csrf_token %}
         <fieldset style="border: none;">
             {% for field in form %}
-                <div class="control-group
-                  {% if field.errors %}has-errors{% endif %}">
+                <div class="control-group{% if field.errors %} has-errors{% endif %}">
                     <label class="control-label">{{ field.label }}</label>
                     <div class="control">{{ field }}</div>
+                    {{ field.errors }}
                 </div>
             {% endfor %}
             <p><input type="submit" value="Разместить заказ"></p>

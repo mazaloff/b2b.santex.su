@@ -22,7 +22,7 @@ class OrderItemInline(admin.TabularInline):
 
 
 class OrderAdmin(admin.ModelAdmin):
-    list_filter = ['person', 'created', 'updated']
+    list_filter = ['person', 'date', 'updated']
     inlines = [OrderItemInline]
 
 admin.site.register(Order, OrderAdmin)

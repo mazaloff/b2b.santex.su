@@ -1,6 +1,8 @@
 from django import forms
-from san_site.models import Order
+from san_site.models import Order, OrderItem, Person
+from san_site.cart.cart import Cart, Currency
 from django.conf import settings
+import datetime
 
 class LoginForm(forms.Form):
     username = forms.CharField(label='Логин')
@@ -18,13 +20,56 @@ class PasswordChangeForm(forms.Form):
 
 
 class OrderCreateForm(forms.ModelForm):
-    delivery = forms.DateField(widget=forms.SelectDateWidget, label='Срок поставки')
+    delivery = forms.DateField(widget=forms.SelectDateWidget,
+                               initial=datetime.date.today() + datetime.timedelta(days=1),
+                               label='Срок поставки')
     shipment = forms.ChoiceField(choices=settings.SHIPMENT_TYPE, required=True,
                                  initial=settings.SHIPMENT_TYPE[0], label='Способ доставки')
     payment = forms.ChoiceField(choices=settings.PAYMENT_FORM, required=True,
-                                 initial=settings.PAYMENT_FORM[0], label='Форма оплаты')
-    comment = forms.CharField(widget=forms.Textarea, label='Комментарий')
+                                 initial=settings.PAYMENT_FORM[1], label='Форма оплаты')
+    comment = forms.CharField(widget=forms.Textarea, label='Комментарий к заказу', required=False)
 
     class Meta:
         model = Order
         fields = ['delivery', 'shipment', 'payment', 'comment']
+
+    def clean_delivery(self):
+        now = datetime.date.today()
+        if self.cleaned_data['delivery'] < now:
+            raise forms.ValidationError(
+                "Срок поставки больше текущей даты."
+            )
+        return self.cleaned_data['delivery']
+
+    def clean(self):
+        pass
+
+    def save(self, commit=True, **kwargs):
+        request = kwargs.get('request', None)
+        if request is None:
+            return
+        person = None
+        set_person = Person.objects.filter(user=request.user)
+        if len(set_person) > 0:
+            person = set_person[0]
+        order = Order.objects.create(person=person,
+                                     delivery=self.cleaned_data['delivery'],
+                                     shipment=self.cleaned_data['shipment'],
+                                     payment=self.cleaned_data['payment'],
+                                     comment=self.cleaned_data['comment'])
+        order.save()
+
+        cart = Cart(request)
+        for item in cart:
+            try:
+                currency = Currency.objects.get(id=item['currency_id'])
+            except Currency.DoesNotExist:
+                continue
+            OrderItem.objects.create(order=order,
+                                     product=item['product'],
+                                     price=item['price'],
+                                     currency=currency,
+                                     price_ruble=item['price_ruble'],
+                                     quantity=item['quantity'])
+        cart.clear()
+        return order
