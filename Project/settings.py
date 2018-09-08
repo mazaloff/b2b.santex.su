@@ -138,3 +138,6 @@ EMAIL_HOST_USER = '' # email id
 EMAIL_HOST_PASSWORD = '' #password
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+
+PAYMENT_FORM = ((1, 'Наличные'), (2, 'Безналичные'))
+SHIPMENT_TYPE = ((1, 'Самовывоз'), (2, 'Доставка'))

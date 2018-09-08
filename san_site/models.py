@@ -1,10 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.conf import settings
 from django.db.models import Prefetch
 from django.db import connection
 
 # connection.queries
+
 
 class SectionManager(models.Manager):
     pass
@@ -53,7 +55,7 @@ class Section(models.Model):
     sort = models.IntegerField(default=500)
     parent_guid = models.CharField(max_length=50, db_index=True)
     created_date = models.DateTimeField(default=timezone.now)
-    is_deleted = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False, db_index=True)
 
     objects = SectionManager()
 
@@ -66,7 +68,7 @@ class Section(models.Model):
 
     def list_with_children(self, list_sections):
         list_sections.append(self)
-        children = Section.objects.filter(parent_guid=self.guid)
+        children = Section.objects.filter(parent_guid=self.guid, is_deleted=False)
         for child in children:
             list_sections.append(child)
             child.list_with_children(list_sections)
@@ -86,7 +88,7 @@ class Section(models.Model):
             if current_customer is None:
                 return list_res_
 
-            products = Product.objects.filter(section__in=list_sections).order_by('code') \
+            products = Product.objects.filter(section__in=list_sections, is_deleted=False).order_by('code') \
                 .prefetch_related(
                 Prefetch('product_inventories',
                     queryset=Inventories.objects.all()),
@@ -108,14 +110,14 @@ class Section(models.Model):
                                 'code': value_product.code,
                                 'name': value_product.name,
                                 'quantity': '>10' if quantity_sum > 10 else '' if quantity_sum == 0 else quantity_sum,
-                                'price': '' if price_discount == 0 else price_discount,
-                                'discount': '' if price_value == 0 else price_value,
+                                'price': '' if price_value == 0 else price_value,
+                                'discount': '' if price_discount == 0 else price_discount,
                                 'currency': currency_name,
                                 'percent': '' if price_percent == 0 else price_percent,
                                 'url_tr_good': 'tr_good' + value_product.guid})
 
         else:
-            products = Product.objects.filter(section__in=list_sections).order_by('code') \
+            products = Product.objects.filter(section__in=list_sections, is_deleted=False).order_by('code') \
                 .prefetch_related('product_inventories', 'product_prices')
             for value_product in products:
                 quantity_sum = 0
@@ -134,7 +136,8 @@ class Section(models.Model):
                                 'price': '' if price_value == 0 else price_value,
                                 'discount': '',
                                 'currency': currency_name,
-                                'percent': ''})
+                                'percent': '',
+                                'url_tr_good': 'tr_good' + value_product.guid})
 
         return list_res_
 
@@ -146,7 +149,7 @@ class Product(models.Model):
     sort = models.IntegerField(default=500)
     section = models.ForeignKey(Section, null=True, db_index=True, on_delete=models.PROTECT)
     created_date = models.DateTimeField(default=timezone.now)
-    is_deleted = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False, db_index=True)
 
     def publish(self):
         self.published_date = timezone.now()
@@ -162,17 +165,18 @@ class Product(models.Model):
 
         current_customer = get_customer(user)
         if current_customer is None:
-            return dict(price=0, price_ruble=0, currency='')
+            return dict(price=0, price_ruble=0, currency_name='', currency_id=0)
 
         query_set_price = CustomersPrices.objects.\
             filter(customer=current_customer, product=self).select_related('currency')
         if len(query_set_price):
             currency = query_set_price[0].currency
             currency_name = query_set_price[0].currency.name
+            currency_id = query_set_price[0].currency.id
             price = query_set_price[0].discount
             price_ruble = currency.change_ruble(price)
-            return dict(price=price, price_ruble=price_ruble, currency=currency_name)
-        return dict(price=0, price_ruble=0, currency='')
+            return dict(price=price, price_ruble=price_ruble, currency_name=currency_name, currency_id=currency_id)
+        return dict(price=0, price_ruble=0, currency_name='', currency_id=0)
 
 
 class Store(models.Model):
@@ -241,11 +245,13 @@ class Inventories(models.Model):
     store = models.ForeignKey(Store, null=True, unique=False, on_delete=models.DO_NOTHING)
     quantity = models.IntegerField(null=False, default=0)
 
+
 class Prices(models.Model):
     product = models.ForeignKey(Product, related_name='product_prices', null=True, db_index=True, on_delete=models.DO_NOTHING)
     price = models.ForeignKey(Price, null=True, unique=False, on_delete=models.DO_NOTHING)
     currency = models.ForeignKey(Currency, null=True, unique=False, on_delete=models.DO_NOTHING)
     value = models.FloatField(null=False, default=0)
+
 
 class CustomersPrices(models.Model):
     customer = models.ForeignKey(Customer, null=True, db_index=True, on_delete=models.DO_NOTHING)
@@ -261,6 +267,39 @@ class Courses(models.Model):
     currency = models.ForeignKey(Currency, null=False, db_index=True, on_delete=models.DO_NOTHING)
     course = models.FloatField(null=False, default=0)
     multiplicity = models.IntegerField(null=False, default=1)
+
+
+class Order(models.Model):
+    date = models.DateField(db_index=True)
+    person = models.ForeignKey(Person, null=False, db_index=True, on_delete=models.PROTECT)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    delivery = models.DateTimeField(null=True)
+    shipment = models.IntegerField(choices=settings.SHIPMENT_TYPE, null=True)
+    payment = models.IntegerField(choices=settings.PAYMENT_FORM, null=True)
+    comment = models.TextField(null=True)
+
+    class Meta:
+        ordering = ('-created',)
+
+    def __str__(self):
+        return 'Order {}'.format(self.id)
+
+    def get_total_cost(self):
+        return sum(item.get_cost() for item in self.items.all())
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, related_name='items', on_delete=models.PROTECT)
+    product = models.ForeignKey(Product, related_name='order_items', on_delete=models.PROTECT)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return '{}'.format(self.id)
+
+    def get_cost(self):
+        return self.price * self.quantity
 
 
 def get_customer(user):

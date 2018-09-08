@@ -8,67 +8,58 @@ class Index {
     static _clickHandlerGoods(event){
         event.preventDefault(); // запрещаем событие
 
+        let html_view_category = jQuery("#goods").html();
         let path = event.target.href; // забираем путь
         let guid = window.getSectionGUID(path);
 
-        $('th#goods_table_1 div').stop().animate({width: 0});
-        $('th#goods_table_2 div').stop().animate({width: 0});
-        $('th#goods_table_3 div').stop().animate({width: 0});
-        $('th#goods_table_4 div').stop().animate({width: 0});
-        $('th#goods_table_5 div').stop().animate({width: 0});
-        $('th#goods_table_6 div').stop().animate({width: 0});
+        jQuery("#products").replaceWith(main_goods_html);
 
-        $('th#cart_table_1 div').stop().animate({width: 0});
-        $('th#cart_table_2 div').stop().animate({width: 0});
-        $('th#cart_table_3 div').stop().animate({width: 0});
-        $('th#cart_table_4 div').stop().animate({width: 0});
-        $('th#cart_table_5 div').stop().animate({width: 0});
-        $('th#cart_table_6 div').stop().animate({width: 0});
-        $('th#cart_table_7 div').stop().animate({width: 0});
-
-        jQuery("#goods_table").replaceWith("<div id=\"goods_table\"></div>");
-        jQuery("#header_cart").replaceWith("<div id=\"header_cart\"></div>");
-        jQuery("#goods_cart").replaceWith("<div id=\"goods_cart\"></div>");
+        widthHeadGoods();
+        widthHeadCart();
 
         jQuery("#categories ul li a").addClass('disabled');
 
-        if (typeof guid !== undefined) {
-            jQuery.ajax({
-                url: "ajax/get_goods/",
-                type: 'GET',
-                data: {'guid': guid},
-                dataType: 'json', // забираем номер страницы, которую нужно отобразить
+        jQuery.ajax({
+            url: "ajax/get_goods/",
+            type: 'GET',
+            data: {'guid': guid},
+            dataType: 'json', // забираем номер страницы, которую нужно отобразить
 
-                success : function (json) {
-                    // Если запрос прошёл успешно и сайт вернул результат
-                    if (json.result)
-                    {
-                        jQuery("#goods_table").replaceWith(json.goods_table);
-                        jQuery("#header_cart").replaceWith(json.header_cart);
-                        jQuery("#goods_cart").replaceWith(json.goods_cart);
+            success : function (json) {
+                // Если запрос прошёл успешно и сайт вернул результат
+                if (json.result)
+                {
+                    jQuery("#products").replaceWith(json.goods_html);
 
-                        $('#goods_cart').stop().animate({height: Number(json.cart_height)})
+                    jQuery("#goods").html("<div id=\"goods\">" + html_view_category + "</div>");
 
-                        jQuery(window).scrollTop(0); // Скроллим страницу в начало
+                    history.pushState(null, null, '/');
+                    history.replaceState(null, null, '/');
 
-                        countHeightTableGoods(json.goods_table_guids);
-                        countHeightTableCart(json.cart_table_guids);
+                    jQuery(window).scrollTop(0);
 
-                        updateTables();
-                        widthHeadGoods();
-                        widthHeadCart();
+                    main_goods_table_guids = json.goods_table_guids;
+                    main_cart_table_guids = json.cart_table_guids;
 
-                    }
-                    jQuery("#categories ul li a").removeClass('disabled');
-                    document.body.querySelectorAll('#cart_add')
-                        .forEach( link => link.addEventListener('click', Index._clickAddCart));
-                    document.body.querySelectorAll('#cart_link_add')
-                        .forEach( link => link.addEventListener('click', Index._clickQuantityAddCart));
-                    document.body.querySelectorAll('#cart_link_reduce')
-                        .forEach( link => link.addEventListener('click', Index._clickQuantityReduceCart));
+                    countHeightTableGoods();
+                    countHeightTableCart();
+
+                    updateTables();
+
+                    widthHeadGoods();
+                    widthHeadCart();
                 }
-            });
-        }
+                jQuery("#categories ul li a").removeClass('disabled');
+                document.body.querySelectorAll('#cart_add')
+                    .forEach( link => link.addEventListener('click', Index._clickAddCart));
+                document.body.querySelectorAll('#cart_link_add')
+                    .forEach( link => link.addEventListener('click', Index._clickQuantityAddCart));
+                document.body.querySelectorAll('#cart_link_reduce')
+                    .forEach( link => link.addEventListener('click', Index._clickQuantityReduceCart));
+                document.body.querySelectorAll('#goods')
+                    .forEach( link => link.addEventListener('click', Index._clickHandlerGoods) );
+            }
+        });
     }
 
     static _clickAddCart(event) {
@@ -82,7 +73,7 @@ class Index {
 
         if (typeof guid !== undefined) {
             jQuery.ajax({
-                url: "ajax/cart_add/",
+                url: "ajax/cart/add/",
                 type: 'GET',
                 data: {'guid': guid},
                 dataType: 'json', // забираем номер страницы, которую нужно отобразить
@@ -94,11 +85,18 @@ class Index {
                         jQuery("#header_cart").replaceWith(json.header_cart);
                         jQuery("#goods_cart").replaceWith(json.goods_cart);
 
-                        countHeightTableCart(json.cart_table_guids);
+                        main_user = json.user_name;
+                        main_cart_table_guids = json.cart_table_guids;
+
+                        countHeightTableCart();
 
                         updateTables();
                         widthHeadCart();
                     }
+                    document.body.querySelectorAll('#cart_link_add')
+                        .forEach( link => link.addEventListener('click', Index._clickQuantityAddCart));
+                    document.body.querySelectorAll('#cart_link_reduce')
+                        .forEach( link => link.addEventListener('click', Index._clickQuantityReduceCart));
                 }
             });
         }
@@ -115,7 +113,7 @@ class Index {
             jQuery("#header_cart").replaceWith("<div id=\"header_cart\"></div>");
 
             jQuery.ajax({
-                url: "ajax/cart_add_quantity/",
+                url: "ajax/cart/add_quantity/",
                 type: 'GET',
                 data: {'guid': guid},
                 dataType: 'json', // забираем номер страницы, которую нужно отобразить
@@ -148,7 +146,7 @@ class Index {
             jQuery("#header_cart").replaceWith("<div id=\"header_cart\"></div>");
 
             jQuery.ajax({
-                url: "ajax/cart_reduce_quantity/",
+                url: "ajax/cart/reduce_quantity/",
                 type: 'GET',
                 data: {'guid': guid},
                 dataType: 'json', // забираем номер страницы, которую нужно отобразить
@@ -184,7 +182,7 @@ class Index {
             jQuery("#header_cart").replaceWith("<div id=\"header_cart\"></div>");
 
             jQuery.ajax({
-                url: "ajax/cart_delete/",
+                url: "ajax/cart/delete/",
                 type: 'GET',
                 data: {'guid': guid},
                 dataType: 'json', // забираем номер страницы, которую нужно отобразить
@@ -192,13 +190,8 @@ class Index {
                 success: function (json) {
                     // Если запрос прошёл успешно и сайт вернул результат
                     if (json.result) {
-
                         jQuery("#header_cart").replaceWith(json.header_cart);
                         jQuery("#tr_cart" + guid).replaceWith("");
-
-                        countHeightTableCart(json.cart_table_guids);
-
-                        updateTables();
                     }
                 }
             });

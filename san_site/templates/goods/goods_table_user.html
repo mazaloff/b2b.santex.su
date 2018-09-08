@@ -14,6 +14,7 @@
                 <th align=left id="goods_table_4"><div>Цена</div></th>
                 <th align=left id="goods_table_5"><div>Вал.</div></th>
                 <th align=left id="goods_table_6"><div>%</div></th>
+                <th align=left id="goods_table_7"><div>Ваша цена</div></th>
             </tr>
         </thead>
         {% for goods in goods_list %}
@@ -37,7 +38,8 @@
                 </td>
                 <td id="goods_table_4" align=right>{{ goods.price|format:"{0:.2f}" }}</td>
                 <td id="goods_table_5">{{ goods.currency }}</td>
-                <td id="goods_table_6">{{ goods.percent|format:"{0:.2f}" }}</td>
+                <td id="goods_table_6" align=center>{{ goods.percent|format:"{0:.2f}" }}</td>
+                <td id="goods_table_7" align=right>{{ goods.discount|format:"{0:.2f}" }}</td>
             </tr>
         {% endfor %}
     </table>

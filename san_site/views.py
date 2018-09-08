@@ -1,16 +1,14 @@
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
-from .forms import LoginForm, PasswordChangeForm, PasswordResetForm
+from .forms import LoginForm, PasswordChangeForm, PasswordResetForm, OrderCreateForm
 from django.contrib.auth.models import User
-from san_site.models import Person
+from san_site.models import Person, Order, OrderItem
+from san_site.cart.cart import Cart
 from django.contrib import messages
 
+
 def index(request):
-    if request.user.is_authenticated:
-        return render(request, 'goods.html', {})
-    else:
-        form = LoginForm()
-        return render(request, 'account/login.html', {'form': form})
+    return render(request, 'content.html', {})
 
 
 def user_login(request):
@@ -93,3 +91,29 @@ def password_change(request):
 
 def password_change_done(request):
     return render(request, 'account/password_change_done.html', {})
+
+
+def order_create(request):
+    cart = Cart(request)
+    if request.method == 'POST':
+        form = OrderCreateForm(request.POST)
+        if form.is_valid():
+            order = form.save()
+            for item in cart:
+                OrderItem.objects.create(order=order,
+                                         product=item['product'],
+                                         price=item['price'],
+                                         quantity=item['quantity'])
+            cart.clear()
+            return render(request, 'orders/created.html',
+                          {'order': order})
+    else:
+        form = OrderCreateForm
+    cart_goods_list = cart.get_cart_list()
+    cart_table_guids = [elem['guid'] for elem in cart_goods_list]
+    return render(request, 'orders/create.html',{
+                      'cart': cart,
+                      'cart_goods_list': cart_goods_list,
+                      'cart_table_guids': cart_table_guids,
+                      'form': form}
+                  )

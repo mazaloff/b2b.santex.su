@@ -1,18 +1,10 @@
-{% extends "base.html" %}
-
-{% load format %}
-
-{% block title %}
-    {{ block.super }}
-{% endblock %}
-
-{% block head %}
-{% include "header.html" %}
-{% endblock %}
-
-{% block content %}
+<div id="products" class="column products">
     <div id="goods">Выберите категорию товаров...</div>
-    <div id="goods_table"></div>
-    <div id="header_cart"></div>
-    <div id="goods_cart"></div>
-{% endblock %}
+    {% if not user.is_authenticated %}
+        {% include "goods/goods_table.html" %}
+    {% else %}
+        {% include "goods/goods_table_user.html" %}
+        {% include "cart/header_cart.html" %}
+        {% include "cart/goods_cart_user.html" %}
+    {% endif %}
+</div>

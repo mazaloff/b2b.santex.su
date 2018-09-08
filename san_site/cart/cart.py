@@ -1,5 +1,5 @@
 from django.conf import settings
-from san_site.models import Product
+from san_site.models import Product, Currency
 
 
 class Cart(object):
@@ -19,7 +19,8 @@ class Cart(object):
             dict_price = product.get_price(self.user)
             self.cart[product_guid] = {'quantity': 0,
                                     'price': dict_price['price'],
-                                    'currency': dict_price['currency'],
+                                    'currency_id': dict_price['currency_id'],
+                                    'currency_name': dict_price['currency_name'],
                                     'price_ruble': dict_price['price_ruble']}
         if update_quantity:
             self.cart[product_guid]['quantity'] = quantity
@@ -51,7 +52,7 @@ class Cart(object):
             yield item
 
     def __len__(self):
-        return len(self.cart.values())
+        return len(self.cart)
 
     def get_total_price(self):
         return round(sum(item['total_price_ruble'] for item in self.cart.values()), 2)
@@ -91,16 +92,20 @@ class Cart(object):
                 'name': element['name'],
                 'quantity': element['quantity'],
                 'price': element['price'],
-                'currency': element['currency'],
+                'currency': element['currency_name'],
                 'total_price': element['total_price'],
                 'total_price_ruble': element['total_price_ruble'],
-                'url_add_quantity': 'cart/add_quantity/?product=' + element['guid'],
-                'url_reduce_quantity': 'cart/reduce_quantity/?product=' + element['guid'],
-                'url_tr_cart': 'tr_cart' + element['guid'],
-                'url_td_cart_quantity': 'td_cart_quantity' + element['guid'],
-                'url_td_cart_total_price': 'td_cart_total_price' + element['guid'],
-                'url_td_cart_total_price_ruble': 'td_cart_total_price_ruble' + element['guid']
                 }
+
+    def view_courses(self):
+        currencies_id = [elem['currency_id'] for elem in self.cart.values()]
+        currencies = Currency.objects.filter(id__in=currencies_id)
+        view = ''
+        for currency in currencies:
+            course = currency.get_today_course()['course']
+            if course != 1:
+                view += ' ;' if len(view) > 0 else '' + currency.name.upper() + ': ' + "{0:.4f}".format(course)
+        return view
 
     @property
     def cart_height(self):

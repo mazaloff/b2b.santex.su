@@ -17,8 +17,8 @@
                 <th align=left id="cart_table_7"><div>Всего руб.</div></th>
             </tr>
         </thead>
-        {% for goods in goods_list %}
-            {% include "tr_cart.html" %}
+        {% for goods in cart_goods_list %}
+            {% include "cart/tr_cart.html" %}
         {% endfor %}
     </table>
 </div>

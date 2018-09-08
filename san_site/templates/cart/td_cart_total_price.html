@@ -1,0 +1,4 @@
+{% load format %}
+<td class="cart_table_5" align=right id="td_cart_total_price{{ goods.guid }}">
+    {{ goods.total_price|format:"{0:.2f}" }}
+</td>

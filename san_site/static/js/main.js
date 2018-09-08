@@ -4,11 +4,14 @@
 var main_goods_height = 999999999,
     main_cart_height = 0,
     main_cart_max = false,
+    main_goods_table_guids = [],
+    main_cart_table_guids = [],
+    main_user = '',
+    main_goods_html = '',
     app = (function($) {
 
     // Инициализируем нужные переменные
-    var ajaxUrl = 'ajax/get_categories',
-        ui = {
+    let ui = {
             $categories: $('#categories'),
             $goods: $('#goods')
         };
@@ -20,7 +23,7 @@ var main_goods_height = 999999999,
 
     // Инициализация дерева категорий с помощью jstree
     function _initTree(data) {
-        var category, str_category, guid;
+        let view_category, guid;
         ui.$categories.jstree({
             core: {
                 check_callback: true,
@@ -35,31 +38,13 @@ var main_goods_height = 999999999,
 
         }).bind('changed.jstree', function(e, data) {
 
-            category = data.node.text;
-            str_category = 'Товары из категории ' + category;
+            view_category = 'Товары из категории ' + data.node.text;
             guid = data.node.original.href;
 
-            ui.$goods.html(str_category.link('?sections=' + data.node.original.href));
-            console.log('changed node: ', data);
+            jQuery("#products").replaceWith(main_goods_html);
 
-            $('th#goods_table_1 div').stop().animate({width: 0});
-            $('th#goods_table_2 div').stop().animate({width: 0});
-            $('th#goods_table_3 div').stop().animate({width: 0});
-            $('th#goods_table_4 div').stop().animate({width: 0});
-            $('th#goods_table_5 div').stop().animate({width: 0});
-            $('th#goods_table_6 div').stop().animate({width: 0});
-
-            $('th#cart_table_1 div').stop().animate({width: 0});
-            $('th#cart_table_2 div').stop().animate({width: 0});
-            $('th#cart_table_3 div').stop().animate({width: 0});
-            $('th#cart_table_4 div').stop().animate({width: 0});
-            $('th#cart_table_5 div').stop().animate({width: 0});
-            $('th#cart_table_6 div').stop().animate({width: 0});
-            $('th#cart_table_7 div').stop().animate({width: 0});
-
-            jQuery("#goods_table").replaceWith("<div id=\"goods_table\"></div>");
-            jQuery("#header_cart").replaceWith("<div id=\"header_cart\"></div>");
-            jQuery("#goods_cart").replaceWith("<div id=\"goods_cart\"></div>");
+            widthHeadGoods();
+            widthHeadCart();
 
             jQuery("#categories ul li a").addClass('disabled');
 
@@ -73,16 +58,24 @@ var main_goods_height = 999999999,
                     // Если запрос прошёл успешно и сайт вернул результат
                     if (json.result)
                     {
-                        jQuery("#goods_table").replaceWith(json.goods_table);
-                        jQuery("#header_cart").replaceWith(json.header_cart);
-                        jQuery("#goods_cart").replaceWith(json.goods_cart);
+                        jQuery("#products").replaceWith(json.goods_html);
+
+                        jQuery("#goods").html(view_category.link('?sections=' + data.node.original.href));
+                        console.log('changed node: ', data);
+
+                        history.pushState(null, null, '/');
+                        history.replaceState(null, null, '/');
 
                         jQuery(window).scrollTop(0);
 
-                        countHeightTableGoods(json.goods_table_guids);
-                        countHeightTableCart(json.cart_table_guids);
+                        main_goods_table_guids = json.goods_table_guids;
+                        main_cart_table_guids = json.cart_table_guids;
+
+                        countHeightTableGoods();
+                        countHeightTableCart();
 
                         updateTables();
+
                         widthHeadGoods();
                         widthHeadCart();
                     }
@@ -93,6 +86,8 @@ var main_goods_height = 999999999,
                         .forEach( link => link.addEventListener('click', Index._clickQuantityAddCart));
                     document.body.querySelectorAll('#cart_link_reduce')
                         .forEach( link => link.addEventListener('click', Index._clickQuantityReduceCart));
+                    document.body.querySelectorAll('#goods')
+                        .forEach( link => link.addEventListener('click', Index._clickHandlerGoods) );
                 }
             });
         });
@@ -100,20 +95,31 @@ var main_goods_height = 999999999,
 
     // Загрузка категорий с сервера
     function _loadData() {
-        var params = {
-            action: 'get_categories'
-        };
+
+        document.body.querySelectorAll('#cart_link_add')
+            .forEach( link => link.addEventListener('click', Index._clickQuantityAddCart));
+        document.body.querySelectorAll('#cart_link_reduce')
+            .forEach( link => link.addEventListener('click', Index._clickQuantityReduceCart))
+
+        widthHeadGoods();
+        widthHeadCart();
 
         $.ajax({
-            url: ajaxUrl,
+            url: 'ajax/get_categories',
             method: 'GET',
             dataType: 'json',
-            success: function(resp) {
+
+            success: function(json) {
                 // Инициализируем дерево категорий
-                if (resp.code === 'success') {
-                    _initTree(resp.result);
+                if (json.code === 'success') {
+                    _initTree(json.result);
+                    main_user = json.user_name;
+                    main_goods_html = json.goods_html
+                    main_cart_table_guids = json.cart_table_guids;
+                    countHeightTableCart();
+                    updateTables();
                 } else {
-                    console.error('Ошибка получения данных с сервера: ', resp.message);
+                    console.error('Ошибка получения данных с сервера: ', json.message);
                 }
             },
             error: function(error) {
@@ -138,39 +144,37 @@ var main_goods_height = 999999999,
 
 function updateTables() {
 
-    var window_height = $(window).height(),
+    let window_height = $(window).height(),
         header_height = $('#header').height(),
         header_cart_height = $('#header_cart').height(),
         categories_height = 0,
         goods_table_height = 0,
         cart_table_height = 0;
 
-    goods_table_height = (window_height
-                            - header_cart_height
-                            - window.main_cart_height
-                            - header_height) - 60;
+    cart_table_height = main_cart_height;
 
-    cart_table_height = window.main_cart_height +
-            Math.max(goods_table_height - window.main_goods_height, 0)
-    if (window.main_cart_max) {
+    if(document.getElementById("goods_table") && main_goods_table_guids.length !== 0) {
+        goods_table_height = (window_height
+            - header_cart_height
+            - main_cart_height
+            - header_height) - 60;
+
+        cart_table_height += Math.max(goods_table_height - main_goods_height, 0)
+    }
+
+    if (main_cart_max) {
         cart_table_height -= 20;
     }
 
-    if (cart_table_height > 0) {
-        $('#goods_cart').stop().animate({height: cart_table_height});
-    }
+    $('#goods_cart').stop().animate({height: cart_table_height});
 
-    goods_table_height = Math.min(goods_table_height, window.main_goods_height)
+    goods_table_height = Math.min(goods_table_height, main_goods_height)
 
-    if (goods_table_height > 0) {
-        $('#goods_table').stop().animate({height: goods_table_height});
-    }
+    $('#goods_table').stop().animate({height: goods_table_height});
 
     categories_height = window_height - header_height - 28;
 
-    if (categories_height > 0) {
-        $('#categories').stop().animate({height: categories_height});
-    }
+    $('#categories').stop().animate({height: categories_height});
 }
 
 function widthHeadCart() {
@@ -184,28 +188,40 @@ function widthHeadCart() {
 }
 
 function widthHeadGoods() {
-    $('th#goods_table_1 div').stop().animate({width: $('#goods_table_1').width() + 5});
-    $('th#goods_table_2 div').stop().animate({width: $('#goods_table_2').width() + 5});
-    $('th#goods_table_3 div').stop().animate({width: $('#goods_table_3').width() + 5});
-    $('th#goods_table_4 div').stop().animate({width: $('#goods_table_4').width() + 5});
-    $('th#goods_table_5 div').stop().animate({width: $('#goods_table_5').width() + 5});
-    $('th#goods_table_6 div').stop().animate({width: $('#goods_table_6').width() + 5});
+    $('th#goods_table_1 div').stop().animate({width: $('#goods_table_1').width() + 3});
+    $('th#goods_table_2 div').stop().animate({width: $('#goods_table_2').width() + 3});
+    $('th#goods_table_3 div').stop().animate({width: $('#goods_table_3').width() + 3});
+    $('th#goods_table_4 div').stop().animate({width: $('#goods_table_4').width() + 3});
+    $('th#goods_table_5 div').stop().animate({width: $('#goods_table_5').width() + 3});
+    $('th#goods_table_6 div').stop().animate({width: $('#goods_table_6').width() + 3});
+    $('th#goods_table_7 div').stop().animate({width: $('#goods_table_7').width() + 3});
 }
 
-function countHeightTableGoods(array) {
+function countHeightTableGoods() {
 
-    var height_ = 20;
-    for (var elem in array) {
-        height_ += $('#tr_good' + array[elem]).height();
+    if (main_goods_table_guids.length === 0) {
+        window.main_goods_height = 0;
+        return;
+    }
+
+    let height_ = 20;
+    for (let elem in main_goods_table_guids) {
+        height_ += $('#tr_good' + main_goods_table_guids[elem]).height();
     }
     window.main_goods_height = height_
 }
 
-function countHeightTableCart(array) {
+function countHeightTableCart() {
 
-    var height_ = 20;
-    for (var elem in array) {
-        height_ += $('#tr_cart' + array[elem]).height();
+    if (main_user === '') {
+        window.main_cart_max = false;
+        window.main_cart_height = 0;
+        return;
+    }
+
+    let height_ = 20;
+    for (let elem in main_cart_table_guids) {
+        height_ += $('#tr_cart' + main_cart_table_guids[elem]).height();
     }
     height_ = Math.min(height_, Math.ceil($(window).height() / 3.5));
     window.main_cart_max = height_ >= Math.ceil($(window).height() / 3.5);

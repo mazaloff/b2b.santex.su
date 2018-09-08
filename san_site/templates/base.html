@@ -9,19 +9,14 @@
     <link rel="stylesheet" href="{% static 'vendor/style.min.css' %}">
 </head>
 <body>
-{% block head %}{% endblock %}
+{% block header %}{% endblock %}
 <div class="main">
-    <div id="categories" class="column categories">
-    </div>
-    <div id="products" class="column products">
-        {% block content %}{% endblock %}
-     </div>
+    <div id="categories" class="column categories"></div>
+    {% block content %}{% endblock %}
 </div>
-
 <script src="{% static 'vendor/jquery.min.js' %}" type="text/javascript"></script>
 <script src="{% static 'vendor/jstree.min.js' %}" type="text/javascript"></script>
 <script src="{% static 'js/main.js' %}" type="text/javascript"></script>
 <script src="{% static 'js/index.js' %}" type="text/javascript"></script>
-
 </body>
 </html>

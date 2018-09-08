@@ -1,4 +1,5 @@
 from django import template
+import re
 
 register = template.Library()
 
@@ -7,7 +8,10 @@ register = template.Library()
 def format(value, fmt):
     if type(value) == str:
         return value
-    return fmt.format(value)
+    elif value > 1000:
+        return re.sub(r'(?<=\d)(?=(\d\d\d)+\b)', ' ', str(fmt.format(value)))
+    else:
+        return str(fmt.format(value))
 
 
 @register.filter(name='units')

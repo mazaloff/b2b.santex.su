@@ -1,11 +1,11 @@
 {% load format %}
 
-<tr id={{ goods.url_tr_cart }}>
+<tr id="tr_cart{{ goods.guid }}">
     <td class="cart_table_1">{{ goods.code }}</td>
     <td class="cart_table_2">{{ goods.name }}</td>
-    {% include "td_cart_quantity.html" %}
+    {% include "cart/td_cart_quantity.html" %}
     <td class="cart_table_4" align=right>{{ goods.price|format:"{0:.2f}" }}</td>
-    {% include "td_cart_total_price.html" %}
+    {% include "cart/td_cart_total_price.html" %}
     <td class="cart_table_6">{{ goods.currency }}</td>
-    {% include "td_cart_total_price_ruble.html" %}
+    {% include "cart/td_cart_total_price_ruble.html" %}
 </tr>
