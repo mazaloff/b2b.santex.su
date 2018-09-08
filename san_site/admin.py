@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from .models import Customer, Person, Order, OrderItem, Section, Product, Price, Store, Currency
 
 admin.site.register(Customer)

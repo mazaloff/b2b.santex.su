@@ -1,9 +1,9 @@
-from django.db import models
-from django.contrib.auth.models import User
-from django.utils import timezone
 from django.conf import settings
+from django.contrib.auth.models import User
+from django.db import models
 from django.db.models import Prefetch
-from django.db import connection
+from django.utils import timezone
+
 
 # connection.queries
 
@@ -293,15 +293,15 @@ class Order(models.Model):
     def __iter__(self):
         for item in self.items.all():
             dict_ = dict(
-                        product=item.product,
-                        code=item.product.code,
-                        guid=item.product.guid,
-                        name=item.product.name,
-                        price=item.price,
-                        currency=item.currency,
-                        price_ruble=item.price_ruble,
-                        quantity=item.quantity
-                    )
+                product=item.product,
+                code=item.product.code,
+                guid=item.product.guid,
+                name=item.product.name,
+                price=item.price,
+                currency=item.currency,
+                price_ruble=item.price_ruble,
+                quantity=item.quantity
+            )
             dict_['total_price'] = round(item.price * item.quantity, 2)
             dict_['total_price_ruble'] = round(item.price_ruble * item.quantity, 2)
 

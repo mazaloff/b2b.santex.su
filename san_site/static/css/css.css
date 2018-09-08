@@ -103,8 +103,15 @@ a.disabled {
     display: block;
 }
 
-#header_cart { height: 20px; margin-top: 5px; margin-left: 10px}
-#header_order{ margin-left: 10px}
+#header_cart {
+    height: 20px;
+    margin-top: 5px;
+    margin-left: 10px
+}
+
+#header_order {
+    margin-left: 10px
+}
 
 #cart_link_add {
     text-decoration: none;
@@ -127,6 +134,11 @@ a.disabled {
 
 .control-group { padding-bottom: 7px }
 
-div.control-group.has-errors label { color: orangered }
+div.control-group.has-errors label {
+    color: orangered
+}
 
-ul.errorlist { margin: 0; color: orangered }
+ul.errorlist {
+    margin: 0;
+    color: orangered
+}

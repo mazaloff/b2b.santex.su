@@ -1,8 +1,11 @@
-from django import forms
-from san_site.models import Order, OrderItem, Person
-from san_site.cart.cart import Cart, Currency
-from django.conf import settings
 import datetime
+
+from django import forms
+from django.conf import settings
+
+from san_site.cart.cart import Cart, Currency
+from san_site.models import Order, OrderItem, Person
+
 
 class LoginForm(forms.Form):
     username = forms.CharField(label='Логин')
@@ -26,7 +29,7 @@ class OrderCreateForm(forms.ModelForm):
     shipment = forms.ChoiceField(choices=settings.SHIPMENT_TYPE, required=True,
                                  initial=settings.SHIPMENT_TYPE[0], label='Способ доставки')
     payment = forms.ChoiceField(choices=settings.PAYMENT_FORM, required=True,
-                                 initial=settings.PAYMENT_FORM[1], label='Форма оплаты')
+                                initial=settings.PAYMENT_FORM[1], label='Форма оплаты')
     comment = forms.CharField(widget=forms.Textarea, label='Комментарий к заказу', required=False)
 
     class Meta:
