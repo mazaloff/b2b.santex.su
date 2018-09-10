@@ -26,3 +26,17 @@ python manage.py compilemessages
 
 queryset = User.objects.annotate(username_index=ExpressionWrapper(Func(F('username'), Value('(\d+)'),
  function='substring'), output_field=IntegerField()))).filter(username__iregex=r'^[A-Z]{2}\d+$').values_list('username_index', flat=True)
+
+ {% if goods.quantity == '' %}
+                        <div id="td_good" >
+                            <a id="cart_add" href={{ goods.product.url_add_cart }}>
+                                &nbsp;&nbsp;&nbsp;
+                            </a>
+                        </div>
+                    {% else %}
+                        <div id="td_good">
+                            <a id="cart_add" href={{ goods.product.url_add_cart }}>
+                                {{ goods.quantity }}
+                            </a>
+                        </div>
+                    {% endif %}

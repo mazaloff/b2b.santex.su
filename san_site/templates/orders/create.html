@@ -11,8 +11,7 @@
 {% block content %}
 
 <div id="products" class="column products">
-    {% include "cart/header_cart.html" %}
-    {% include "cart/goods_cart_user.html" %}
+    {% include "cart/cart.html" %}
     {% for field_error in form.non_field_errors %}
         <div class="alert alert-danger">{{ field_error }}</div>
     {% endfor %}

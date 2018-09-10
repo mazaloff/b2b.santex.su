@@ -7,17 +7,31 @@
             <col style = "background:#beebff">
         </colgroup>
         <thead style="background: #ffffff;">
-            <tr id="tr_cart_head">
-                <th align=left id="cart_table_1"><div>Артикул</div></th>
-                <th align=left id="cart_table_2"><div>Наименование товара</div></th>
-                <th align=left id="cart_table_3"><div>Кол-во</div></th>
-                <th align=left id="cart_table_4"><div>Цена</div></th>
-                <th align=left id="cart_table_5"><div>Сумма</div></th>
-                <th align=left id="cart_table_6"><div>Вал.</div></th>
-                <th align=left id="cart_table_7"><div>Всего руб.</div></th>
+        <tr>
+            <th align=left id="cart_table_1">
+                <div><span>Артикул</span></div>
+            </th>
+            <th align=left id="cart_table_2">
+                <div><span>Наименование товара</span></div>
+            </th>
+            <th align=left id="cart_table_3">
+                <div><span>Кол-во</span></div>
+            </th>
+            <th align=left id="cart_table_4">
+                <div><span>Цена</span></div>
+            </th>
+            <th align=left id="cart_table_5">
+                <div><span>Сумма</span></div>
+            </th>
+            <th align=left id="cart_table_6">
+                <div><span>Вал.</span></div>
+            </th>
+            <th align=left id="cart_table_7">
+                <div><span>Всего руб.</span></div>
+            </th>
             </tr>
         </thead>
-        {% for goods in cart_goods_list %}
+        {% for goods in cart.get_cart_list %}
             {% include "cart/tr_cart.html" %}
         {% endfor %}
     </table>

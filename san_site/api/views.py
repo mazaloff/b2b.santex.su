@@ -1,12 +1,13 @@
-from san_site.models import \
-    Customer, Person, Section, Product, Store, Price, Currency, Inventories, Prices, CustomersPrices, Courses
-from django.contrib.auth.models import User
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.utils import timezone
-from django.db import connection
 import datetime
 import json
+
+from django.contrib.auth.models import User
+from django.http import HttpResponse
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+
+from san_site.models import \
+    Customer, Person, Section, Product, Store, Price, Currency, Inventories, Prices, CustomersPrices, Courses
 
 
 @csrf_exempt

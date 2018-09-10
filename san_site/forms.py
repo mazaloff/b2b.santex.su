@@ -55,11 +55,13 @@ class OrderCreateForm(forms.ModelForm):
         set_person = Person.objects.filter(user=request.user)
         if len(set_person) > 0:
             person = set_person[0]
-        order = Order.objects.create(person=person,
-                                     delivery=self.cleaned_data['delivery'],
-                                     shipment=self.cleaned_data['shipment'],
-                                     payment=self.cleaned_data['payment'],
-                                     comment=self.cleaned_data['comment'])
+        order = Order.objects.create(
+            person=person,
+            delivery=self.cleaned_data['delivery'],
+            shipment=self.cleaned_data['shipment'],
+            payment=self.cleaned_data['payment'],
+            comment=self.cleaned_data['comment']
+        )
         order.save()
 
         cart = Cart(request)
@@ -67,12 +69,17 @@ class OrderCreateForm(forms.ModelForm):
             try:
                 currency = Currency.objects.get(id=item['currency_id'])
             except Currency.DoesNotExist:
-                continue
-            OrderItem.objects.create(order=order,
-                                     product=item['product'],
-                                     price=item['price'],
-                                     currency=currency,
-                                     price_ruble=item['price_ruble'],
-                                     quantity=item['quantity'])
+                currency = None
+                pass
+            item = OrderItem.objects.create(
+                order=order,
+                product=item['product'],
+                price=item['price'],
+                price_ruble=item['price_ruble'],
+                quantity=item['quantity']
+            )
+            if currency:
+                item.currency = currency
+            item.save()
         cart.clear()
         return order

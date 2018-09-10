@@ -11,6 +11,11 @@
 {% block content %}
 
     <div id="products" class="column products">
+        {% if created %}
+            <p style="color: red">
+                Спасибо, Ваш заказ успешно сформирован. Ожидайте, Мы с Вас свяжемся.
+            </p>
+        {% endif %}
         {% include "orders/header_order.html" %}
         {% include "orders/goods_order.html" %}
     </div>

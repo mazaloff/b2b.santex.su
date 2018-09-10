@@ -18,17 +18,27 @@ body {
     right: 20px;
 }
 
-#header #header_cart{ margin-left: 100px; }
+#branding {
+    flex: 1 50 20%
+}
+
+#header_menu {
+    flex: 5 1 60%
+}
+
+#user_tools {
+    flex: 1 2 20%
+}
 
 .categories  {
-    flex: 2 2 230px;
+    flex: 2 50 200px;
     display: block;
     border: 1px solid #ccc;
     padding: 2px 10px 10px 2px;
     margin-right: -1px;
 }
 .products {
-    flex: 10 10 800px;
+    flex: 10 1 800px;
     display: block;
     padding: 0 8px 8px 8px;
 }
@@ -43,6 +53,17 @@ a.disabled {
 
 #accounts_login { margin-left: 10px; }
 
+#categories {
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto
+}
+
+#categories {
+    border-collapse: collapse;
+}
+
+
 #goods_table { height: 100%; overflow: auto; }
 #goods_table table { border-collapse: collapse; }
 #goods_table th div { position: absolute; margin-top: -20px; background: #beebff; font-weight: normal }
@@ -51,13 +72,62 @@ a.disabled {
 #goods_cart table { border-collapse: collapse; }
 #goods_cart th div { position: absolute; margin-top: -20px; background: #beebff; font-weight: normal }
 
-#categories { height: 100%; overflow-x: hidden; overflow-y: auto}
-#categories { border-collapse: collapse; }
+#list_orders {
+    height: 0;
+    overflow: auto;
+}
+
+#list_orders table {
+    border-collapse: collapse;
+}
+
+#list_orders th div {
+    position: absolute;
+    margin-top: -20px;
+    background: #beebff;
+    font-weight: normal
+}
+
 
 #goods_table { margin-top: 20px; border-collapse: collapse; }
 #goods_table td { padding: 4px 12px 6px 8px; }
 #goods_table tr { border-bottom: 1px solid #e8e9eb; }
 #goods_table tbody tr:hover { background: #e7f4f9; }
+
+#goods_cart {
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+#goods_cart td {
+    padding: 4px 12px 6px 8px;
+}
+
+#goods_cart tr {
+    border-bottom: 1px solid #e8e9eb;
+}
+
+#goods_cart tbody tr:hover {
+    background: #e7f4f9;
+}
+
+#list_orders {
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+#list_orders td {
+    padding: 4px 12px 6px 8px;
+}
+
+#list_orders tr {
+    border-bottom: 1px solid #e8e9eb;
+}
+
+#list_orders tbody tr:hover {
+    background: #e7f4f9;
+}
+
 
 #goods_table th#goods_table_1 { min-width: 100px; max-width: 140px; }
 #goods_table th#goods_table_2 { min-width: 450px; }
@@ -67,11 +137,6 @@ a.disabled {
 #goods_table th#goods_table_6 { width: 20px; min-width: 20px; }
 #goods_table th#goods_table_7 { width: 90px; min-width: 60px; }
 
-#goods_cart { margin-top: 20px; border-collapse: collapse; }
-#goods_cart td { padding: 4px 12px 6px 8px; }
-#goods_cart tr { border-bottom: 1px solid #e8e9eb; }
-#goods_cart tbody tr:hover { background: #e7f4f9; }
-
 #goods_cart th#cart_table_1 { min-width: 100px; max-width: 140px; }
 #goods_cart th#cart_table_2 { min-width: 450px; }
 #goods_cart th#cart_table_3 { width: 80px; min-width: 60px; }
@@ -80,21 +145,169 @@ a.disabled {
 #goods_cart th#cart_table_6 { width: 30px; min-width: 30px; }
 #goods_cart th#cart_table_7 { width: 100px; min-width: 70px; }
 
-#goods_table th#goods_table_1 div { margin-left: -1px; padding-left: 10px;}
-#goods_table th#goods_table_2 div { padding-left: 10px; }
-#goods_table th#goods_table_3 div { padding-left: 5px; }
-#goods_table th#goods_table_4 div { padding-left: 30px; }
-#goods_table th#goods_table_5 div { padding-left: 5px; }
-#goods_table th#goods_table_6 div { padding-left: 30px; }
-#goods_table th#goods_table_7 div { padding-left: 20px; }
+#list_orders th#orders_table_1 {
+    width: 80px;
+}
 
-#goods_cart th#cart_table_1 div { margin-left: -1px; padding-left: 10px;}
-#goods_cart th#cart_table_2 div { padding-left: 10px; }
-#goods_cart th#cart_table_3 div { padding-left: 10px; }
-#goods_cart th#cart_table_4 div { padding-left: 30px; }
-#goods_cart th#cart_table_5 div { padding-left: 30px; }
-#goods_cart th#cart_table_6 div { padding-left: 5px; }
-#goods_cart th#cart_table_7 div { padding-left: 20px; }
+#list_orders th#orders_table_2 {
+    width: 190px;
+}
+
+#list_orders th#orders_table_3 {
+    width: 110px;
+}
+
+#list_orders th#orders_table_4 {
+    width: 30px;
+}
+
+#list_orders th#orders_table_5 {
+    width: 190px;
+}
+
+#list_orders th#orders_table_6 {
+    width: 100px;
+}
+
+#list_orders th#orders_table_7 {
+    width: 250px;
+}
+
+#goods_table th#goods_table_1 div {
+    margin-left: -1px;
+    padding-right: 3px;
+    text-align: center;
+}
+
+#goods_table th#goods_table_2 div {
+    padding-right: 3px;
+    text-align: center;
+}
+
+#goods_table th#goods_table_3 div {
+    padding-right: 3px;
+    text-align: right;
+}
+
+#goods_table th#goods_table_4 div {
+    padding-right: 3px;
+    text-align: right;
+}
+
+#goods_table th#goods_table_5 div {
+    padding-right: 3px;
+    text-align: center;
+}
+
+#goods_table th#goods_table_6 div {
+    padding-right: 3px;
+    text-align: center;
+}
+
+#goods_table th#goods_table_7 div {
+    padding-right: 3px;
+    text-align: center;
+}
+
+#goods_table th#goods_table_3 span {
+    padding-right: 10px;
+}
+
+#goods_table th#goods_table_4 span {
+    padding-right: 10px;
+}
+
+#goods_cart th#cart_table_1 div {
+    margin-left: -1px;
+    padding-right: 3px;
+    text-align: center;
+}
+
+#goods_cart th#cart_table_2 div {
+    padding-right: 3px;
+    text-align: center;
+}
+
+#goods_cart th#cart_table_3 div {
+    padding-right: 3px;
+    text-align: right;
+}
+
+#goods_cart th#cart_table_4 div {
+    padding-right: 3px;
+    text-align: right;
+}
+
+#goods_cart th#cart_table_5 div {
+    padding-right: 3px;
+    text-align: right;
+}
+
+#goods_cart th#cart_table_6 div {
+    padding-right: 3px;
+    text-align: center;
+}
+
+#goods_cart th#cart_table_7 div {
+    padding-right: 3px;
+    text-align: right;
+}
+
+#goods_cart th#cart_table_3 span {
+    padding-right: 10px;
+}
+
+#goods_cart th#cart_table_4 span {
+    padding-right: 10px;
+}
+
+#goods_cart th#cart_table_5 span {
+    padding-right: 10px;
+}
+
+#goods_cart th#cart_table_7 span {
+    padding-right: 10px;
+}
+
+#list_orders th#orders_table_1 div {
+    margin-left: -1px;
+    padding-right: 3px;
+    text-align: center;
+}
+
+#list_orders th#orders_table_2 div {
+    padding-right: 3px;
+    text-align: center;
+}
+
+#list_orders th#orders_table_3 div {
+    padding-right: 3px;
+    text-align: right;
+}
+
+#list_orders th#orders_table_4 div {
+    padding-right: 3px;
+    text-align: center;
+}
+
+#list_orders th#orders_table_5 div {
+    padding-right: 3px;
+    text-align: center;
+}
+
+#list_orders th#orders_table_6 div {
+    padding-right: 3px;
+    text-align: center;
+}
+
+#list_orders th#orders_table_7 div {
+    padding-right: 3px;
+    text-align: center;
+}
+
+#list_orders th#orders_table_3 span {
+    padding-right: 10px;
+}
 
 #goods_table a#cart_add {
     text-decoration: none;
@@ -109,26 +322,27 @@ a.disabled {
     margin-left: 10px
 }
 
+#header_table_order {
+    height: 20px;
+    margin-left: 10px;
+    margin-top: 10px;
+}
+
 #header_order {
     margin-left: 10px
 }
 
-#cart_link_add {
-    text-decoration: none;
-    color: #979797;
-    padding-right: 4px;
-}
-
-#cart_link_reduce {
-    text-decoration: none;
-    color: #979797;
-}
-
 .cart_table_3_box { display: flex; }
 
-.cart_table_3_box_add { flex: 1 1 5px; }
+.cart_table_3_box_add {
+    flex: 1 1 5px;
+    color: #979797;
+}
 
-.cart_table_3_box_reduce { flex: 1 1 5px; }
+.cart_table_3_box_reduce {
+    flex: 1 1 5px;
+    color: #979797;
+}
 
 .cart_table_3_box_quantity { flex: 5 5; }
 
@@ -142,3 +356,9 @@ ul.errorlist {
     margin: 0;
     color: orangered
 }
+
+#order_status {
+    background-color: #beebff;
+    padding: 1em;
+}
+

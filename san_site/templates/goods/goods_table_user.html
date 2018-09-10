@@ -7,34 +7,36 @@
         <col style = "background:#beebff">
     </colgroup>
         <thead style="background: #ffffff;">
-            <tr id="tr_goods_head">
-                <th align=left id="goods_table_1"><div>Артикул</div></th>
-                <th align=left id="goods_table_2"><div>Наименование товара</div></th>
-                <th align=left id="goods_table_3"><div>Остаток</div></th>
-                <th align=left id="goods_table_4"><div>Цена</div></th>
-                <th align=left id="goods_table_5"><div>Вал.</div></th>
-                <th align=left id="goods_table_6"><div>%</div></th>
-                <th align=left id="goods_table_7"><div>Ваша цена</div></th>
+        <tr>
+            <th id="goods_table_1">
+                <div><span>Артикул</span></div>
+            </th>
+            <th id="goods_table_2">
+                <div><span>Наименование товара</span></div>
+            </th>
+            <th id="goods_table_3">
+                <div><span>Остаток</span></div>
+            </th>
+            <th id="goods_table_4">
+                <div><span>Цена</span></div>
+            </th>
+            <th id="goods_table_5">
+                <div><span>Вал.</span></div>
+            </th>
+            <th id="goods_table_6">
+                <div><span>%</span></div>
+            </th>
+            <th id="goods_table_7">
+                <div><span>Ваша цена</span></div>
+            </th>
             </tr>
         </thead>
         {% for goods in goods_list %}
-            <tr id={{ goods.url_tr_good }}>
+            <tr>
                 <td id="goods_table_1">{{ goods.code }}</td>
                 <td id="goods_table_2">{{ goods.name }}</td>
-                <td id="goods_table_3" align=right>
-                    {% if goods.quantity == '' %}
-                        <div id="td_good">
-                            <a id="cart_add" href={{ goods.product.url_add_cart }}>
-                                &nbsp;&nbsp;&nbsp;
-                            </a>
-                        </div>
-                    {% else %}
-                        <div id="td_good">
-                            <a id="cart_add" href={{ goods.product.url_add_cart }}>
-                                {{ goods.quantity }}
-                            </a>
-                        </div>
-                    {% endif %}
+                <td onclick="addCart('{{ goods.guid }}')" id="goods_table_3" align=right style="cursor: pointer;">
+                    {{ goods.quantity }}
                 </td>
                 <td id="goods_table_4" align=right>{{ goods.price|format:"{0:.2f}" }}</td>
                 <td id="goods_table_5">{{ goods.currency }}</td>

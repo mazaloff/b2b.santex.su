@@ -105,7 +105,8 @@ class Section(models.Model):
                     price_discount = product_prices.discount
                     price_percent = product_prices.percent
                     currency_name = currency_dict.get(product_prices.currency_id, '')
-                list_res_.append({'product': value_product,
+                list_res_.append({
+                    'product': value_product,
                                 'guid': value_product.guid,
                                 'code': value_product.code,
                                 'name': value_product.name,
@@ -114,7 +115,8 @@ class Section(models.Model):
                                 'discount': '' if price_discount == 0 else price_discount,
                                 'currency': currency_name,
                                 'percent': '' if price_percent == 0 else price_percent,
-                                'url_tr_good': 'tr_good' + value_product.guid})
+                }
+                )
 
         else:
             products = Product.objects.filter(section__in=list_sections, is_deleted=False).order_by('code') \
@@ -128,7 +130,8 @@ class Section(models.Model):
                 for product_prices in value_product.product_prices.all():
                     price_value = product_prices.value
                     currency_name = currency_dict.get(product_prices.currency_id, '')
-                list_res_.append({'product': value_product,
+                list_res_.append({
+                    'product': value_product,
                                 'guid': value_product.guid,
                                 'code': value_product.code,
                                 'name': value_product.name,
@@ -137,7 +140,8 @@ class Section(models.Model):
                                 'discount': '',
                                 'currency': currency_name,
                                 'percent': '',
-                                'url_tr_good': 'tr_good' + value_product.guid})
+                }
+                )
 
         return list_res_
 
@@ -157,9 +161,6 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
-
-    def url_add_cart(self):
-        return 'cart/add/?product=' + self.guid
 
     def get_price(self, user):
 
@@ -226,6 +227,10 @@ class Currency(models.Model):
     def __str__(self):
         return self.name
 
+    @staticmethod
+    def get_ruble():
+        return get_ruble().id
+
     def get_today_course(self):
         from django.db.models import Max
         dict_max_date = Courses.objects.filter(currency=self).aggregate(max_date=Max('date'))
@@ -241,13 +246,15 @@ class Currency(models.Model):
 
 
 class Inventories(models.Model):
-    product = models.ForeignKey(Product, related_name='product_inventories', null=True, db_index=True, on_delete=models.DO_NOTHING)
+    product = models.ForeignKey(Product, related_name='product_inventories',
+                                null=True, db_index=True, on_delete=models.DO_NOTHING)
     store = models.ForeignKey(Store, null=True, unique=False, on_delete=models.DO_NOTHING)
     quantity = models.IntegerField(null=False, default=0)
 
 
 class Prices(models.Model):
-    product = models.ForeignKey(Product, related_name='product_prices', null=True, db_index=True, on_delete=models.DO_NOTHING)
+    product = models.ForeignKey(Product, related_name='product_prices',
+                                null=True, db_index=True, on_delete=models.DO_NOTHING)
     price = models.ForeignKey(Price, null=True, unique=False, on_delete=models.DO_NOTHING)
     currency = models.ForeignKey(Currency, null=True, unique=False, on_delete=models.DO_NOTHING)
     value = models.FloatField(null=False, default=0)
@@ -255,7 +262,8 @@ class Prices(models.Model):
 
 class CustomersPrices(models.Model):
     customer = models.ForeignKey(Customer, null=True, db_index=True, on_delete=models.DO_NOTHING)
-    product = models.ForeignKey(Product, related_name='product_customers_prices', null=True, db_index=True, on_delete=models.DO_NOTHING)
+    product = models.ForeignKey(Product, related_name='product_customers_prices',
+                                null=True, db_index=True, on_delete=models.DO_NOTHING)
     currency = models.ForeignKey(Currency, null=True, on_delete=models.DO_NOTHING)
     value = models.FloatField(null=False, default=0)
     discount = models.FloatField(null=False, default=0)
@@ -270,12 +278,14 @@ class Courses(models.Model):
 
 
 class Order(models.Model):
-    date = models.DateField(auto_now_add=True, db_index=True)
+    date = models.DateTimeField(auto_now_add=True, db_index=True)
     person = models.ForeignKey(Person, null=False, db_index=True, on_delete=models.PROTECT)
+    guid = models.CharField(max_length=50, db_index=True, null=True)
     updated = models.DateTimeField(auto_now=True)
     delivery = models.DateTimeField(null=True)
     shipment = models.CharField(max_length=50, choices=settings.SHIPMENT_TYPE, null=True)
     payment = models.CharField(max_length=50, choices=settings.PAYMENT_FORM, null=True)
+    status = models.CharField(max_length=50, choices=settings.STATUS_ORDER, null=False, default='Новый')
     comment = models.TextField(null=True)
 
     class Meta:
@@ -313,12 +323,24 @@ class Order(models.Model):
             list_res_.append(element)
         return list_res_
 
+    @staticmethod
+    def get_orders_list(user):
+        set_person = Person.objects.filter(user=user)
+        if len(set_person) == 0:
+            return []
+        orders = Order.objects.filter(person=set_person[0])
+        return orders
+
+
+def get_ruble():
+    return Currency.objects.get(code='643')
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.PROTECT)
     product = models.ForeignKey(Product, related_name='order_items', on_delete=models.PROTECT)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    currency = models.ForeignKey(Currency, null=False, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, null=True, on_delete=models.PROTECT, default=get_ruble)
     price_ruble = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField(default=1)
 
@@ -326,7 +348,7 @@ class OrderItem(models.Model):
         return '{}'.format(self.id)
 
     def get_cost(self):
-        return self.price * self.quantity
+        return round(self.price_ruble * self.quantity, 2)
 
 
 def get_customer(user):

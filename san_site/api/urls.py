@@ -1,6 +1,6 @@
 from django.conf.urls import url
-from san_site.api import views_api as views
 
+from san_site.api import views
 
 urlpatterns = [
     url(r'v1/upsert$', views.api_upsert, name='api_upsert'),

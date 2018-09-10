@@ -1,10 +1,10 @@
 <td class="cart_table_3" align=right id="td_cart_quantity{{ goods.guid }}">
     <div class="cart_table_3_box">
-        <div class="cart_table_3_box_add">
-            <a id="cart_link_add" href="cart/add_quantity/?product={{ goods.guid }}">+</a>
+        <div class="cart_table_3_box_add" onclick="addQuantityCart('{{ goods.guid }}')" style="cursor: pointer;">
+            +
         </div>
-        <div class="cart_table_3_box_reduce">
-            <a id="cart_link_reduce" href="cart/reduce_quantity/?product={{ goods.guid }}">-</a>
+        <div class="cart_table_3_box_reduce" onclick="reduceQuantityCart('{{ goods.guid }}')" style="cursor: pointer;">
+            -
         </div>
         <div class="cart_table_3_box_quantity"}>
             {{ goods.quantity }}

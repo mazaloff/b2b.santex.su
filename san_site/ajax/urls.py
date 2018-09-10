@@ -1,5 +1,6 @@
 from django.conf.urls import url
-from san_site.ajax import views_ajax as views
+
+from san_site.ajax import views
 
 urlpatterns = [
     url(r'get_categories$', views.get_categories, name='get_categories'),

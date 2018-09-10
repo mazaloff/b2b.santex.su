@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% load format %}
+
+{% block title %}
+    {{ block.super }}
+{% endblock %}
+
+{% block header %}
+    {% include "header.html" %}
+{% endblock %}
+
+{% block content %}
+
+    <div id="products" class="column products">
+        <div id="list_orders">
+            <table>
+                <colgroup>
+                    <col style="background:#beebff;">
+                    <col>
+                    <col style="background:#beebff">
+                    <col>
+                    <col>
+                    <col style="background:#beebff">
+                </colgroup>
+                <thead style="background: #ffffff;">
+                <tr>
+                    <th id="orders_table_1">
+                        <div><span>Номер</span></div>
+                    </th>
+                    <th id="orders_table_2">
+                        <div><span>Дата</span></div>
+                    </th>
+                    <th id="orders_table_3">
+                        <div><span>Сумма</span></div>
+                    </th>
+                    <th id="orders_table_4">
+                        <div><span>Вал.</span></div>
+                    </th>
+                    <th id="orders_table_5">
+                        <div><span>Доставка</span></div>
+                    </th>
+                    <th id="orders_table_6">
+                        <div><span>Статус</span></div>
+                    </th>
+                    <th id="orders_table_7">
+                        <div><span>Ком-рий</span></div>
+                    </th>
+                </tr>
+                </thead>
+                {% for order in orders_list %}
+                    <tr style="cursor: pointer;" onclick="doNav('{{ order.id }}')">
+                        <td class="orders_table_1">{{ order.id }}</td>
+                        <td class="orders_table_2">{{ order.date }}</td>
+                        <td class="orders_table_3" align=right> {{ order.get_total_cost|format:"{0:.2f}" }}</td>
+                        <td class="orders_table_4">руб.</td>
+                        <td class="orders_table_5">{{ order.delivery }}</td>
+                        <td class="orders_table_6">{{ order.status }}</td>
+                        <td class="orders_table_7">{{ order.comment }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+{% endblock %}

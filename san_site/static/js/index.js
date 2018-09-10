@@ -23,7 +23,7 @@ class Index {
             url: "ajax/get_goods/",
             type: 'GET',
             data: {'guid': guid},
-            dataType: 'json', // забираем номер страницы, которую нужно отобразить
+            dataType: 'json',
 
             success : function (json) {
                 // Если запрос прошёл успешно и сайт вернул результат
@@ -38,9 +38,6 @@ class Index {
 
                     jQuery(window).scrollTop(0);
 
-                    main_goods_table_guids = json.goods_table_guids;
-                    main_cart_table_guids = json.cart_table_guids;
-
                     countHeightTableGoods();
                     countHeightTableCart();
 
@@ -48,28 +45,21 @@ class Index {
 
                     widthHeadGoods();
                     widthHeadCart();
+                } else {
+                    console.error('Ошибка получения данных с сервера');
                 }
                 jQuery("#categories ul li a").removeClass('disabled');
-                document.body.querySelectorAll('#cart_add')
-                    .forEach( link => link.addEventListener('click', Index._clickAddCart));
-                document.body.querySelectorAll('#cart_link_add')
-                    .forEach( link => link.addEventListener('click', Index._clickQuantityAddCart));
-                document.body.querySelectorAll('#cart_link_reduce')
-                    .forEach( link => link.addEventListener('click', Index._clickQuantityReduceCart));
                 document.body.querySelectorAll('#goods')
                     .forEach( link => link.addEventListener('click', Index._clickHandlerGoods) );
             }
         });
     }
 
-    static _clickAddCart(event) {
-        event.preventDefault(); // запрещаем событие
+    static _clickAddCart(guid) {
 
-        let path = event.target.href; // забираем путь
-        let guid = window.getProductGUID(path);
+        guid = window.getProductGUID(guid);
 
-        jQuery("#header_cart").replaceWith("<div id=\"header_cart\"></div>");
-        jQuery("#goods_cart").replaceWith("<div id=\"goods_cart\"></div>");
+        jQuery("#cart").replaceWith("<div id=\"cart\"></div>");
 
         if (typeof guid !== undefined) {
             jQuery.ajax({
@@ -82,31 +72,23 @@ class Index {
                     // Если запрос прошёл успешно и сайт вернул результат
                     if (json.result) {
 
-                        jQuery("#header_cart").replaceWith(json.header_cart);
-                        jQuery("#goods_cart").replaceWith(json.goods_cart);
-
-                        main_user = json.user_name;
-                        main_cart_table_guids = json.cart_table_guids;
+                        jQuery("#cart").replaceWith(json.cart_http);
 
                         countHeightTableCart();
 
                         updateTables();
                         widthHeadCart();
+                    } else {
+                        console.error('Ошибка получения данных с сервера');
                     }
-                    document.body.querySelectorAll('#cart_link_add')
-                        .forEach( link => link.addEventListener('click', Index._clickQuantityAddCart));
-                    document.body.querySelectorAll('#cart_link_reduce')
-                        .forEach( link => link.addEventListener('click', Index._clickQuantityReduceCart));
                 }
             });
         }
     }
 
-    static _clickQuantityAddCart(event) {
-        event.preventDefault(); // запрещаем событие
+    static _clickQuantityAddCart(guid) {
 
-        let path = event.target.href; // забираем путь
-        let guid = window.getProductGUID(path);
+        guid = window.getProductGUID(guid);
 
         if (typeof guid !== undefined) {
 
@@ -121,25 +103,21 @@ class Index {
                 success: function (json) {
                     // Если запрос прошёл успешно и сайт вернул результат
                     if (json.result) {
-                        jQuery("#td_cart_quantity" + guid).replaceWith(json.td_cart_quantity);
-                        jQuery("#td_cart_total_price" + guid).replaceWith(json.td_cart_total_price);
-                        jQuery("#td_cart_total_price_ruble" + guid).replaceWith(json.td_cart_total_price_ruble);
+                        jQuery("#td_cart_quantity" + guid).replaceWith(json.http_quantity);
+                        jQuery("#td_cart_total_price" + guid).replaceWith(json.http_total_price);
+                        jQuery("#td_cart_total_price_ruble" + guid).replaceWith(json.http_total_price_ruble);
                         jQuery("#header_cart").replaceWith(json.header_cart);
-                        document.body.querySelectorAll('#cart_link_add')
-                            .forEach( link => link.addEventListener('click', Index._clickQuantityAddCart));
-                        document.body.querySelectorAll('#cart_link_reduce')
-                            .forEach( link => link.addEventListener('click', Index._clickQuantityReduceCart))
+                    } else {
+                        console.error('Ошибка получения данных с сервера');
                     }
                 }
             });
         }
     }
 
-    static _clickQuantityReduceCart(event) {
-        event.preventDefault(); // запрещаем событие
+    static _clickQuantityReduceCart(guid) {
 
-        let path = event.target.href; // забираем путь
-        let guid = window.getProductGUID(path);
+        guid = window.getProductGUID(guid);
 
         if (typeof guid !== undefined) {
 
@@ -154,17 +132,17 @@ class Index {
                 success: function (json) {
                     // Если запрос прошёл успешно и сайт вернул результат
                     if (json.result) {
-                        jQuery("#td_cart_quantity" + guid).replaceWith(json.td_cart_quantity);
-                        jQuery("#td_cart_total_price" + guid).replaceWith(json.td_cart_total_price);
-                        jQuery("#td_cart_total_price_ruble" + guid).replaceWith(json.td_cart_total_price_ruble);
+                        jQuery("#td_cart_quantity" + guid).replaceWith(json.http_quantity);
+                        jQuery("#td_cart_total_price" + guid).replaceWith(json.http_total_price);
+                        jQuery("#td_cart_total_price_ruble" + guid).replaceWith(json.http_total_price_ruble);
                         if (json.delete) {
                             jQuery("#tr_cart" + guid).replaceWith("");
+                            countHeightTableCart();
+                            updateTables();
+                        } else {
+                            console.error('Ошибка получения данных с сервера');
                         }
                         jQuery("#header_cart").replaceWith(json.header_cart);
-                        document.body.querySelectorAll('#cart_link_add')
-                            .forEach( link => link.addEventListener('click', Index._clickQuantityAddCart));
-                        document.body.querySelectorAll('#cart_link_reduce')
-                            .forEach( link => link.addEventListener('click', Index._clickQuantityReduceCart))
                     }
                 }
             });
@@ -192,6 +170,8 @@ class Index {
                     if (json.result) {
                         jQuery("#header_cart").replaceWith(json.header_cart);
                         jQuery("#tr_cart" + guid).replaceWith("");
+                    } else {
+                        console.error('Ошибка получения данных с сервера');
                     }
                 }
             });
@@ -202,15 +182,18 @@ class Index {
 Index.initGoods();
 
 function getProductGUID(path) {
-    var wheres_ = path.lastIndexOf("?product=");
-    if (wheres_ !== 0) {
-        return path.slice("?product=".length + wheres_, path.length);
+
+    let arrayOfStrings = path.split('/');
+    if (arrayOfStrings.length !== 0) {
+        return arrayOfStrings[arrayOfStrings.length - 1];
     }
+
     return undefined
 }
 
 function getSectionGUID(path) {
-    var wheres_ = path.lastIndexOf("?sections=");
+
+    let wheres_ = path.lastIndexOf("?sections=");
     if (wheres_ !== 0) {
         return path.slice("?sections=".length + wheres_, path.length);
     }

@@ -1,0 +1,54 @@
+{% load format %}
+<div id="goods_cart">
+    <table>
+        <colgroup>
+            <col style="background:#beebff;">
+            <col>
+            <col style="background:#beebff">
+        </colgroup>
+        <thead style="background: #ffffff;">
+        <tr>
+            <th id="cart_table_1">
+                <div><span>Артикул</span></div>
+            </th>
+            <th id="cart_table_2">
+                <div><span>Наименование товара</span></div>
+            </th>
+            <th id="cart_table_3">
+                <div><span>Кол-во</span></div>
+            </th>
+            <th id="cart_table_4">
+                <div><span>Цена</span></div>
+            </th>
+            <th id="cart_table_5">
+                <div><span>Сумма</span></div>
+            </th>
+            <th id="cart_table_6">
+                <div><span>Вал.</span></div>
+            </th>
+            <th id="cart_table_7">
+                <div><span>Всего руб.</span></div>
+            </th>
+        </tr>
+        </thead>
+        {% for goods in order.get_order_list %}
+            <tr>
+                <td class="cart_table_1">{{ goods.code }}</td>
+                <td class="cart_table_2">{{ goods.name }}</td>
+                <td class="cart_table_3" align=right> {{ goods.quantity }}</td>
+                <td class="cart_table_4" align=right>{{ goods.price|format:"{0:.2f}" }}</td>
+                <td class="cart_table_5" align=right>
+                    {{ goods.total_price|format:"{0:.2f}" }}
+                </td>
+                <td class="cart_table_6">{{ goods.currency }}</td>
+                <td class="cart_table_7" align=right>
+                    {{ goods.total_price_ruble|format:"{0:.2f}" }}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+<div id="header_table_order">
+    Всего количество: <strong>{{ order.get_total_quantity|units }}</strong>
+    , на сумму <strong>{{ order.get_total_cost|format:"{0:.2f}" }} руб.</strong>
+</div>
