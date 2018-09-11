@@ -1,8 +1,13 @@
+import datetime
+import json
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Prefetch
 from django.utils import timezone
+
+json.JSONEncoder.default = lambda self, obj: (obj.isoformat() if isinstance(obj, datetime.datetime) else None)
 
 
 # connection.queries
@@ -91,9 +96,9 @@ class Section(models.Model):
             products = Product.objects.filter(section__in=list_sections, is_deleted=False).order_by('code') \
                 .prefetch_related(
                 Prefetch('product_inventories',
-                    queryset=Inventories.objects.all()),
+                         queryset=Inventories.objects.all()),
                 Prefetch('product_customers_prices',
-                    queryset=CustomersPrices.objects.filter(customer=current_customer)))
+                         queryset=CustomersPrices.objects.filter(customer=current_customer)))
             for value_product in products:
                 quantity_sum = 0
                 for product_inventories in value_product.product_inventories.all():
@@ -107,14 +112,14 @@ class Section(models.Model):
                     currency_name = currency_dict.get(product_prices.currency_id, '')
                 list_res_.append({
                     'product': value_product,
-                                'guid': value_product.guid,
-                                'code': value_product.code,
-                                'name': value_product.name,
-                                'quantity': '>10' if quantity_sum > 10 else '' if quantity_sum == 0 else quantity_sum,
-                                'price': '' if price_value == 0 else price_value,
-                                'discount': '' if price_discount == 0 else price_discount,
-                                'currency': currency_name,
-                                'percent': '' if price_percent == 0 else price_percent,
+                    'guid': value_product.guid,
+                    'code': value_product.code,
+                    'name': value_product.name,
+                    'quantity': '>10' if quantity_sum > 10 else '' if quantity_sum == 0 else quantity_sum,
+                    'price': '' if price_value == 0 else price_value,
+                    'discount': '' if price_discount == 0 else price_discount,
+                    'currency': currency_name,
+                    'percent': '' if price_percent == 0 else price_percent,
                 }
                 )
 
@@ -132,14 +137,14 @@ class Section(models.Model):
                     currency_name = currency_dict.get(product_prices.currency_id, '')
                 list_res_.append({
                     'product': value_product,
-                                'guid': value_product.guid,
-                                'code': value_product.code,
-                                'name': value_product.name,
-                                'quantity': '>10' if quantity_sum > 10 else '' if quantity_sum == 0 else quantity_sum,
-                                'price': '' if price_value == 0 else price_value,
-                                'discount': '',
-                                'currency': currency_name,
-                                'percent': '',
+                    'guid': value_product.guid,
+                    'code': value_product.code,
+                    'name': value_product.name,
+                    'quantity': '>10' if quantity_sum > 10 else '' if quantity_sum == 0 else quantity_sum,
+                    'price': '' if price_value == 0 else price_value,
+                    'discount': '',
+                    'currency': currency_name,
+                    'percent': '',
                 }
                 )
 
@@ -168,7 +173,7 @@ class Product(models.Model):
         if current_customer is None:
             return dict(price=0, price_ruble=0, currency_name='', currency_id=0)
 
-        query_set_price = CustomersPrices.objects.\
+        query_set_price = CustomersPrices.objects. \
             filter(customer=current_customer, product=self).select_related('currency')
         if len(query_set_price):
             currency = query_set_price[0].currency
@@ -229,7 +234,11 @@ class Currency(models.Model):
 
     @staticmethod
     def get_ruble():
-        return get_ruble().id
+        try:
+            currency = Currency.objects.get(code='643')
+        except Currency.DoesNotExist:
+            return
+        return currency.id
 
     def get_today_course(self):
         from django.db.models import Max
@@ -331,16 +340,57 @@ class Order(models.Model):
         orders = Order.objects.filter(person=set_person[0])
         return orders
 
+    def get_json_for_request(self):
+        rest = dict(guid=self.guid,
+                    date=self.date,
+                    number=self.id,
+                    customer=self.person.customer.guid,
+                    delivery=self.delivery,
+                    shipment=self.shipment,
+                    payment=self.payment,
+                    comment=self.comment
+                    )
+        rest_items = []
+        for item in self:
+            rest_item = dict(
+                product=item['guid'],
+                quantity=item['quantity'])
+            rest_items.append(rest_item)
+        rest['items'] = rest_items
+        return json.dumps(rest)
 
-def get_ruble():
-    return Currency.objects.get(code='643')
+    def request_order(self):
+        import requests
+
+        api_url = settings.API_URL + 'Order/OrderCreate/'
+
+        data = self.get_json_for_request()
+
+        params = {
+            'Content-Type': 'application/json'}
+
+        answer = requests.post(api_url, data=data, headers=params)
+        if answer.status_code != 200:
+            return
+        dict_obj = answer.json()
+        if not dict_obj.get('success', None):
+            return
+        result = dict_obj.get('result', None)
+        if result is None:
+            return
+        if len(result) == 0:
+            return
+        if result[0]['number'] != self.id:
+            return
+        self.guid = result[0]['guid']
+        self.save()
 
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.PROTECT)
     product = models.ForeignKey(Product, related_name='order_items', on_delete=models.PROTECT)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    currency = models.ForeignKey(Currency, null=True, on_delete=models.PROTECT, default=get_ruble)
+    currency = models.ForeignKey(Currency, null=True, on_delete=models.PROTECT, default=Currency.get_ruble)
     price_ruble = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField(default=1)
 

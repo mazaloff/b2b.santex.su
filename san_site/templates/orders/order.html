@@ -11,6 +11,9 @@
 {% block content %}
 
     <div id="products" class="column products">
+        {% if debug %}
+            <a href="{% url 'order_request' order.id %}">Выгрузить в 1с (POST)</a>
+        {% endif %}
         {% if created %}
             <p style="color: red">
                 Спасибо, Ваш заказ успешно сформирован. Ожидайте, Мы с Вас свяжемся.

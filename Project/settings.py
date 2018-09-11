@@ -67,7 +67,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'san_site.context_processors.cart.cart',
+                'san_site.context_processors.processor.cart',
+                'san_site.context_processors.processor.user',
+                'san_site.context_processors.processor.debug',
             ],
         },
     },
@@ -142,3 +144,4 @@ EMAIL_USE_TLS = True
 PAYMENT_FORM = (('Наличные', 'Наличные'), ('Безналичные', 'Безналичные'))
 SHIPMENT_TYPE = (('Самовывоз', 'Самовывоз'), ('Доставка', 'Доставка'))
 STATUS_ORDER = (('Новый', 'Новый'), ('ВОбработке', 'В обработке'), ('Выполнен', 'Выполнен'), ('Отменен', 'Отменен'))
+API_URL = 'http://185.46.154.84:8080/UprTest/hs/'

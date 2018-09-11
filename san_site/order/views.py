@@ -28,6 +28,17 @@ def order(request, **kwargs):
     return render(request, 'orders/order.html', {'order': order})
 
 
+def order_request(request, **kwargs):
+    order_id = kwargs.get('id', 0)
+    try:
+        order = Order.objects.get(id=order_id)
+    except Order.DoesNotExist:
+        raise Http404()
+
+    order.request_order()
+    return render(request, 'orders/order.html', {'order': order})
+
+
 def order_list(request):
     return render(request, 'orders/list_orders.html', {
         'orders_list': Order.get_orders_list(request.user)

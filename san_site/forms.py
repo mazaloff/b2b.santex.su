@@ -82,4 +82,7 @@ class OrderCreateForm(forms.ModelForm):
                 item.currency = currency
             item.save()
         cart.clear()
+
+        order.request_order()
+
         return order
