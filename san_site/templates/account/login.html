@@ -13,16 +13,11 @@
 <div id="products" class="column products">
     <div id="accounts_login">
 
-        {% if errors %}
-        <p>Имя пользователя и пароль не совпадают. Попробуйте еще раз.</p>
-        {% endif %}
-
         {% if messages %}
             <ul class="messages">
                 {% for message in messages %}
                     <li class="{{ message.tags }}">
                         {{ message|safe }}
-                        <a href="#" class="close">✖</a>
                     </li>
                 {% endfor %}
             </ul>

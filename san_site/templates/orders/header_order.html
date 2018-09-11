@@ -4,14 +4,17 @@
     <h3>Заказ N {{ order.id }} от {{ order.date }}</h3>
     <table>
         <tr>
-            <td valign="top" width="75%">
+            <td valign="top">
                 Срок поставки: <strong>{{ order.delivery }}</strong>
-                <p>Тип доставки: <strong>{{ order.shipment }}</strong></p>
                 <p>Форма оплаты: <strong>{{ order.payment }}</strong></p>
+                <p>Тип доставки: <strong>{{ order.shipment }}</strong></p>
                 <p>Комментарий: <strong>{{ order.comment }}</strong></p>
             </td>
-            <td valign="top" width="25%">
+            <td valign="top">
                 <div id="order_status">Статус: <strong>{{ order.status }}</strong></div>
+                {% if debug %}
+                    <p>Guid 1c: <strong>{{ order.guid }}</strong></p>
+                {% endif %}
             </td>
         </tr>
     </table>

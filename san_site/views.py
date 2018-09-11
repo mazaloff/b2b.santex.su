@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.shortcuts import render
 
+from san_site.decorates.decorate import page_not_access
 from san_site.models import Person
 from .forms import LoginForm, PasswordChangeForm, PasswordResetForm
 
@@ -40,6 +41,7 @@ def user_login(request):
     return render(request, 'account/login.html', {'form': form})
 
 
+@page_not_access
 def user_logout(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
@@ -47,6 +49,7 @@ def user_logout(request):
     return index(request)
 
 
+@page_not_access
 def password_reset(request):
     if request.method == 'POST':
         form = PasswordResetForm(request.POST)
@@ -57,6 +60,7 @@ def password_reset(request):
     return render(request, 'account/password_reset.html', {'form': form, 'errors': False})
 
 
+@page_not_access
 def password_change(request):
     if request.method == 'POST':
         form = PasswordChangeForm(request.POST)

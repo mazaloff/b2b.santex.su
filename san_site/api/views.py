@@ -7,7 +7,8 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from san_site.models import \
-    Customer, Person, Section, Product, Store, Price, Currency, Inventories, Prices, CustomersPrices, Courses
+    Customer, Person, Section, Product, Store, Price, Currency, Inventories, Prices, CustomersPrices, Courses, \
+    get_person
 
 
 @csrf_exempt
@@ -482,12 +483,17 @@ def update_users(load_list):
                     and new_object.last_name == element_list['last_name'] \
                     and new_object.email == element_list['email'] \
                     and new_object.is_active == element_list['is_active']:
-                pass
+                person = get_person(new_object)
+                if person and not person.change_password:
+                    new_object.set_password(element_list['password'])
             else:
                 new_object.first_name = element_list['first_name']
                 new_object.last_name = element_list['last_name']
                 new_object.email = element_list['email']
                 new_object.is_active = element_list['is_active']
+                person = get_person(new_object)
+                if person and not person.change_password:
+                    new_object.set_password(element_list['password'])
                 new_object.save()
         else:
             new_object = User.objects.create(username=element_list['username'],
@@ -497,8 +503,8 @@ def update_users(load_list):
                                              is_active=element_list['is_active'],
                                              )
             new_object.created_date = timezone.now()
-            new_object.save()
             new_object.set_password(element_list['password'])
+            new_object.save()
             filter_object[element_list['username']] = new_object
 
         new_object_customer = filter_object_customer.get(element_list['guidCustomer'], None)
@@ -671,13 +677,6 @@ def users_prices(load_list, value_response):
                 continue
 
             try:
-                value_price = float(element_list_price['value'])
-            except ValueError:
-                add_error(value_response, code='Prices.ValueError',
-                          message='no float value price', description=element_list)
-                continue
-
-            try:
                 value_discount = float(element_list_price['discount'])
             except ValueError:
                 add_error(value_response, code='Prices.ValueError',
@@ -694,7 +693,6 @@ def users_prices(load_list, value_response):
             new_object = CustomersPrices.objects.create(customer=obj_customer,
                                                         product=obj_product,
                                                         currency=obj_currency,
-                                                        value=value_price,
                                                         discount=value_discount,
                                                         percent=value_percent)
             new_object.save()

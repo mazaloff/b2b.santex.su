@@ -83,6 +83,7 @@ class OrderCreateForm(forms.ModelForm):
             item.save()
         cart.clear()
 
+        order.save()
         order.request_order()
 
         return order
