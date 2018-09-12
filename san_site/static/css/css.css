@@ -19,15 +19,15 @@ body {
 }
 
 #branding {
-    flex: 1 50 20%
+    flex: 1 50 30%
 }
 
 #header_menu {
-    flex: 5 1 60%
+    flex: 5 1 40%
 }
 
 #user_tools {
-    flex: 1 2 20%
+    flex: 1 2 30%
 }
 
 .categories  {

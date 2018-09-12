@@ -28,18 +28,11 @@ def api_upsert(request):
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
     try:
-        list_load = json.loads(json_str[8 + json_str.find('&params', 0, 500):])
+        dict_load = json.loads(json_str)
     except ValueError:
         add_error(value_response, code='json.ValueError',
                   message='error json loads', description='')
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
-
-    if len(list_load) < 1:
-        add_error(value_response, code='json.ValueError',
-                  message='json is not params', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
-
-    dict_load = list_load[0]
 
     if 'sections' not in dict_load is None:
         add_error(value_response, code='json.ValueError',
@@ -93,20 +86,13 @@ def api_inventories(request):
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
     try:
-        list_load = json.loads(json_str[8 + json_str.find('&params', 0, 500):])
+        list_load = json.loads(json_str)
     except ValueError:
         add_error(value_response, code='json.ValueError',
                   message='error json loads', description='')
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
-    if len(list_load) < 1:
-        add_error(value_response, code='json.ValueError',
-                  message='json is not params', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
-
-    dict_load = list_load[0]
-
-    update_inventories(dict_load, value_response)
+    update_inventories(list_load, value_response)
 
     value_response['time']['end'] = timezone.now().ctime()
     return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
@@ -129,19 +115,13 @@ def api_prices(request):
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
     try:
-        list_load = json.loads(json_str[8 + json_str.find('&params', 0, 500):])
+        list_load = json.loads(json_str)
     except ValueError:
         add_error(value_response, code='json.ValueError',
                   message='error json loads', description='')
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
-    if len(list_load) < 1:
-        add_error(value_response, code='json.ValueError',
-                  message='json is not params', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
-
-    dict_load = list_load[0]
-    update_prices(dict_load, value_response)
+    update_prices(list_load, value_response)
 
     value_response['time']['end'] = timezone.now().ctime()
     return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
@@ -164,20 +144,13 @@ def api_users(request):
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
     try:
-        list_load = json.loads(json_str[8 + json_str.find('&params', 0, 500):])
+        list_load = json.loads(json_str)
     except ValueError:
         add_error(value_response, code='json.ValueError',
                   message='error json loads', description='')
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
-    if len(list_load) < 1:
-        add_error(value_response, code='json.ValueError',
-                  message='json is not params', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
-
-    dict_load = list_load[0]
-
-    update_users(dict_load)
+    update_users(list_load)
 
     value_response['time']['end'] = timezone.now().ctime()
     return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
@@ -200,20 +173,13 @@ def api_users_prices(request):
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
     try:
-        list_load = json.loads(json_str[8 + json_str.find('&params', 0, 500):])
+        list_load = json.loads(json_str)
     except ValueError:
         add_error(value_response, code='json.ValueError',
                   message='error json loads', description='')
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
-    if len(list_load) < 1:
-        add_error(value_response, code='json.ValueError',
-                  message='json is not params', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
-
-    dict_load = list_load[0]
-
-    users_prices(dict_load, value_response)
+    update_users_prices(list_load, value_response)
 
     value_response['time']['end'] = timezone.now().ctime()
     return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
@@ -236,20 +202,13 @@ def api_courses(request):
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
     try:
-        list_load = json.loads(json_str[8 + json_str.find('&params', 0, 500):])
+        list_load = json.loads(json_str)
     except ValueError:
         add_error(value_response, code='json.ValueError',
                   message='error json loads', description='')
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
-    if len(list_load) < 1:
-        add_error(value_response, code='json.ValueError',
-                  message='json is not params', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
-
-    dict_load = list_load[0]
-
-    update_courses(dict_load, value_response)
+    update_courses(list_load, value_response)
 
     value_response['time']['end'] = timezone.now().ctime()
     return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
@@ -640,7 +599,7 @@ def update_prices(load_list, value_response):
             new_object.save()
 
 
-def users_prices(load_list, value_response):
+def update_users_prices(load_list, value_response):
     filter_guid = [element_list['guid'] for element_list in load_list]
     filter_object = {t.guid: t for t in Customer.objects.filter(guid__in=filter_guid)}
 

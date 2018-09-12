@@ -1,6 +1,6 @@
 <div id="header">
     <div id="branding">
-        <h1><a href="/">Santex's e-Commerce</a></h1>
+        <h1 style="margin:0;"><a href="/">Santex's e-Commerce</a></h1>
     </div>
     <div id="header_menu">
         {% if user.is_authenticated %}
@@ -13,7 +13,7 @@
     <div id="user_tools">
     {% if not user.is_authenticated %}
         <a id="user-tools-accounts-login" href="{% url 'account_login' %}">
-            Авторизуйтесь, чтобы видеть ваши цены и делать заказы
+            Войти, чтобы видеть ваши цены и делать заказы
         </a>
     {% else %}
         Добро пожаловать, <strong>{{ user.get_full_name }}</strong>
