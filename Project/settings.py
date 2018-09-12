@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 
+import Project.local_settings as local_settings
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -144,4 +146,10 @@ EMAIL_USE_TLS = True
 PAYMENT_FORM = (('Наличные', 'Наличные'), ('Безналичные', 'Безналичные'))
 SHIPMENT_TYPE = (('Самовывоз', 'Самовывоз'), ('Доставка', 'Доставка'))
 STATUS_ORDER = (('Новый', 'Новый'), ('ВОбработке', 'В обработке'), ('Выполнен', 'Выполнен'), ('Отменен', 'Отменен'))
+
 API_URL = 'http://185.46.154.84:8080/UprTest/hs/'
+
+try:
+    from local_settings import *
+except ImportError:
+    pass
