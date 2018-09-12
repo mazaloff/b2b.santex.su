@@ -12,8 +12,6 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 
-import Project.settings_local as local_settings
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -150,6 +148,6 @@ STATUS_ORDER = (('Новый', 'Новый'), ('ВОбработке', 'В об�
 API_URL = 'http://185.46.154.84:8080/UprTest/hs/'
 
 try:
-    from local_settings import *
+    from .settings_local import *
 except ImportError:
     pass
