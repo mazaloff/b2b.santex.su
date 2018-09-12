@@ -1,4 +1,4 @@
 /.idea/*
 /Environment/*
 *.pyc
-/Project/local_settings.ry
+/Project/settings_local.py
