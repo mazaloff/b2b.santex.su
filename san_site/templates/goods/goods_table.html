@@ -23,15 +23,33 @@
             <th id="goods_table_5">
                 <div><span>Вал.</span></div>
             </th>
+            {% if user.is_authenticated %}
+                <th id="goods_table_6">
+                    <div><span>%</span></div>
+                </th>
+                <th id="goods_table_7">
+                    <div><span>Ваша цена</span></div>
+                </th>
+            {% endif %}
             </tr>
         </thead>
         {% for goods in goods_list %}
-            <tr>
+            <tr {% if goods.promo %} class="goods_tr_promo" {% endif %}>
                 <td id="goods_table_1">{{ goods.code }}</td>
                 <td id="goods_table_2">{{ goods.name }}</td>
-                <td id="goods_table_3" align=right>{{ goods.quantity }}</td>
+                {% if user.is_authenticated %}
+                    <td onclick="addCart('{{ goods.guid }}')" id="goods_table_3" align=right style="cursor: pointer;">
+                        {{ goods.quantity }}
+                    </td>
+                {% else %}
+                    <td id="goods_table_3" align=right>{{ goods.quantity }}</td>
+                {% endif %}
                 <td id="goods_table_4" align=right>{{ goods.price|format:"{0:.2f}" }}</td>
                 <td id="goods_table_5">{{ goods.currency }}</td>
+                {% if user.is_authenticated %}
+                    <td id="goods_table_6" align=center>{{ goods.percent|format:"{0:.2f}" }}</td>
+                    <td id="goods_table_7" align=right>{{ goods.discount|format:"{0:.2f}" }}</td>
+                {% endif %}
             </tr>
         {% endfor %}
     </table>

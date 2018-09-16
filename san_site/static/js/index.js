@@ -13,16 +13,22 @@ class Index {
         let guid = window.getSectionGUID(path);
 
         jQuery("#products").replaceWith(main_goods_html);
-
-        widthHeadGoods();
-        widthHeadCart();
+        recoverOnlyStock();
+        recoverOnlyPromo();
 
         jQuery("#categories ul li a").addClass('disabled');
+        jQuery("#loading_icon").removeClass('disabled');
+
+        document.getElementById('goods_table').style.display = 'none';
 
         jQuery.ajax({
             url: "ajax/get_goods/",
             type: 'GET',
-            data: {'guid': guid},
+            data: {
+                'guid': guid,
+                'only_stock': getOnlyStock(),
+                'only_promo': getOnlyPromo()
+            },
             dataType: 'json',
 
             success : function (json) {
@@ -30,6 +36,8 @@ class Index {
                 if (json.result)
                 {
                     jQuery("#products").replaceWith(json.goods_html);
+                    recoverOnlyStock();
+                    recoverOnlyPromo();
 
                     jQuery("#goods").html("<div id=\"goods\">" + html_view_category + "</div>");
 
@@ -45,12 +53,16 @@ class Index {
 
                     widthHeadGoods();
                     widthHeadCart();
+
                 } else {
                     console.error('Ошибка получения данных с сервера');
                 }
                 jQuery("#categories ul li a").removeClass('disabled');
+                jQuery("#loading_icon").addClass('disabled');
                 document.body.querySelectorAll('#goods')
-                    .forEach( link => link.addEventListener('click', Index._clickHandlerGoods) );
+                    .forEach(link => link.addEventListener('click', Index._clickHandlerGoods));
+                onlyStock();
+                onlyPromo();
             }
         });
     }
@@ -75,9 +87,9 @@ class Index {
                         jQuery("#cart").replaceWith(json.cart_http);
 
                         countHeightTableCart();
-
                         updateTables();
                         widthHeadCart();
+
                     } else {
                         console.error('Ошибка получения данных с сервера');
                     }
@@ -149,34 +161,50 @@ class Index {
         }
     }
 
-    static _clickQuantityDeleteCart(event) {
-        event.preventDefault(); // запрещаем событие
+    static _changeSelections() {
 
-        let path = event.target.href; // забираем путь
-        let guid = window.getProductGUID(path);
+        jQuery("#goods_table").replaceWith("<div id=\"goods_table\"></div>");
+        jQuery("#categories ul li a").addClass('disabled');
+        jQuery("#loading_icon").removeClass('disabled');
 
-        if (typeof guid !== undefined) {
+        jQuery.ajax({
+            url: "ajax/selection/",
+            type: 'GET',
+            data: {
+                'only_stock': getOnlyStock(),
+                'only_promo': getOnlyPromo(),
+                'search': getSearchCode()
+            },
+            dataType: 'json',
 
-            jQuery("#header_cart").replaceWith("<div id=\"header_cart\"></div>");
+            success: function (json) {
+                // Если запрос прошёл успешно и сайт вернул результат
+                if (json.result) {
+                    jQuery("#goods_table").replaceWith(json.goods_html);
 
-            jQuery.ajax({
-                url: "ajax/cart/delete/",
-                type: 'GET',
-                data: {'guid': guid},
-                dataType: 'json', // забираем номер страницы, которую нужно отобразить
-
-                success: function (json) {
-                    // Если запрос прошёл успешно и сайт вернул результат
-                    if (json.result) {
-                        jQuery("#header_cart").replaceWith(json.header_cart);
-                        jQuery("#tr_cart" + guid).replaceWith("");
+                    if (json.section.guid === undefined) {
+                        jQuery("#goods").html('Выберите категорию товаров...');
                     } else {
-                        console.error('Ошибка получения данных с сервера');
+                        jQuery("#goods").html('Товары из категории ' + json.section.name
+                            .link('?sections=' + json.section.guid));
                     }
+
+                    jQuery(window).scrollTop(0);
+
+                    countHeightTableGoods();
+                    updateTables();
+                    widthHeadGoods();
+
+                } else {
+                    console.error('Ошибка получения данных с сервера');
                 }
-            });
-        }
+                jQuery("#categories ul li a").removeClass('disabled');
+                jQuery("#loading_icon").addClass('disabled');
+            }
+        });
+
     }
+
 }
 
 Index.initGoods();

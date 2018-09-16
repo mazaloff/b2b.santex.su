@@ -1,5 +1,6 @@
 import datetime
 
+from django.utils import timezone
 from django import forms
 from django.conf import settings
 
@@ -24,7 +25,7 @@ class PasswordChangeForm(forms.Form):
 
 class OrderCreateForm(forms.ModelForm):
     delivery = forms.DateField(widget=forms.SelectDateWidget,
-                               initial=datetime.date.today() + datetime.timedelta(days=1),
+                               initial=datetime.datetime.now(tz=timezone.utc) + datetime.timedelta(days=1),
                                label='Срок поставки')
     shipment = forms.ChoiceField(choices=settings.SHIPMENT_TYPE, required=True,
                                  initial=settings.SHIPMENT_TYPE[0], label='Способ доставки')

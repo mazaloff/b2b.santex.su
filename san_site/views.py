@@ -41,7 +41,6 @@ def user_login(request):
     return render(request, 'account/login.html', {'form': form})
 
 
-@page_not_access
 def user_logout(request):
     if request.method == 'GET':
         if request.user.is_authenticated:

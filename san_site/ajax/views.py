@@ -3,6 +3,7 @@ import json
 from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
+from django.utils.datastructures import MultiValueDictKeyError
 
 from san_site.cart.cart import Cart
 from san_site.models import Section, Product
@@ -11,35 +12,49 @@ from san_site.models import Section, Product
 def get_categories(request):
 
     sections = Section.objects.filter(is_deleted=False).order_by('sort', 'name')
-    data_for = []
+    data = []
 
     for obj in sections:
         parent = '#' if obj.parent_guid == '---' else obj.parent_guid
-        data_for.append({'id': obj.guid, 'parent': parent, 'text': obj.name, 'href': obj.guid})
+        data.append({'id': obj.guid, 'parent': parent, 'text': obj.name, 'href': obj.guid})
     str_json = json.dumps(
         {
             'code': 'success',
-            'result': data_for,
+            'result': data,
             'user_name': request.user.username,
-            'goods_html': render_to_string('goods.html', {}),
+            'goods_html': render_to_string('goods.html', {})
         }
     )
     return HttpResponse(str_json, content_type="application/json", status=200)
 
 
 def get_goods(request):
+
     try:
         guid = request.GET.get('guid')
-    except:
+    except MultiValueDictKeyError:
         raise HttpResponseBadRequest
 
     try:
-        obj_Section = Section.objects.get(guid=guid)
+        only_stock_ = request.GET.get('only_stock')
+    except MultiValueDictKeyError:
+        only_stock_ = None
+
+    try:
+        only_promo_ = request.GET.get('only_promo')
+    except MultiValueDictKeyError:
+        only_promo_ = None
+
+    try:
+        obj_section = Section.objects.get(guid=guid)
     except Section.DoesNotExist:
         raise HttpResponseBadRequest
 
+    obj_section.add_current_session(request)
+
     cart = Cart(request)
-    goods_list = obj_Section.get_goods_list(request.user)
+    goods_list = obj_section.get_goods_list_section(
+        user=request.user, only_stock=only_stock_, only_promo=only_promo_)
 
     return JsonResponse(
         {
@@ -53,10 +68,51 @@ def get_goods(request):
     )
 
 
+def selection(request):
+    try:
+        only_stock_ = request.GET.get('only_stock')
+    except MultiValueDictKeyError:
+        only_stock_ = None
+
+    try:
+        only_promo_ = request.GET.get('only_promo')
+    except MultiValueDictKeyError:
+        only_promo_ = None
+
+    try:
+        search = request.GET.get('search')
+    except MultiValueDictKeyError:
+        search = None
+
+    section_dict = {}
+    if search != '' or only_promo_ == 'true':
+        goods_list = Section.get_goods_list(
+            user=request.user, search=search, only_stock=only_stock_, only_promo=only_promo_)
+    else:
+        try:
+            obj_section = Section.objects.get(id=Section.get_current_session(request=request))
+        except Section.DoesNotExist:
+            return JsonResponse({"result": False})
+        section_dict = {'name': obj_section.name, 'guid': obj_section.guid}
+        goods_list = obj_section.get_goods_list_section(
+            user=request.user, only_stock=only_stock_, only_promo=only_promo_)
+
+    return JsonResponse(
+        {
+            "result": True,
+            'section': section_dict,
+            'goods_html': render_to_string('goods\goods_table.html', {
+                'goods_list': goods_list,
+                'user': request.user,
+            }),
+        })
+
+
 def cart_add(request):
+
     try:
         guid = request.GET.get('guid')
-    except:
+    except MultiValueDictKeyError:
         raise HttpResponseBadRequest
 
     cart = Cart(request)
@@ -74,7 +130,7 @@ def cart_add(request):
 def cart_add_quantity(request):
     try:
         guid = request.GET.get('guid')
-    except:
+    except MultiValueDictKeyError:
         raise HttpResponseBadRequest
 
     cart = Cart(request)
@@ -97,7 +153,7 @@ def cart_add_quantity(request):
 def cart_reduce_quantity(request):
     try:
         guid = request.GET.get('guid')
-    except:
+    except MultiValueDictKeyError:
         raise HttpResponseBadRequest
 
     cart = Cart(request)

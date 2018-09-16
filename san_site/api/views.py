@@ -7,13 +7,13 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from san_site.models import \
-    Customer, Person, Section, Product, Store, Price, Currency, Inventories, Prices, CustomersPrices, Courses, \
+    Order, Customer, Person, Section, Product, Store, Price, Currency, Inventories, Prices, CustomersPrices, Courses, \
     get_person
 
 
 @csrf_exempt
-def api_upsert(request):
-    value_response = {'success': True, 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
+def api_main(request):
+    value_response = {'success': True, 'date': [], 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
 
     try:
         json_str = request.body.decode()
@@ -71,7 +71,7 @@ def api_upsert(request):
 
 @csrf_exempt
 def api_inventories(request):
-    value_response = {'success': True, 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
+    value_response = {'success': True, 'date': [], 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
 
     try:
         json_str = request.body.decode()
@@ -100,7 +100,7 @@ def api_inventories(request):
 
 @csrf_exempt
 def api_prices(request):
-    value_response = {'success': True, 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
+    value_response = {'success': True, 'date': [], 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
 
     try:
         json_str = request.body.decode()
@@ -129,7 +129,7 @@ def api_prices(request):
 
 @csrf_exempt
 def api_users(request):
-    value_response = {'success': True, 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
+    value_response = {'success': True, 'date': [], 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
 
     try:
         json_str = request.body.decode()
@@ -158,7 +158,7 @@ def api_users(request):
 
 @csrf_exempt
 def api_users_prices(request):
-    value_response = {'success': True, 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
+    value_response = {'success': True, 'date': [], 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
 
     try:
         json_str = request.body.decode()
@@ -187,7 +187,7 @@ def api_users_prices(request):
 
 @csrf_exempt
 def api_courses(request):
-    value_response = {'success': True, 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
+    value_response = {'success': True, 'date': [], 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
 
     try:
         json_str = request.body.decode()
@@ -209,6 +209,35 @@ def api_courses(request):
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
     update_courses(list_load, value_response)
+
+    value_response['time']['end'] = timezone.now().ctime()
+    return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+
+@csrf_exempt
+def api_statuses(request):
+    value_response = {'success': True, 'date': [], 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
+
+    try:
+        json_str = request.body.decode()
+    except UnicodeError:
+        add_error(value_response, code='decode.UnicodeError',
+                  message='error body decode', description='')
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+    if json_str is None:
+        add_error(value_response, code='json.ValueError',
+                  message='json is empty', description='')
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+    try:
+        list_load = json.loads(json_str)
+    except ValueError:
+        add_error(value_response, code='json.ValueError',
+                  message='error json loads', description='')
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+    update_statuses(list_load, value_response)
 
     value_response['time']['end'] = timezone.now().ctime()
     return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
@@ -595,7 +624,8 @@ def update_prices(load_list, value_response):
             new_object = Prices.objects.create(product=obj_product,
                                                price=obj_price,
                                                currency=obj_currency,
-                                               value=value_price)
+                                               value=value_price,
+                                               promo=element_list_price['promo'])
             new_object.save()
 
 
@@ -657,7 +687,25 @@ def update_users_prices(load_list, value_response):
             new_object.save()
 
 
-def add_error(value_respons, **kwargs):
-    value_respons['success'] = False
-    value_respons['errors'].append(kwargs)
-    value_respons['time']['end'] = timezone.now().ctime()
+def update_statuses(load_list, value_response):
+    filter_guid = [element_list['guid'] for element_list in load_list]
+    filter_object = {t.guid: t for t in Order.objects.filter(guid__in=filter_guid)}
+
+    for element_list in load_list:
+
+        obj_order = filter_object.get(element_list['guid'], None)
+        if not obj_order:
+            add_error(value_response, code='Order.DoesNotExist',
+                      message='no get order', description=element_list)
+            value_response['date'].append(element_list['guid'])
+            continue
+
+        obj_order.status = element_list['status']
+        obj_order.save()
+        value_response['date'].append(element_list['guid'])
+
+
+def add_error(value_response, **kwargs):
+    value_response['success'] = False
+    value_response['errors'].append(kwargs)
+    value_response['time']['end'] = timezone.now().ctime()

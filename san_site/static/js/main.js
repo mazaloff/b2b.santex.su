@@ -2,10 +2,10 @@
 
 // Модуль приложения
 var main_goods_height = 99999,
-    main_goods_items = 0,
     main_cart_height = 99999,
-    main_cart_max = false,
     main_list_orders_height = 99999,
+    main_goods_items = 0,
+    main_cart_max = false,
     main_user = '',
     main_goods_html = '',
     app = (function($) {
@@ -18,7 +18,9 @@ var main_goods_height = 99999,
 
     $(window).resize(function() {
         updateTables();
-        widthHeadGoods()
+        widthHeadGoods();
+        widthHeadCart();
+        widthHeadOrders();
     });
 
     // Инициализация дерева категорий с помощью jstree
@@ -41,19 +43,25 @@ var main_goods_height = 99999,
             guid = data.node.original.href;
 
             jQuery("#products").replaceWith(main_goods_html);
+            recoverOnlyStock();
+            recoverOnlyPromo();
 
-            widthHeadGoods();
-            widthHeadCart();
-
-            jQuery("#goods").html('Грузим товары из категории ' + data.node.text
+            jQuery("#goods").html('Товары из категории ' + data.node.text
                 .link('?sections=' + data.node.original.href));
 
             jQuery("#categories ul li a").addClass('disabled');
+            jQuery("#loading_icon").removeClass('disabled');
+
+            document.getElementById('goods_table').style.display = 'none';
 
             jQuery.ajax({
                 url: "ajax/get_goods/",
                 type: 'GET',
-                data: {'guid': guid},
+                data: {
+                    'guid': guid,
+                    'only_stock': getOnlyStock(),
+                    'only_promo': getOnlyPromo()
+                },
                 dataType: 'json', // забираем номер страницы, которую нужно отобразить
 
                 success : function (json) {
@@ -61,6 +69,8 @@ var main_goods_height = 99999,
                     if (json.result)
                     {
                         jQuery("#products").replaceWith(json.goods_html);
+                        recoverOnlyStock();
+                        recoverOnlyPromo();
 
                         jQuery("#goods").html('Товары из категории ' + data.node.text
                             .link('?sections=' + data.node.original.href));
@@ -79,12 +89,16 @@ var main_goods_height = 99999,
 
                         widthHeadGoods();
                         widthHeadCart();
+
                     } else {
                         console.error('Ошибка получения данных с сервера');
                     }
                     jQuery("#categories ul li a").removeClass('disabled');
+                    jQuery("#loading_icon").addClass('disabled');
                     document.body.querySelectorAll('#goods')
                         .forEach( link => link.addEventListener('click', Index._clickHandlerGoods) );
+                    onlyStock();
+                    onlyPromo();
                 }
             });
         });
@@ -96,6 +110,8 @@ var main_goods_height = 99999,
         widthHeadGoods();
         widthHeadCart();
         widthHeadOrders();
+        recoverOnlyStock();
+        recoverOnlyPromo();
         countHeightListOrders();
 
         $.ajax({
@@ -123,6 +139,9 @@ var main_goods_height = 99999,
         _loadData();
     }
 
+        onlyStock();
+        onlyPromo();
+
     $("html,body").css("overflow","hidden");
 
     // Экспортируем наружу
@@ -139,16 +158,21 @@ function updateTables() {
         header_height = $('#header').height(),
         goods_table_height = 0;
 
-    let cart_table_height = main_cart_height;
+    let categories_height = window_height - header_height - 28;
     let list_orders_table_height = window_height - header_height - 34;
+
+    let cart_table_height = main_cart_height;
 
     if (document.getElementById("goods_table") && main_goods_items !== 0) {
         goods_table_height = (window_height
             - $('#header_cart').height()
-            - main_cart_height
+            - $('#goods_search').height()
+            - (document.getElementById("goods_cart") ? (main_cart_height + (main_cart_max ? 0 : 10)) : -5)
             - header_height) - 60;
-        cart_table_height += Math.max(goods_table_height - main_goods_height, 0);
-        cart_table_height -= main_cart_max ? 20 : 0;
+        if (document.getElementById("goods_cart")) {
+            cart_table_height -= main_cart_max ? 20 : 0;
+            cart_table_height += Math.max(goods_table_height - main_goods_height, 0);
+        }
     }
 
     if (document.getElementById("goods_cart")) {
@@ -165,7 +189,6 @@ function updateTables() {
         $('#goods_table').stop().animate({height: goods_table_height});
     }
 
-    let categories_height = window_height - header_height - 28;
 
     if (document.getElementById("categories")) {
         $('#categories').stop().animate({height: categories_height});
@@ -213,8 +236,7 @@ function countHeightTableGoods() {
     });
 
     if (main_goods_items === 0) {
-        window.main_goods_height = 0;
-        return;
+        height = 0;
     }
 
     main_goods_height = height
@@ -269,6 +291,84 @@ function addQuantityCart(guid) {
 
 function reduceQuantityCart(guid) {
     Index._clickQuantityReduceCart(guid)
+}
+
+function getOnlyStock() {
+    return ($('#only_stock').is(':checked'));
+}
+
+function getOnlyPromo() {
+    return ($('#only_promo').is(':checked'));
+}
+
+function getSearchCode() {
+    return $('#search_code').val();
+}
+
+function searchByCode() {
+    Index._changeSelections()
+}
+
+function onlyStock() {
+    $('#only_stock').click(function () {
+        createCookie('is_only_stock', getOnlyStock(), 30);
+        Index._changeSelections();
+    });
+}
+
+function onlyPromo() {
+    $('#only_promo').click(function () {
+        createCookie('is_only_promo', getOnlyPromo(), 30);
+        Index._changeSelections();
+    });
+}
+
+function getCookie(c_name) {
+    if (document.cookie.length > 0) {
+        let c_start = document.cookie.indexOf(c_name + "=");
+        if (c_start !== -1) {
+            c_start = c_start + c_name.length + 1;
+            let c_end = document.cookie.indexOf(";", c_start);
+            if (c_end === -1) {
+                c_end = document.cookie.length;
+            }
+            return unescape(document.cookie.substring(c_start, c_end));
+        }
+    }
+    return "";
+}
+
+let createCookie = function (name, value, days) {
+    let expires;
+    if (days) {
+        let date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    else {
+        expires = "";
+    }
+    document.cookie = name + "=" + value + expires + "; path=/";
+};
+
+function recoverOnlyStock() {
+    if (getCookie('is_only_stock') === 'true') {
+        $('#only_stock').prop('checked', true);
+    } else {
+        $('#only_stock').prop('checked', false);
+    }
+}
+
+function recoverOnlyPromo() {
+    if (getCookie('is_only_promo') === 'true') {
+        $('#only_promo').prop('checked', true);
+    } else {
+        $('#only_promo').prop('checked', false);
+    }
+}
+
+function recoverSearch() {
+    $('#text').val(getCookie('string_search'))
 }
 
 jQuery(document).ready(app.init);

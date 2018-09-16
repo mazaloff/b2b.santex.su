@@ -111,11 +111,3 @@ class Cart(object):
             if course != 1:
                 view += ' ;' if len(view) > 0 else '' + currency.name.upper() + ': ' + "{0:.4f}".format(course)
         return view
-
-    @property
-    def cart_height(self):
-        len_ = len(self)
-        if len_ == 0:
-            return 0
-        else:
-            return min(len_ * 34, 34 * 6)

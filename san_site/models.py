@@ -6,6 +6,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Prefetch
 from django.utils import timezone
+from django.db.models import Q
+from django.db import connection
 
 json.JSONEncoder.default = lambda self, obj: \
     (obj.isoformat() if isinstance(obj, (datetime.datetime, datetime.date)) else None)
@@ -78,14 +80,30 @@ class Section(models.Model):
             list_sections.append(child)
             child.list_with_children(list_sections)
 
-    def get_goods_list(self, user):
+    def add_current_session(self, request):
+        request.session['id_current_session'] = self.id
+        request.session.modified = True
 
-        list_sections = []
-        self.list_with_children(list_sections)
+    @staticmethod
+    def get_current_session(request):
+        return request.session.get('id_current_session')
+
+    @staticmethod
+    def get_goods_list(user, list_sections=None, search=None, only_stock=None, only_promo=None):
 
         list_res_ = []
-
         currency_dict = {elem_.id: elem_.name for elem_ in Currency.objects.all()}
+
+        set_products = Product.objects.filter(is_deleted=False)
+
+        if list_sections is not None:
+            set_products = set_products.filter(section__in=list_sections)
+
+        if only_promo == 'true':
+            set_products = set_products.filter(id__in=Prices.objects.filter(promo=True).values("product_id"))
+
+        if search is not None and search != '':
+            set_products = set_products.filter(Q(code__icontains=search) | Q(name__icontains=search))
 
         if user.is_authenticated:
 
@@ -93,28 +111,29 @@ class Section(models.Model):
             if current_customer is None:
                 return list_res_
 
-            products = Product.objects.filter(section__in=list_sections, is_deleted=False).order_by('code') \
-                .prefetch_related(
-                Prefetch('product_inventories',
-                         queryset=Inventories.objects.all()),
-                Prefetch('product_prices',
-                         queryset=Prices.objects.all()),
+            products = set_products.order_by('code').prefetch_related(
+                Prefetch('product_inventories', queryset=Inventories.objects.all()),
+                Prefetch('product_prices', queryset=Prices.objects.all()),
                 Prefetch('product_customers_prices',
                          queryset=CustomersPrices.objects.filter(customer=current_customer)))
+
             for value_product in products:
                 quantity_sum = 0
                 for product_inventories in value_product.product_inventories.all():
                     quantity_sum += product_inventories.quantity
                 price_value, price_discount, price_percent = (0, 0, 0)
-                currency_name = ''
+                currency_name, promo = ('', False)
                 for product_prices in value_product.product_customers_prices.all():
                     price_discount = product_prices.discount
                     price_percent = product_prices.percent
                     currency_name = currency_dict.get(product_prices.currency_id, '')
                 for product_prices in value_product.product_prices.all():
                     price_value = product_prices.value
+                    promo = product_prices.promo
                     if currency_name == '':
                         currency_name = currency_dict.get(product_prices.currency_id, '')
+                if only_stock == 'true' and quantity_sum <= 0:
+                    continue
                 list_res_.append({
                     'product': value_product,
                     'guid': value_product.guid,
@@ -122,6 +141,7 @@ class Section(models.Model):
                     'name': value_product.name,
                     'quantity': '>10' if quantity_sum > 10 else '' if quantity_sum == 0 else quantity_sum,
                     'price': '' if price_value == 0 else price_value,
+                    'promo': promo,
                     'discount': '' if price_discount == 0 else price_discount,
                     'currency': currency_name,
                     'percent': '' if price_percent == 0 else price_percent,
@@ -129,21 +149,23 @@ class Section(models.Model):
                 )
 
         else:
-            products = Product.objects.filter(section__in=list_sections, is_deleted=False).order_by('code') \
-                .prefetch_related(
-                Prefetch('product_inventories',
-                         queryset=Inventories.objects.all()),
-                Prefetch('product_prices',
-                         queryset=Prices.objects.all()))
+
+            products = set_products.order_by('code').prefetch_related(
+                Prefetch('product_inventories', queryset=Inventories.objects.all()),
+                Prefetch('product_prices', queryset=Prices.objects.all()))
+
             for value_product in products:
                 quantity_sum = 0
                 for product_inventories in value_product.product_inventories.all():
                     quantity_sum += product_inventories.quantity
                 price_value = 0
-                currency_name = ''
+                currency_name, promo = ('', False)
                 for product_prices in value_product.product_prices.all():
                     price_value = product_prices.value
                     currency_name = currency_dict.get(product_prices.currency_id, '')
+                    promo = product_prices.promo
+                if only_stock == 'true' and quantity_sum <= 0:
+                    continue
                 list_res_.append({
                     'product': value_product,
                     'guid': value_product.guid,
@@ -151,6 +173,7 @@ class Section(models.Model):
                     'name': value_product.name,
                     'quantity': '>10' if quantity_sum > 10 else '' if quantity_sum == 0 else quantity_sum,
                     'price': '' if price_value == 0 else price_value,
+                    'promo': promo,
                     'discount': '',
                     'currency': currency_name,
                     'percent': '',
@@ -159,11 +182,17 @@ class Section(models.Model):
 
         return list_res_
 
+    def get_goods_list_section(self, user, search=None, only_stock=None, only_promo=None):
+        list_sections = []
+        self.list_with_children(list_sections)
+        return Section.get_goods_list(
+            user=user, list_sections=list_sections, search=search, only_stock=only_stock, only_promo=only_promo)
+
 
 class Product(models.Model):
     guid = models.CharField(max_length=50, db_index=True)
-    name = models.CharField(max_length=200)
-    code = models.CharField(max_length=30)
+    name = models.CharField(max_length=200, db_index=True)
+    code = models.CharField(max_length=30, db_index=True)
     sort = models.IntegerField(default=500)
     section = models.ForeignKey(Section, db_index=True, on_delete=models.PROTECT)
     created_date = models.DateTimeField(default=timezone.now)
@@ -273,6 +302,7 @@ class Inventories(models.Model):
 class Prices(models.Model):
     product = models.ForeignKey(Product, related_name='product_prices',
                                 db_index=True, on_delete=models.DO_NOTHING)
+    promo = models.BooleanField(default=False, db_index=True)
     price = models.ForeignKey(Price, on_delete=models.DO_NOTHING)
     currency = models.ForeignKey(Currency, on_delete=models.DO_NOTHING)
     value = models.FloatField(default=0)
@@ -370,7 +400,7 @@ class Order(models.Model):
     def request_order(self):
         import requests
 
-        api_url = settings.API_URL + 'Order/OrderCreate/'
+        api_url = settings.API_URL + r'Order/OrderCreate/'
 
         data = self.get_json_for_request()
 
@@ -379,9 +409,12 @@ class Order(models.Model):
 
         answer = requests.post(api_url, data=data, headers=params)
         if answer.status_code != 200:
+            pass
+        try:
+            dict_obj = answer.json()
+        except json.decoder.JSONDecodeError:
             return
-        dict_obj = answer.json()
-        if not dict_obj.get('success', None):
+        if dict_obj.get('success', None) is None:
             return
         result = dict_obj.get('result', None)
         if result is None:
