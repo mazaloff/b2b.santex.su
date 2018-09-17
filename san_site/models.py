@@ -123,10 +123,14 @@ class Section(models.Model):
                     quantity_sum += product_inventories.quantity
                 price_value, price_discount, price_percent = (0, 0, 0)
                 currency_name, promo = ('', False)
+                for product_prices in value_product.product_prices.all():
+                    price_value = product_prices.value
+                    price_discount = product_prices.value
+                    promo = product_prices.promo
+                    currency_name = currency_dict.get(product_prices.currency_id, '')
                 for product_prices in value_product.product_customers_prices.all():
                     price_discount = product_prices.discount
                     price_percent = product_prices.percent
-                    currency_name = currency_dict.get(product_prices.currency_id, '')
                 for product_prices in value_product.product_prices.all():
                     price_value = product_prices.value
                     promo = product_prices.promo
