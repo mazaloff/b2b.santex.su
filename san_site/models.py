@@ -213,6 +213,15 @@ class Product(models.Model):
             price = query_set_price[0].discount
             price_ruble = currency.change_ruble(price)
             return dict(price=price, price_ruble=price_ruble, currency_name=currency_name, currency_id=currency_id)
+        else:
+            query_set_price = Prices.objects.filter(product=self)
+            if len(query_set_price):
+                currency = query_set_price[0].currency
+                currency_name = query_set_price[0].currency.name
+                currency_id = query_set_price[0].currency.id
+                price = query_set_price[0].value
+                price_ruble = currency.change_ruble(price)
+                return dict(price=price, price_ruble=price_ruble, currency_name=currency_name, currency_id=currency_id)
         return dict(price=0, price_ruble=0, currency_name='', currency_id=0)
 
 
