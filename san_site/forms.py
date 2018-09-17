@@ -6,6 +6,7 @@ from django.conf import settings
 
 from san_site.cart.cart import Cart, Currency
 from san_site.models import Order, OrderItem, Person
+import pytz
 
 
 class LoginForm(forms.Form):
@@ -24,9 +25,10 @@ class PasswordChangeForm(forms.Form):
 
 
 class OrderCreateForm(forms.ModelForm):
-    delivery = forms.DateField(widget=forms.SelectDateWidget,
-                               initial=datetime.datetime.now(tz=timezone.utc) + datetime.timedelta(days=1),
-                               label='Срок поставки')
+    delivery = forms.DateTimeField(
+        widget=forms.SelectDateWidget,
+        initial=datetime.datetime.now(tz=pytz.timezone(settings.TIME_ZONE)) + datetime.timedelta(days=1),
+        label='Срок поставки')
     shipment = forms.ChoiceField(choices=settings.SHIPMENT_TYPE, required=True,
                                  initial=settings.SHIPMENT_TYPE[0], label='Способ доставки')
     payment = forms.ChoiceField(choices=settings.PAYMENT_FORM, required=True,
@@ -39,7 +41,7 @@ class OrderCreateForm(forms.ModelForm):
 
     def clean_delivery(self):
         now = datetime.date.today()
-        if self.cleaned_data['delivery'] < now:
+        if self.cleaned_data['delivery'].date() < now:
             raise forms.ValidationError(
                 "Срок поставки больше текущей даты."
             )
@@ -56,9 +58,11 @@ class OrderCreateForm(forms.ModelForm):
         set_person = Person.objects.filter(user=request.user)
         if len(set_person) > 0:
             person = set_person[0]
+        eastern = pytz.timezone(settings.TIME_ZONE)
+        delivery = self.cleaned_data['delivery'].astimezone(tz=eastern)
         order = Order.objects.create(
             person=person,
-            delivery=self.cleaned_data['delivery'],
+            delivery=delivery,
             shipment=self.cleaned_data['shipment'],
             payment=self.cleaned_data['payment'],
             comment=self.cleaned_data['comment']

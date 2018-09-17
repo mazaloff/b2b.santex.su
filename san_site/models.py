@@ -2,11 +2,11 @@ import datetime
 import json
 
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Prefetch
 from django.utils import timezone
 from django.db.models import Q
+from django.contrib.auth.models import User
 from django.db import connection
 
 json.JSONEncoder.default = lambda self, obj: \
@@ -28,16 +28,12 @@ class Customer(models.Model):
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)
 
-    def publish(self):
-        self.published_date = timezone.now()
-        self.save()
-
     def __str__(self):
         return self.name
 
 
 class Person(models.Model):
-    user = models.OneToOneField(User, db_index=True, on_delete=models.PROTECT)
+    user = models.OneToOneField(User, db_index=True, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
     guid = models.CharField(max_length=50, db_index=True)
     name = models.CharField(max_length=200)
@@ -46,10 +42,6 @@ class Person(models.Model):
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)
     change_password = models.BooleanField(default=False)
-
-    def publish(self):
-        self.published_date = timezone.now()
-        self.save()
 
     def __str__(self):
         return self.name
@@ -65,10 +57,6 @@ class Section(models.Model):
     is_deleted = models.BooleanField(default=False, db_index=True)
 
     objects = SectionManager()
-
-    def publish(self):
-        self.published_date = timezone.now()
-        self.save()
 
     def __str__(self):
         return self.name
@@ -100,7 +88,7 @@ class Section(models.Model):
             set_products = set_products.filter(section__in=list_sections)
 
         if only_promo == 'true':
-            set_products = set_products.filter(id__in=Prices.objects.filter(promo=True).values("product_id"))
+            set_products = set_products.filter(id__in=PricesSale.objects.all().values("product_id"))
 
         if search is not None and search != '':
             set_products = set_products.filter(Q(code__icontains=search) | Q(name__icontains=search))
@@ -156,7 +144,8 @@ class Section(models.Model):
 
             products = set_products.order_by('code').prefetch_related(
                 Prefetch('product_inventories', queryset=Inventories.objects.all()),
-                Prefetch('product_prices', queryset=Prices.objects.all()))
+                Prefetch('product_prices', queryset=Prices.objects.all()),
+                Prefetch('product_prices_sale', queryset=PricesSale.objects.all()))
 
             for value_product in products:
                 quantity_sum = 0
@@ -164,10 +153,14 @@ class Section(models.Model):
                     quantity_sum += product_inventories.quantity
                 price_value = 0
                 currency_name, promo = ('', False)
-                for product_prices in value_product.product_prices.all():
+                for product_prices in value_product.product_prices_sale.all():
                     price_value = product_prices.value
                     currency_name = currency_dict.get(product_prices.currency_id, '')
-                    promo = product_prices.promo
+                    promo = True
+                if price_value == 0:
+                    for product_prices in value_product.product_prices.all():
+                        price_value = product_prices.value
+                        currency_name = currency_dict.get(product_prices.currency_id, '')
                 if only_stock == 'true' and quantity_sum <= 0:
                     continue
                 list_res_.append({
@@ -202,10 +195,6 @@ class Product(models.Model):
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False, db_index=True)
 
-    def publish(self):
-        self.published_date = timezone.now()
-        self.save()
-
     def __str__(self):
         return self.name
 
@@ -235,10 +224,6 @@ class Store(models.Model):
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)
 
-    def publish(self):
-        self.published_date = timezone.now()
-        self.save()
-
     def __str__(self):
         return self.name
 
@@ -251,10 +236,6 @@ class Price(models.Model):
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)
 
-    def publish(self):
-        self.published_date = timezone.now()
-        self.save()
-
     def __str__(self):
         return self.name
 
@@ -266,10 +247,6 @@ class Currency(models.Model):
     sort = models.IntegerField(default=500)
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)
-
-    def publish(self):
-        self.published_date = timezone.now()
-        self.save()
 
     def __str__(self):
         return self.name
@@ -298,32 +275,39 @@ class Currency(models.Model):
 
 class Inventories(models.Model):
     product = models.ForeignKey(Product, related_name='product_inventories',
-                                db_index=True, on_delete=models.DO_NOTHING)
-    store = models.ForeignKey(Store, on_delete=models.DO_NOTHING)
+                                db_index=True, on_delete=models.PROTECT)
+    store = models.ForeignKey(Store, on_delete=models.PROTECT)
     quantity = models.IntegerField(default=0)
 
 
 class Prices(models.Model):
     product = models.ForeignKey(Product, related_name='product_prices',
-                                db_index=True, on_delete=models.DO_NOTHING)
-    promo = models.BooleanField(default=False, db_index=True)
-    price = models.ForeignKey(Price, on_delete=models.DO_NOTHING)
-    currency = models.ForeignKey(Currency, on_delete=models.DO_NOTHING)
+                                db_index=True, on_delete=models.PROTECT)
+    promo = models.BooleanField(default=False)
+    price = models.ForeignKey(Price, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT)
+    value = models.FloatField(default=0)
+
+
+class PricesSale(models.Model):
+    product = models.ForeignKey(Product, related_name='product_prices_sale',
+                                db_index=True, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT)
     value = models.FloatField(default=0)
 
 
 class CustomersPrices(models.Model):
-    customer = models.ForeignKey(Customer, db_index=True, on_delete=models.DO_NOTHING)
+    customer = models.ForeignKey(Customer, db_index=True, on_delete=models.PROTECT)
     product = models.ForeignKey(Product, related_name='product_customers_prices',
-                                db_index=True, on_delete=models.DO_NOTHING)
-    currency = models.ForeignKey(Currency, on_delete=models.DO_NOTHING)
+                                db_index=True, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT)
     discount = models.FloatField(default=0)
     percent = models.FloatField(default=0)
 
 
 class Courses(models.Model):
     date = models.DateField(db_index=True)
-    currency = models.ForeignKey(Currency, db_index=True, on_delete=models.DO_NOTHING)
+    currency = models.ForeignKey(Currency, db_index=True, on_delete=models.PROTECT)
     course = models.FloatField(default=0)
     multiplicity = models.IntegerField(default=1)
 
@@ -435,7 +419,7 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.PROTECT)
     product = models.ForeignKey(Product, related_name='order_items', on_delete=models.PROTECT)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    currency = models.ForeignKey(Currency, null=True, on_delete=models.PROTECT, default=Currency.get_ruble)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, default=Currency.get_ruble)
     price_ruble = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField(default=1)
 
@@ -447,12 +431,6 @@ class OrderItem(models.Model):
 
 
 def get_customer(user):
-    person = get_person(user)
+    person = user.person
     if person:
         return person.customer
-
-
-def get_person(user):
-    set_person = Person.objects.filter(user=user).select_related('customer').only('customer')
-    if len(set_person) > 0:
-        return set_person[0]

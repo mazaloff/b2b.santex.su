@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from san_site.models import \
     Order, Customer, Person, Section, Product, Store, Price, Currency, Inventories, Prices, CustomersPrices, Courses, \
-    get_person
+    PricesSale
 
 
 @csrf_exempt
@@ -436,18 +436,18 @@ def update_courses(load_list, value_response):
 
         load_list_courses = element_list['courses']
         filter_date = [datetime.date(
-                            int(element_list['year']),
-                            int(element_list['month']),
-                            int(element_list['day'])) for element_list in load_list_courses]
+            int(element_list['year']),
+            int(element_list['month']),
+            int(element_list['day'])) for element_list in load_list_courses]
 
         Courses.objects.filter(currency=obj_currency).filter(date__in=filter_date).delete()
 
         for element_list_course in load_list_courses:
             new_object = Courses.objects.create(currency=obj_currency,
                                                 date=datetime.date(
-                                                        int(element_list_course['year']),
-                                                        int(element_list_course['month']),
-                                                        int(element_list_course['day'])),
+                                                    int(element_list_course['year']),
+                                                    int(element_list_course['month']),
+                                                    int(element_list_course['day'])),
                                                 course=element_list_course['course'],
                                                 multiplicity=element_list_course['multiplicity'])
             new_object.save()
@@ -464,36 +464,6 @@ def update_users(load_list):
     filter_object_customer = {t.guid: t for t in Customer.objects.filter(guid__in=filter_guid)}
 
     for element_list in load_list:
-
-        new_object = filter_object.get(element_list['username'], None)
-        if new_object:
-            if new_object.first_name == element_list['first_name'] \
-                    and new_object.last_name == element_list['last_name'] \
-                    and new_object.email == element_list['email'] \
-                    and new_object.is_active == element_list['is_active']:
-                person = get_person(new_object)
-                if person and not person.change_password:
-                    new_object.set_password(element_list['password'])
-            else:
-                new_object.first_name = element_list['first_name']
-                new_object.last_name = element_list['last_name']
-                new_object.email = element_list['email']
-                new_object.is_active = element_list['is_active']
-                person = get_person(new_object)
-                if person and not person.change_password:
-                    new_object.set_password(element_list['password'])
-                new_object.save()
-        else:
-            new_object = User.objects.create(username=element_list['username'],
-                                             first_name=element_list['first_name'],
-                                             last_name=element_list['last_name'],
-                                             email=element_list['email'],
-                                             is_active=element_list['is_active'],
-                                             )
-            new_object.created_date = timezone.now()
-            new_object.set_password(element_list['password'])
-            new_object.save()
-            filter_object[element_list['username']] = new_object
 
         new_object_customer = filter_object_customer.get(element_list['guidCustomer'], None)
         if new_object_customer:
@@ -518,6 +488,38 @@ def update_users(load_list):
             new_object_customer.created_date = timezone.now()
             new_object_customer.save()
             filter_object_customer[element_list['guidCustomer']] = new_object_customer
+
+        new_object = filter_object.get(element_list['username'], None)
+        if new_object:
+            if new_object.first_name == element_list['first_name'] \
+                    and new_object.last_name == element_list['last_name'] \
+                    and new_object.email == element_list['email'] \
+                    and new_object.is_active == element_list['is_active']:
+                person = new_object.person
+                if person and not person.change_password:
+                    new_object.set_password(element_list['password'])
+            else:
+                new_object.first_name = element_list['first_name']
+                new_object.last_name = element_list['last_name']
+                new_object.email = element_list['email']
+                new_object.is_active = element_list['is_active']
+                person = new_object.person
+                if person and not person.change_password:
+                    new_object.set_password(element_list['password'])
+
+                new_object.save()
+        else:
+            new_object = User.objects.create(username=element_list['username'],
+                                             first_name=element_list['first_name'],
+                                             last_name=element_list['last_name'],
+                                             email=element_list['email'],
+                                             is_active=element_list['is_active']
+                                             )
+            new_object.created_date = timezone.now()
+            new_object.set_password(element_list['password'])
+
+            new_object.save()
+            filter_object[element_list['username']] = new_object
 
         new_object_person = filter_object_person.get(element_list['guid'], None)
         if new_object_person:
@@ -585,6 +587,7 @@ def update_inventories(load_list, value_response):
 
 def update_prices(load_list, value_response):
     Prices.objects.all().delete()
+    PricesSale.objects.all().delete()
 
     filter_guid = [element_list['productGuid'] for element_list in load_list]
     filter_object = {t.guid: t for t in Product.objects.filter(guid__in=filter_guid)}
@@ -610,22 +613,41 @@ def update_prices(load_list, value_response):
 
             obj_currency = filter_object_currency.get(element_list_price['currencyGuid'], None)
             if not obj_currency:
-                add_error(value_response, code='Currency.DoesNotExist',
-                          message='no get currency', description=element_list)
                 continue
 
             try:
                 value_price = float(element_list_price['value'])
             except ValueError:
-                add_error(value_response, code='Prices.ValueError',
-                          message='no float value price', description=element_list)
-                continue
+                value_price = 0
 
             new_object = Prices.objects.create(product=obj_product,
                                                price=obj_price,
                                                currency=obj_currency,
                                                value=value_price,
                                                promo=element_list_price['promo'])
+            new_object.save()
+
+        load_list_sale = element_list['sale']
+        for element_list_sale in load_list_sale:
+
+            if 'currencyGuid' not in element_list_sale.keys():
+                continue
+
+            obj_currency = filter_object_currency.get(element_list_sale['currencyGuid'], None)
+            if not obj_currency:
+                continue
+
+            try:
+                value_price = float(element_list_sale['value'])
+            except ValueError:
+                value_price = 0
+
+            if value_price == 0:
+                continue
+
+            new_object = PricesSale.objects.create(product=obj_product,
+                                                   currency=obj_currency,
+                                                   value=value_price)
             new_object.save()
 
 

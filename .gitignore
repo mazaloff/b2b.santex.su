@@ -1,4 +1,5 @@
 /.idea/*
 /Environment/*
+/migrations/*
 *.pyc
 /Project/settings_local.py

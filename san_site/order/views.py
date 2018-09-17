@@ -12,9 +12,9 @@ def order_create(request):
     if request.method == 'POST':
         form = OrderCreateForm(request.POST)
         if form.is_valid():
-            order = form.save(request=request)
+            order_new = form.save(request=request)
             if order:
-                return render(request, 'orders/order.html', {'order': order, 'created': True})
+                return render(request, 'orders/order.html', {'order': order_new, 'created': True})
     else:
         form = OrderCreateForm
 
@@ -25,17 +25,17 @@ def order_create(request):
 def order(request, **kwargs):
     order_id = kwargs.get('id', 0)
     try:
-        order = Order.objects.get(id=order_id)
+        order_currently = Order.objects.get(id=order_id)
     except Order.DoesNotExist:
         raise Http404()
 
     customer = get_customer(request.user)
-    if customer == order.person.customer:
-        return render(request, 'orders/order.html', {'order': order})
+    if customer == order_currently.person.customer:
+        return render(request, 'orders/order.html', {'order': order_currently})
     else:
         response = HttpResponseForbidden()
         log_response(
-            'Order %s Not Allowed (%s): %s', order.id, request.user, request.path,
+            'Order %s Not Allowed (%s): %s', order_id, request.user, request.path,
             response=response,
             request=request,
         )
@@ -46,18 +46,18 @@ def order(request, **kwargs):
 def order_request(request, **kwargs):
     order_id = kwargs.get('id', 0)
     try:
-        order = Order.objects.get(id=order_id)
+        order_currently = Order.objects.get(id=order_id)
     except Order.DoesNotExist:
         raise Http404()
 
     customer = get_customer(request.user)
-    if customer == order.person.customer:
-        order.request_order()
-        return render(request, 'orders/order.html', {'order': order})
+    if customer == order_currently.person.customer:
+        order_currently.request_order()
+        return render(request, 'orders/order.html', {'order': order_currently})
     else:
         response = HttpResponseForbidden()
         log_response(
-            'Order %s Not Allowed (%s): %s', order.id, request.user, request.path,
+            'Order %s Not Allowed (%s): %s', order_id, request.user, request.path,
             response=response,
             request=request,
         )
