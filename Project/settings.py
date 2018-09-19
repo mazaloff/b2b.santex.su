@@ -37,8 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'san_site.apps.SanSiteConfig',
 ]
+
+INSTALLED_APPS += ("san_site.apps.SanSiteConfig",)
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -130,24 +131,32 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+STATIC_ROOT = os.path.join(BASE_DIR, '/static/')
 
-LOGIN_URL = '/login'
+LOGIN_URL = '/login/'
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2147483648
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = '' # mail service smtp
-EMAIL_HOST_USER = '' # email id
-EMAIL_HOST_PASSWORD = '' #password
+EMAIL_HOST = ''  # mail service smtp
+EMAIL_HOST_USER = ''  # email id
+EMAIL_HOST_PASSWORD = ''  # password
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 PAYMENT_FORM = (('Наличные', 'Наличные'), ('Безналичные', 'Безналичные'))
 SHIPMENT_TYPE = (('Самовывоз', 'Самовывоз'), ('Доставка', 'Доставка'))
 STATUS_ORDER = (('Новый', 'Новый'), ('ВОбработке', 'В обработке'), ('Выполнен', 'Выполнен'), ('Отменен', 'Отменен'))
+RELEVANT_MATRIX = ('Акция', 'Заказной', 'Основной')
 
 API_URL = 'http://185.46.154.84:8080/UprTest/hs/'
+
+# Celery Data Format
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+
 
 try:
     from .settings_local import *

@@ -1,13 +1,14 @@
 import datetime
 import json
 
+from django.db import connection
 from django.conf import settings
 from django.db import models
 from django.db.models import Prefetch
 from django.utils import timezone
 from django.db.models import Q
 from django.contrib.auth.models import User
-from django.db import connection
+import requests
 
 json.JSONEncoder.default = lambda self, obj: \
     (obj.isoformat() if isinstance(obj, (datetime.datetime, datetime.date)) else None)
@@ -77,12 +78,22 @@ class Section(models.Model):
         return request.session.get('id_current_session')
 
     @staticmethod
-    def get_goods_list(user, list_sections=None, search=None, only_stock=None, only_promo=None):
+    def get_goods_list(**kwargs):
+
+        user = kwargs.get('user', None)
+        list_sections = kwargs.get('list_sections', None)
+        search = kwargs.get('search', None)
+        only_stock = kwargs.get('only_stock', None)
+        only_promo = kwargs.get('only_promo', None)
+        only_available = kwargs.get('only_available', True)
 
         list_res_ = []
         currency_dict = {elem_.id: elem_.name for elem_ in Currency.objects.all()}
 
-        set_products = Product.objects.filter(is_deleted=False)
+        set_products = Product.objects
+
+        if only_available:
+            set_products = set_products.filter(is_deleted=False)
 
         if list_sections is not None:
             set_products = set_products.filter(section__in=list_sections)
@@ -93,7 +104,7 @@ class Section(models.Model):
         if search is not None and search != '':
             set_products = set_products.filter(Q(code__icontains=search) | Q(name__icontains=search))
 
-        if user.is_authenticated:
+        if user is not None and user.is_authenticated:
 
             current_customer = get_customer(user)
             if current_customer is None:
@@ -131,6 +142,7 @@ class Section(models.Model):
                     'guid': value_product.guid,
                     'code': value_product.code,
                     'name': value_product.name,
+                    'relevant': value_product.is_relevant(),
                     'quantity': '>10' if quantity_sum > 10 else '' if quantity_sum == 0 else quantity_sum,
                     'price': '' if price_value == 0 else price_value,
                     'promo': promo,
@@ -167,6 +179,7 @@ class Section(models.Model):
                     'product': value_product,
                     'guid': value_product.guid,
                     'code': value_product.code,
+                    'relevant': value_product.is_relevant(),
                     'name': value_product.name,
                     'quantity': '>10' if quantity_sum > 10 else '' if quantity_sum == 0 else quantity_sum,
                     'price': '' if price_value == 0 else price_value,
@@ -179,11 +192,11 @@ class Section(models.Model):
 
         return list_res_
 
-    def get_goods_list_section(self, user, search=None, only_stock=None, only_promo=None):
+    def get_goods_list_section(self, **kwargs):
         list_sections = []
         self.list_with_children(list_sections)
-        return Section.get_goods_list(
-            user=user, list_sections=list_sections, search=search, only_stock=only_stock, only_promo=only_promo)
+        kwargs['list_sections'] = list_sections
+        return Section.get_goods_list(**kwargs)
 
 
 class Product(models.Model):
@@ -192,11 +205,42 @@ class Product(models.Model):
     code = models.CharField(max_length=30, db_index=True)
     sort = models.IntegerField(default=500)
     section = models.ForeignKey(Section, db_index=True, on_delete=models.PROTECT)
+    matrix = models.CharField(max_length=30, default='Основной')
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False, db_index=True)
 
     def __str__(self):
         return self.name
+
+    def is_relevant(self):
+        return self.matrix in settings.RELEVANT_MATRIX
+
+    @classmethod
+    def change_relevant_products(cls):
+        sections = Section.objects.filter(is_deleted=False, parent_guid='---')
+        for obj_section in sections:
+            goods_list = obj_section.get_goods_list_section(only_available=False)
+            filter_guid = [element_list['guid'] for element_list in goods_list]
+            filter_object = {t.guid: t for t in cls.objects.filter(guid__in=filter_guid)}
+            for element_list in goods_list:
+                cur_object = filter_object.get(element_list['guid'], None)
+                if not cur_object:
+                    continue
+                if not cur_object.is_deleted:
+                    if element_list['quantity'] == '' and element_list['price'] == '':
+                        cur_object.is_deleted = True
+                        cur_object.save()
+                    elif element_list['quantity'] == '' and not element_list['relevant']:
+                        cur_object.is_deleted = True
+                        cur_object.save()
+                elif element_list['relevant']:
+                    if element_list['quantity'] != '' or element_list['price'] != '':
+                        cur_object.is_deleted = False
+                        cur_object.save()
+                else:
+                    if element_list['quantity'] != '':
+                        cur_object.is_deleted = True
+                        cur_object.save()
 
     def get_price(self, user):
 
@@ -324,13 +368,16 @@ class Courses(models.Model):
 class Order(models.Model):
     date = models.DateTimeField(auto_now_add=True, db_index=True)
     person = models.ForeignKey(Person, db_index=True, on_delete=models.PROTECT)
-    guid = models.CharField(max_length=50, db_index=True, null=True)
+    guid = models.CharField(max_length=50, db_index=True, default='')
     updated = models.DateTimeField(auto_now=True)
     delivery = models.DateTimeField(null=True)
     shipment = models.CharField(max_length=50, choices=settings.SHIPMENT_TYPE, null=True)
     payment = models.CharField(max_length=50, choices=settings.PAYMENT_FORM, null=True)
     status = models.CharField(max_length=50, choices=settings.STATUS_ORDER, default='Новый')
     comment = models.TextField(null=True)
+
+    class RequestOrderError(BaseException):
+        pass
 
     class Meta:
         ordering = ('-date',)
@@ -394,32 +441,46 @@ class Order(models.Model):
         rest['items'] = rest_items
         return json.dumps(rest)
 
+    @classmethod
+    def orders_request(cls):
+        orders = cls.objects.filter(guid='')
+        for obj in orders:
+            try:
+                obj.request_order()
+            except cls.RequestOrderError:
+                pass
+
     def request_order(self):
-        import requests
 
         api_url = settings.API_URL + r'Order/OrderCreate/'
-
         data = self.get_json_for_request()
-
         params = {
             'Content-Type': 'application/json'}
 
-        answer = requests.post(api_url, data=data, headers=params)
+        try:
+            answer = requests.post(api_url, data=data, headers=params)
+        except requests.exceptions.ConnectionError:
+            raise self.RequestOrderError
+
         if answer.status_code != 200:
             pass
+
         try:
             dict_obj = answer.json()
         except json.decoder.JSONDecodeError:
-            return
+            raise self.RequestOrderError
+
         if dict_obj.get('success', None) is None:
-            return
+            raise self.RequestOrderError
+
         result = dict_obj.get('result', None)
         if result is None:
-            return
+            raise self.RequestOrderError
         if len(result) == 0:
-            return
+            raise self.RequestOrderError()
         if result[0]['number'] != self.id:
-            return
+            raise self.RequestOrderError
+
         self.guid = result[0]['guid']
         self.save()
 

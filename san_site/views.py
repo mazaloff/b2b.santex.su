@@ -3,8 +3,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.shortcuts import render
 
-from san_site.decorates.decorate import page_not_access
-from san_site.models import Person
+from .decorates.decorate import page_not_access
+from .models import Person
 from .forms import LoginForm, PasswordChangeForm, PasswordResetForm
 
 

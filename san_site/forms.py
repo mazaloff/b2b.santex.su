@@ -1,11 +1,12 @@
 import datetime
 
-from django.utils import timezone
 from django import forms
 from django.conf import settings
 
-from san_site.cart.cart import Cart, Currency
-from san_site.models import Order, OrderItem, Person
+from .cart.cart import Cart, Currency
+from .models import Order, OrderItem, Person
+from .tasks import order_request as task_order_request
+
 import pytz
 
 
@@ -89,6 +90,6 @@ class OrderCreateForm(forms.ModelForm):
         cart.clear()
 
         order.save()
-        order.request_order()
+        task_order_request.delay(order.id)
 
         return order

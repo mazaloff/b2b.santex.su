@@ -489,7 +489,11 @@ input#only_stock, input#only_promo {
     position: relative;
 }
 
-#goods_table tr.goods_tr_promo {
+#goods_table tr.goods_tr.not_relevant {
+    color: gray;
+}
+
+#goods_table tr.goods_tr.promo {
     color: deeppink;
 }
 

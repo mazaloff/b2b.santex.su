@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
+from san_site.tasks import change_relevant_products as task_change_relevant_products
 from san_site.models import \
     Order, Customer, Person, Section, Product, Store, Price, Currency, Inventories, Prices, CustomersPrices, Courses, \
     PricesSale
@@ -288,11 +289,13 @@ def update_product(load_list):
     for element_list in load_list:
         i += 1
 
+        matrix = 'Основной' if element_list['matrix'] == '' else element_list['matrix']
         new_object = filter_object.get(element_list['guid'], None)
         if new_object:
             if new_object.name == element_list['name'] \
                     and new_object.code == element_list['code'] \
                     and new_object.sort == int(element_list['sort']) \
+                    and new_object.matrix == matrix \
                     and new_object.section.guid == element_list['sectionGuid'] \
                     and new_object.is_deleted == element_list['is_deleted']:
                 continue
@@ -305,6 +308,7 @@ def update_product(load_list):
                                                 name=element_list['name'],
                                                 code=element_list['code'],
                                                 sort=int(element_list['sort']),
+                                                matrix=matrix,
                                                 section=section_obj,
                                                 is_deleted=element_list['is_deleted'],
                                                 )
@@ -323,8 +327,11 @@ def update_product(load_list):
         new_object.name = element_list['name']
         new_object.code = element_list['code']
         new_object.sort = int(element_list['sort'])
+        new_object.matrix = matrix
         new_object.is_deleted = element_list['is_deleted']
         new_object.save()
+
+    task_change_relevant_products.delay()
 
 
 def update_store(load_list):

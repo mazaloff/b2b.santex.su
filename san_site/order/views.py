@@ -5,6 +5,7 @@ from django.utils.log import log_response
 from san_site.decorates.decorate import page_not_access
 from san_site.forms import OrderCreateForm
 from san_site.models import Order, get_customer
+from san_site.tasks import order_request as task_order_request
 
 
 @page_not_access
@@ -52,7 +53,7 @@ def order_request(request, **kwargs):
 
     customer = get_customer(request.user)
     if customer == order_currently.person.customer:
-        order_currently.request_order()
+        task_order_request.delay(order_id)
         return render(request, 'orders/order.html', {'order': order_currently})
     else:
         response = HttpResponseForbidden()
