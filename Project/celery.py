@@ -21,7 +21,7 @@ app.autodiscover_tasks()
 
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
-    sender.add_periodic_task(60.0, orders_request.s('test'), name='orders_request')
+    sender.add_periodic_task(600.0, orders_request.s('orders_request'), name='orders_request')
 
 
 @app.task
