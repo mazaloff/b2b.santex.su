@@ -138,10 +138,6 @@ var main_goods_height = 99999,
         _loadData();
     }
 
-        $('.fixtable').each(function () {
-            new FixTable(this);
-        });
-
         onlyStock();
         onlyPromo();
 
