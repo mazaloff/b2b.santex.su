@@ -11,7 +11,7 @@ body {
 
 #header {
     display: flex;
-    height: 60px;
+    height: 30px;
 }
 
 #header #user-tools {
@@ -19,11 +19,11 @@ body {
     right: 20px;
 }
 
-#branding {
-    flex: 1 50 30%
+#header #branding {
+    flex: 1 50 20%
 }
 
-#header_menu {
+#header #header_menu {
     flex: 5 1 40%
 }
 
@@ -184,27 +184,22 @@ div.disabled {
 
 #goods_table th#goods_table_3 {
     width: 70px;
-    min-width: 60px;
 }
 
 #goods_table th#goods_table_4 {
     width: 100px;
-    min-width: 60px;
 }
 
 #goods_table th#goods_table_5 {
     width: 30px;
-    min-width: 30px;
 }
 
 #goods_table th#goods_table_6 {
     width: 20px;
-    min-width: 20px;
 }
 
 #goods_table th#goods_table_7 {
-    width: 90px;
-    min-width: 60px;
+    width: 100px;
 }
 
 #goods_cart th#cart_table_1 {
@@ -218,27 +213,22 @@ div.disabled {
 
 #goods_cart th#cart_table_3 {
     width: 80px;
-    min-width: 60px;
 }
 
 #goods_cart th#cart_table_4 {
-    width: 90px;
-    min-width: 60px;
+    width: 100px;
 }
 
 #goods_cart th#cart_table_5 {
     width: 100px;
-    min-width: 70px;
 }
 
 #goods_cart th#cart_table_6 {
     width: 30px;
-    min-width: 30px;
 }
 
 #goods_cart th#cart_table_7 {
     width: 100px;
-    min-width: 70px;
 }
 
 #list_orders th#orders_table_1 {
@@ -246,23 +236,23 @@ div.disabled {
 }
 
 #list_orders th#orders_table_2 {
-    width: 190px;
+    width: 200px;
 }
 
 #list_orders th#orders_table_3 {
-    width: 110px;
+    width: 120px;
 }
 
 #list_orders th#orders_table_4 {
-    width: 30px;
+    width: 50px;
 }
 
 #list_orders th#orders_table_5 {
-    width: 190px;
+    width: 200px;
 }
 
 #list_orders th#orders_table_6 {
-    width: 100px;
+    width: 110px;
 }
 
 #list_orders th#orders_table_7 {
@@ -302,7 +292,7 @@ div.disabled {
 
 #goods_table th#goods_table_7 div {
     padding-right: 3px;
-    text-align: center;
+    text-align: right;
 }
 
 #goods_table th#goods_table_3 span {
@@ -310,7 +300,11 @@ div.disabled {
 }
 
 #goods_table th#goods_table_4 span {
-    padding-right: 10px;
+    padding-right: 12px;
+}
+
+#goods_table th#goods_table_7 span {
+    padding-right: 12px;
 }
 
 #goods_cart th#cart_table_1 div {
@@ -350,19 +344,19 @@ div.disabled {
 }
 
 #goods_cart th#cart_table_3 span {
-    padding-right: 10px;
+    padding-right: 5px;
 }
 
 #goods_cart th#cart_table_4 span {
-    padding-right: 10px;
+    padding-right: 12px;
 }
 
 #goods_cart th#cart_table_5 span {
-    padding-right: 10px;
+    padding-right: 12px;
 }
 
 #goods_cart th#cart_table_7 span {
-    padding-right: 10px;
+    padding-right: 12px;
 }
 
 #list_orders th#orders_table_1 div {
