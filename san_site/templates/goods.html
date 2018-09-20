@@ -5,6 +5,7 @@
     <div id="goods">Выберите категорию товаров...</div>
     {% include "goods/goods_search.html" %}
     {% include "goods/goods_table.html" %}
+    <div id="form_enter_quantity"></div>
     {% if user.is_authenticated %}
         {% include "cart/cart.html" %}
     {% endif %}

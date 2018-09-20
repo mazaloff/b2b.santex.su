@@ -46,8 +46,7 @@ var main_goods_height = 99999,
             recoverOnlyStock();
             recoverOnlyPromo();
 
-            jQuery("#goods").html('Товары из категории ' + data.node.text
-                .link('?sections=' + data.node.original.href));
+            jQuery("#goods").html('Загрузка товаров...');
 
             jQuery("#categories ul li a").addClass('disabled');
             jQuery("#loading_icon").removeClass('disabled');
@@ -72,8 +71,8 @@ var main_goods_height = 99999,
                         recoverOnlyStock();
                         recoverOnlyPromo();
 
-                        jQuery("#goods").html('Товары из категории ' + data.node.text
-                            .link('?sections=' + data.node.original.href));
+                        jQuery("#goods").html('Товары из категории ' + json.current_section
+                            .link('?sections=' + guid));
 
                         console.log('changed node: ', data);
 
@@ -139,6 +138,10 @@ var main_goods_height = 99999,
         _loadData();
     }
 
+        $('.fixtable').each(function () {
+            new FixTable(this);
+        });
+
         onlyStock();
         onlyPromo();
 
@@ -203,6 +206,7 @@ function widthHeadCart() {
     $('th#cart_table_5 div').stop().animate({width: $('th#cart_table_5').width()});
     $('th#cart_table_6 div').stop().animate({width: $('th#cart_table_6').width()});
     $('th#cart_table_7 div').stop().animate({width: $('th#cart_table_7').width()});
+    $('th#cart_table_8 div').stop().animate({width: $('th#cart_table_8').width()});
 }
 
 function widthHeadGoods() {
@@ -282,11 +286,15 @@ function doNav(theUrl) {
 }
 
 function addCart(guid) {
-    Index._clickAddCart(guid)
+    Index._showFormForQuantity(guid)
 }
 
 function addQuantityCart(guid) {
     Index._clickQuantityAddCart(guid)
+}
+
+function deleteRowCart(guid) {
+    Index._clickDeleteRowCart(guid)
 }
 
 function reduceQuantityCart(guid) {

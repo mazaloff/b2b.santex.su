@@ -25,6 +25,10 @@ class PasswordChangeForm(forms.Form):
     password_repeat = forms.CharField(widget=forms.PasswordInput, label='Повтор')
 
 
+class EnterQuantity(forms.Form):
+    quantity = forms.IntegerField(min_value=1, required=False, label='Добавить в заказ')
+
+
 class OrderCreateForm(forms.ModelForm):
     delivery = forms.DateTimeField(
         widget=forms.SelectDateWidget,

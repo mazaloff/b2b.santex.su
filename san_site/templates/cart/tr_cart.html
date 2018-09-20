@@ -8,4 +8,6 @@
     {% include "cart/td_cart_total_price.html" %}
     <td class="cart_table_6">{{ goods.currency }}</td>
     {% include "cart/td_cart_total_price_ruble.html" %}
+    <td class="cart_table_8"><a href="javascript:void(0)"
+                                onclick="deleteRowCart('{{ goods.guid }}')">x</a></td>
 </tr>

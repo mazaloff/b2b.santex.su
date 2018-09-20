@@ -7,6 +7,7 @@ from django.utils.datastructures import MultiValueDictKeyError
 
 from san_site.cart.cart import Cart
 from san_site.models import Section, Product
+from san_site.forms import EnterQuantity
 
 
 def get_categories(request):
@@ -58,7 +59,8 @@ def get_goods(request):
 
     return JsonResponse(
         {
-            "result": True,
+            'result': True,
+            'current_section': obj_section.full_name,
             'goods_html': render_to_string('goods.html', {
                 'cart': cart,
                 'goods_list': goods_list,
@@ -93,13 +95,13 @@ def selection(request):
             obj_section = Section.objects.get(id=Section.get_current_session(request=request))
         except Section.DoesNotExist:
             return JsonResponse({"result": False})
-        section_dict = {'name': obj_section.name, 'guid': obj_section.guid}
+        section_dict = {'name': obj_section.full_name, 'guid': obj_section.guid}
         goods_list = obj_section.get_goods_list_section(
             user=request.user, only_stock=only_stock_, only_promo=only_promo_)
 
     return JsonResponse(
         {
-            "result": True,
+            'result': True,
             'section': section_dict,
             'goods_html': render_to_string('goods\goods_table.html', {
                 'goods_list': goods_list,
@@ -115,16 +117,46 @@ def cart_add(request):
     except MultiValueDictKeyError:
         raise HttpResponseBadRequest
 
+    try:
+        quantity = request.GET.get('quantity')
+    except MultiValueDictKeyError:
+        quantity = 1
+
+    try:
+        quantity = int(quantity)
+    except MultiValueDictKeyError:
+        quantity = 1
+
     cart = Cart(request)
     product = get_object_or_404(Product, guid=guid)
-    cart.add(product=product, quantity=1)
+    if quantity > 0:
+        cart.add(product=product, quantity=quantity)
 
     return JsonResponse(
         {
-            "result": True,
+            'result': True,
             'cart_http': render_to_string('cart/cart.html', {'cart': cart}),
         }
     )
+
+
+def cart_get_form_quantity(request):
+    if request.method == 'POST':
+        pass
+    else:
+        try:
+            guid = request.GET.get('guid')
+        except MultiValueDictKeyError:
+            raise HttpResponseBadRequest
+
+        form = EnterQuantity(request.POST or None, initial={'quantity': ''})
+        return JsonResponse(
+            {
+                'guid': guid,
+                'result': True,
+                'form_quantity_http': render_to_string('goods/enter_quantity.html', {'form': form}),
+            }
+        )
 
 
 def cart_add_quantity(request):
@@ -141,7 +173,7 @@ def cart_add_quantity(request):
 
     return JsonResponse(
         {
-            "result": True,
+            'result': True,
             'http_quantity': render_to_string('cart/td_cart_quantity.html', {'goods': elem_cart}),
             'http_total_price': render_to_string('cart/td_cart_total_price.html', {'goods': elem_cart}),
             'http_total_price_ruble': render_to_string('cart/td_cart_total_price_ruble.html', {'goods': elem_cart}),
@@ -168,11 +200,29 @@ def cart_reduce_quantity(request):
 
     return JsonResponse(
         {
-            "result": True,
+            'result': True,
             'delete': delete_,
             'http_quantity': render_to_string('cart/td_cart_quantity.html', {'goods': elem_cart}),
             'http_total_price': render_to_string('cart/td_cart_total_price.html', {'goods': elem_cart}),
             'http_total_price_ruble': render_to_string('cart/td_cart_total_price_ruble.html', {'goods': elem_cart}),
+            'header_cart': render_to_string('cart/header_cart.html', {'cart': cart}),
+        }
+    )
+
+
+def cart_delete_row(request):
+    try:
+        guid = request.GET.get('guid')
+    except MultiValueDictKeyError:
+        raise HttpResponseBadRequest
+
+    cart = Cart(request)
+    product = get_object_or_404(Product, guid=guid)
+    cart.remove(product)
+
+    return JsonResponse(
+        {
+            'result': True,
             'header_cart': render_to_string('cart/header_cart.html', {'cart': cart}),
         }
     )

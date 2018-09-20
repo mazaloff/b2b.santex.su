@@ -231,6 +231,16 @@ div.disabled {
     width: 100px;
 }
 
+#goods_cart th#cart_table_8 {
+    width: 20px;
+}
+
+#goods_cart td.cart_table_8 a {
+    color: #979797;
+    text-decoration: none;
+}
+
+
 #list_orders th#orders_table_1 {
     width: 80px;
 }
@@ -427,12 +437,13 @@ div.disabled {
 }
 
 .cart_table_3_box_add {
-    flex: 1 1 5px;
+    flex: 1 1 0;
     color: #979797;
+    padding-right: 10px;
 }
 
 .cart_table_3_box_reduce {
-    flex: 1 1 5px;
+    flex: 1 1 0;
     color: #979797;
 }
 
@@ -501,4 +512,47 @@ div#loading_icon span {
     position: relative;
     left: 20px;
     top: 3px;
+}
+
+.black-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    z-index: 1001;
+    -moz-opacity: 0.7;
+    opacity: .70;
+    filter: alpha(opacity=70);
+}
+
+.enter-quantity-wrapper {
+    position: absolute;
+    background: white;
+    padding-left: 18px;
+    padding-top: 10px;
+    width: 192px;
+    height: 105px;
+    z-index: 1002;
+    top: 50%;
+    left: 50%;
+}
+
+input#btn_enter_quantity_cart {
+    width: 80px;
+    height: 23px;
+}
+
+input#btn_create_order {
+    height: 23px;
+}
+
+#form_enter_quantity input#id_quantity {
+    height: 17px;
+    padding-left: 5px;
+}
+
+.control-group select {
+    height: 20px;
 }

@@ -73,6 +73,26 @@ class Section(models.Model):
         request.session['id_current_session'] = self.id
         request.session.modified = True
 
+    @property
+    def parent(self):
+        if self.parent_guid != '---':
+            try:
+                return Section.objects.get(guid=self.parent_guid)
+            except Section.DoesNotExist:
+                return None
+
+    @property
+    def full_name(self):
+        parents_name = self.create_parents_name()
+        return parents_name + ('' if parents_name == '' else '/') + self.name
+
+    def create_parents_name(self, full_name=''):
+        parent = self.parent
+        if parent or None:
+            full_name = parent.name + ('' if full_name == '' else '/') + full_name
+            full_name = parent.create_parents_name(full_name)
+        return full_name
+
     @staticmethod
     def get_current_session(request):
         return request.session.get('id_current_session')

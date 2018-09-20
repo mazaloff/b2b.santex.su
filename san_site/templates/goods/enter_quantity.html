@@ -1,0 +1,17 @@
+<div id="form_enter_quantity">
+    <div class="enter-quantity-wrapper">
+        <a href="javascript:void(0)"
+           onclick="document.getElementById('form_enter_quantity').style.display='none'">X</a>
+        <form action="." method="post">
+            {% for field in form %}
+                <div class="control-group{% if field.errors %} has-errors{% endif %}">
+                    <label class="control-label">{{ field.label }}</label>
+                    <div class="control">{{ field }}</div>
+                    {{ field.errors }}
+                </div>
+            {% endfor %}
+            <input id="btn_enter_quantity_cart" type="submit" value="ОК">
+        </form>
+    </div>
+    <div class="black-overlay"></div>
+</div>

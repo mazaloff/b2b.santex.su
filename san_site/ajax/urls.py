@@ -7,6 +7,8 @@ urlpatterns = [
     url(r'get_goods/$', views.get_goods, name='get_goods'),
     url(r'selection/$', views.selection, name='selection'),
     url(r'cart/add/$', views.cart_add, name='cart_add'),
+    url(r'cart/get_form_quantity/$', views.cart_get_form_quantity, name='cart_get_form_quantity'),
     url(r'cart/add_quantity/$', views.cart_add_quantity, name='cart_add_quantity'),
     url(r'cart/reduce_quantity/$', views.cart_reduce_quantity, name='cart_reduce_quantity'),
+    url(r'cart/delete_row/$', views.cart_delete_row, name='cart_delete_row'),
 ]

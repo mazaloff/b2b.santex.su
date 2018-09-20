@@ -6,10 +6,13 @@ class Index {
     }
 
     static _clickHandlerGoods(event){
-        event.preventDefault(); // запрещаем событие
+        event.preventDefault();
 
         let html_view_category = jQuery("#goods").html();
-        let path = event.target.href; // забираем путь
+        if (html_view_category === '') {
+            return
+        }
+        let path = event.target.href;
         let guid = window.getSectionGUID(path);
 
         jQuery("#products").replaceWith(main_goods_html);
@@ -39,7 +42,8 @@ class Index {
                     recoverOnlyStock();
                     recoverOnlyPromo();
 
-                    jQuery("#goods").html("<div id=\"goods\">" + html_view_category + "</div>");
+                    jQuery("#goods").html('Товары из категории ' + json.current_section
+                        .link('?sections=' + guid));
 
                     history.pushState(null, null, '/');
                     history.replaceState(null, null, '/');
@@ -54,28 +58,27 @@ class Index {
                     widthHeadGoods();
                     widthHeadCart();
 
+                    jQuery("#categories ul li a").removeClass('disabled');
+                    jQuery("#loading_icon").addClass('disabled');
+                    document.body.querySelectorAll('#goods')
+                        .forEach(link => link.addEventListener('click', Index._clickHandlerGoods));
+                    onlyStock();
+                    onlyPromo();
+
                 } else {
                     console.error('Ошибка получения данных с сервера');
                 }
-                jQuery("#categories ul li a").removeClass('disabled');
-                jQuery("#loading_icon").addClass('disabled');
-                document.body.querySelectorAll('#goods')
-                    .forEach(link => link.addEventListener('click', Index._clickHandlerGoods));
-                onlyStock();
-                onlyPromo();
             }
         });
     }
 
-    static _clickAddCart(guid) {
+    static _showFormForQuantity(guid) {
 
         guid = window.getProductGUID(guid);
 
-        jQuery("#cart").replaceWith("<div id=\"cart\"></div>");
-
         if (typeof guid !== undefined) {
             jQuery.ajax({
-                url: "ajax/cart/add/",
+                url: "ajax/cart/get_form_quantity/",
                 type: 'GET',
                 data: {'guid': guid},
                 dataType: 'json', // забираем номер страницы, которую нужно отобразить
@@ -84,11 +87,27 @@ class Index {
                     // Если запрос прошёл успешно и сайт вернул результат
                     if (json.result) {
 
-                        jQuery("#cart").replaceWith(json.cart_http);
+                        let form_enter_quantity = jQuery("#form_enter_quantity");
 
-                        countHeightTableCart();
-                        updateTables();
-                        widthHeadCart();
+                        form_enter_quantity.replaceWith(json.form_quantity_http);
+                        form_enter_quantity.css('display', 'block');
+
+                        let position = getOffset(document.getElementById('tr_goods' + guid));
+                        position.left += $("th#goods_table_1").width();
+                        position.left += $("th#goods_table_2").width();
+
+                        let form_enter_wrapper = jQuery(".enter-quantity-wrapper");
+                        form_enter_wrapper.css('left', position.left - 40);
+                        form_enter_wrapper.css('top', position.top - 40);
+                        jQuery("#id_quantity").focus();
+
+                        $("#btn_enter_quantity_cart").click(
+                            function () {
+                                let quantity = jQuery("#id_quantity").val();
+                                AddCart(guid, quantity);
+                                return false;
+                            }
+                        );
 
                     } else {
                         console.error('Ошибка получения данных с сервера');
@@ -161,6 +180,35 @@ class Index {
         }
     }
 
+    static _clickDeleteRowCart(guid) {
+
+        guid = window.getProductGUID(guid);
+
+        if (typeof guid !== undefined) {
+
+            jQuery("#header_cart").replaceWith("<div id=\"header_cart\"></div>");
+
+            jQuery.ajax({
+                url: "ajax/cart/delete_row/",
+                type: 'GET',
+                data: {'guid': guid},
+                dataType: 'json', // забираем номер страницы, которую нужно отобразить
+
+                success: function (json) {
+                    // Если запрос прошёл успешно и сайт вернул результат
+                    if (json.result) {
+                        jQuery("#tr_cart" + guid).replaceWith("");
+                        countHeightTableCart();
+                        updateTables();
+                    } else {
+                        console.error('Ошибка получения данных с сервера');
+                    }
+                    jQuery("#header_cart").replaceWith(json.header_cart);
+                }
+            });
+        }
+    }
+
     static _changeSelections() {
 
         jQuery("#goods_table").replaceWith("<div id=\"goods_table\"></div>");
@@ -204,10 +252,45 @@ class Index {
         });
 
     }
-
 }
 
 Index.initGoods();
+
+function AddCart(guid, quantity) {
+
+    if (quantity === '' || quantity === '0') {
+        jQuery("#id_quantity").focus();
+        return
+    }
+
+    jQuery("#form_enter_quantity").css('display', 'none');
+
+    jQuery("#cart").replaceWith("<div id=\"cart\"></div>");
+
+    if (typeof guid !== undefined) {
+        jQuery.ajax({
+            url: "ajax/cart/add/",
+            type: 'GET',
+            data: {'guid': guid, 'quantity': quantity},
+            dataType: 'json', // забираем номер страницы, которую нужно отобразить
+
+            success: function (json) {
+                // Если запрос прошёл успешно и сайт вернул результат
+                if (json.result) {
+
+                    jQuery("#cart").replaceWith(json.cart_http);
+
+                    countHeightTableCart();
+                    updateTables();
+                    widthHeadCart();
+
+                } else {
+                    console.error('Ошибка получения данных с сервера');
+                }
+            }
+        });
+    }
+}
 
 function getProductGUID(path) {
 
@@ -226,4 +309,12 @@ function getSectionGUID(path) {
         return path.slice("?sections=".length + wheres_, path.length);
     }
     return undefined
+}
+
+function getOffset(el) {
+    el = el.getBoundingClientRect();
+    return {
+        left: el.left + window.scrollX,
+        top: el.top + window.scrollY
+    }
 }
