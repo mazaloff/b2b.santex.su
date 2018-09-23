@@ -56,7 +56,7 @@ def order_request(request, **kwargs):
     if customer == order_currently.person.customer:
         if settings.CELERY_NO_CREATE_ORDERS:
             try:
-                order.request_order()
+                order_currently.request_order()
             except Order.RequestOrderError:
                 pass
         else:
