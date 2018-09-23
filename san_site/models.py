@@ -63,7 +63,7 @@ class Person(models.Model):
         )
         text_content = 'This is an important message.'
         msg = EmailMultiAlternatives(
-            "inform change your password Santex's e-Commerce!",
+            "Information for change your password Santex!",
             text_content,
             settings.DEFAULT_FROM_EMAIL,
             [self.user.email])
@@ -71,7 +71,7 @@ class Person(models.Model):
         try:
             msg.send()
         except Exception:
-            if settings.EMAIL_NO_CELERY:
+            if settings.CELERY_NO_SEND_EMAIL:
                 return
             raise self.LetterPasswordChangeError
 

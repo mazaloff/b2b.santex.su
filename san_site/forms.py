@@ -94,6 +94,12 @@ class OrderCreateForm(forms.ModelForm):
         cart.clear()
 
         order.save()
-        task_order_request.delay(order.id)
+        if settings.CELERY_NO_CREATE_ORDERS:
+            try:
+                order.request_order()
+            except Order.RequestOrderError:
+                pass
+        else:
+            task_order_request.delay(order.id)
 
         return order

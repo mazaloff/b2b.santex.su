@@ -70,7 +70,7 @@ def password_reset(request):
 
             url = request.build_absolute_uri(reverse('account_password_change'))
 
-            if settings.EMAIL_NO_CELERY:
+            if settings.CELERY_NO_SEND_EMAIL:
                 person.letter_password_change(url)
             else:
                 task_letter_password_change.delay(set_query[0].id, url)

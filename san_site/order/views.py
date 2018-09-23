@@ -1,6 +1,7 @@
 from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import render
 from django.utils.log import log_response
+from django.conf import settings
 
 from san_site.decorates.decorate import page_not_access
 from san_site.forms import OrderCreateForm
@@ -53,7 +54,13 @@ def order_request(request, **kwargs):
 
     customer = get_customer(request.user)
     if customer == order_currently.person.customer:
-        task_order_request.delay(order_id)
+        if settings.CELERY_NO_CREATE_ORDERS:
+            try:
+                order.request_order()
+            except Order.RequestOrderError:
+                pass
+        else:
+            task_order_request.delay(order_id)
         return render(request, 'orders/order.html', {'order': order_currently})
     else:
         response = HttpResponseForbidden()

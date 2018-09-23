@@ -514,7 +514,7 @@ input#only_stock, input#only_promo {
 }
 
 div#loading_icon {
-    background: url("../vendor/throbber.gif") left center no-repeat;
+    background: url("../vendor/jstree/throbber.gif") left center no-repeat;
     width: 70px;
     height: 24px;
 }
