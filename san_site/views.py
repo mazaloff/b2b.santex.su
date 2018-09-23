@@ -1,11 +1,14 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from django.shortcuts import render
+from django.shortcuts import render, reverse
+from django.http import Http404
+from django.conf import settings
 
 from .decorates.decorate import page_not_access
 from .models import Person
 from .forms import LoginForm, PasswordChangeForm, PasswordResetForm
+from .tasks import letter_password_change as task_letter_password_change
 
 
 def index(request):
@@ -48,15 +51,53 @@ def user_logout(request):
     return index(request)
 
 
-@page_not_access
 def password_reset(request):
     if request.method == 'POST':
         form = PasswordResetForm(request.POST)
+
         if form.is_valid():
-            pass
+            cd = form.cleaned_data
+            email = cd['email']
+            set_query = User.objects.filter(email=email)
+            if len(set_query) == 0:
+                messages.error(request, 'Не найден акаунт с таким email.')
+                return render(request, 'account/password_reset.html', {'form': form})
+            try:
+                person = set_query[0].person
+            except Person.DoesNotExist:
+                messages.error(request, 'Не найден акаунт с таким email.')
+                return render(request, 'account/password_reset.html', {'form': form})
+
+            url = request.build_absolute_uri(reverse('account_password_change'))
+
+            if settings.EMAIL_NO_CELERY:
+                person.letter_password_change(url)
+            else:
+                task_letter_password_change.delay(set_query[0].id, url)
+            return render(request, 'account/password_reset_done.html', {})
     else:
         form = PasswordResetForm()
     return render(request, 'account/password_reset.html', {'form': form, 'errors': False})
+
+
+def password_change_key(request, **kwargs):
+    if request.method == 'POST':
+        return password_change(request)
+    else:
+        key = kwargs.get('key', '').replace('/', '')
+        try:
+            person = Person.objects.get(key=key)
+        except Person.DoesNotExist:
+            raise Http404()
+        try:
+            user = person.user
+        except User.DoesNotExist:
+            raise Http404()
+        login(request, user)
+        form = PasswordChangeForm()
+        form.fields['password'].disabled = True
+        form.base_fields['password'].required = False
+        return render(request, 'account/password_change.html', {'form': form})
 
 
 @page_not_access
@@ -66,14 +107,16 @@ def password_change(request):
         if form.is_valid():
             if request.user.is_authenticated:
                 cd = form.cleaned_data
-                if request.user.check_password(cd['password']):
+                if not form.fields['password'].required \
+                        or request.user.check_password(cd['password']):
                     user = User.objects.get(id=request.user.id)
                     user.set_password(cd['password_new'])
                     user.save()
                     try:
-                        customer = Person.objects.get(user=user)
-                        customer.change_password = True
-                        customer.save()
+                        person = Person.objects.get(user=user)
+                        person.change_password = True
+                        person.key = ''
+                        person.save()
                     except Person.DoesNotExist:
                         pass
                     login(request, user)
@@ -89,8 +132,10 @@ def password_change(request):
             return render(request, 'account/password_change.html', {'form': form})
 
     form = PasswordChangeForm()
+    form.base_fields['password'].required = True
     return render(request, 'account/password_change.html', {'form': form})
 
 
+@page_not_access
 def password_change_done(request):
     return render(request, 'account/password_change_done.html', {})

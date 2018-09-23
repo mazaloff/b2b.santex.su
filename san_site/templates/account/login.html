@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block header %}
-{% include "header.html" %}
+    {% include "header/header.html" %}
 {% endblock %}
 
 {% block content %}
@@ -34,6 +34,7 @@
         <form action="{% url 'account_login' %}" method="post">
             {% csrf_token %}
             <p>Авторизуйтесь, чтобы видеть ваши цены и делать заказы...</p>
+            <p>Если у Вас нет доступа или вы забыли логин обратитесь к вашему менеджеру.</p>
             {{ form.as_p }}
             <div>
               <input type="submit" value="Войти" />

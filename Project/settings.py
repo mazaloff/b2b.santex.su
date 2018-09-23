@@ -136,12 +136,17 @@ LOGIN_URL = '/login/'
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2147483648
 
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = ''  # mail service smtp
-EMAIL_HOST_USER = ''  # email id
-EMAIL_HOST_PASSWORD = ''  # password
-EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.bk.ru'
+EMAIL_PORT = 2525
+EMAIL_HOST_USER = 'mazaloff@bk.ru'
+EMAIL_HOST_PASSWORD = ''
+
+DEFAULT_FROM_EMAIL = 'mazaloff@bk.ru'
+DEFAULT_TO_EMAIL = 'mazaloff@bk.ru'
+
 
 PAYMENT_FORM = (('Наличные', 'Наличные'), ('Безналичные', 'Безналичные'))
 SHIPMENT_TYPE = (('Самовывоз', 'Самовывоз'), ('Доставка', 'Доставка'))
@@ -156,6 +161,7 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 
+EMAIL_NO_CELERY = True
 
 try:
     from .settings_local import *

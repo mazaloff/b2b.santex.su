@@ -15,9 +15,12 @@ class Index {
         let path = event.target.href;
         let guid = window.getSectionGUID(path);
 
-        jQuery("#products").replaceWith(main_goods_html);
+        jQuery("#products").replaceWith(main_products);
         recoverOnlyStock();
         recoverOnlyPromo();
+
+        history.pushState(null, null, '/');
+        history.replaceState(null, null, '/');
 
         jQuery("#categories ul li a").addClass('disabled');
         jQuery("#loading_icon").removeClass('disabled');
@@ -36,17 +39,14 @@ class Index {
 
             success : function (json) {
                 // Если запрос прошёл успешно и сайт вернул результат
-                if (json.result)
+                if (json.success)
                 {
-                    jQuery("#products").replaceWith(json.goods_html);
+                    jQuery("#products").replaceWith(json.products);
                     recoverOnlyStock();
                     recoverOnlyPromo();
 
                     jQuery("#goods").html('Товары из категории ' + json.current_section
                         .link('?sections=' + guid));
-
-                    history.pushState(null, null, '/');
-                    history.replaceState(null, null, '/');
 
                     jQuery(window).scrollTop(0);
 
@@ -72,7 +72,7 @@ class Index {
         });
     }
 
-    static _showFormForQuantity(guid) {
+    static _showFormForQuantity(guid, id_column) {
 
         guid = window.getProductGUID(guid);
 
@@ -85,21 +85,26 @@ class Index {
 
                 success: function (json) {
                     // Если запрос прошёл успешно и сайт вернул результат
-                    if (json.result) {
+                    if (json.success) {
 
                         let form_enter_quantity = jQuery("#form_enter_quantity");
 
-                        form_enter_quantity.replaceWith(json.form_quantity_http);
+                        form_enter_quantity.replaceWith(json.form_enter_quantity);
                         form_enter_quantity.css('display', 'block');
 
                         let position = getOffset(document.getElementById('tr_goods' + guid));
                         position.left += $("th#goods_table_1").width();
-                        position.left += $("th#goods_table_2").width();
-
+                        if (id_column === 3) {
+                            position.left += $("th#goods_table_2").width();
+                        } else {
+                            position.left += Math.ceil($("th#goods_table_2").width() / 2);
+                        }
                         let form_enter_wrapper = jQuery(".enter-quantity-wrapper");
                         form_enter_wrapper.css('left', position.left - 40);
                         form_enter_wrapper.css('top', position.top - 40);
                         jQuery("#id_quantity").focus();
+
+                        jQuery("#tr_goods" + guid).addClass('current-tr');
 
                         $("#btn_enter_quantity_cart").click(
                             function () {
@@ -133,11 +138,12 @@ class Index {
 
                 success: function (json) {
                     // Если запрос прошёл успешно и сайт вернул результат
-                    if (json.result) {
-                        jQuery("#td_cart_quantity" + guid).replaceWith(json.http_quantity);
-                        jQuery("#td_cart_total_price" + guid).replaceWith(json.http_total_price);
-                        jQuery("#td_cart_total_price_ruble" + guid).replaceWith(json.http_total_price_ruble);
+                    if (json.success) {
+                        jQuery("#td_cart_quantity" + guid).replaceWith(json.td_cart_quantity);
+                        jQuery("#td_cart_total_price" + guid).replaceWith(json.td_cart_total_price);
+                        jQuery("#td_cart_total_price_ruble" + guid).replaceWith(json.td_cart_total_price_ruble);
                         jQuery("#header_cart").replaceWith(json.header_cart);
+                        jQuery("#user_cart").replaceWith(json.user_cart);
                     } else {
                         console.error('Ошибка получения данных с сервера');
                     }
@@ -162,10 +168,10 @@ class Index {
 
                 success: function (json) {
                     // Если запрос прошёл успешно и сайт вернул результат
-                    if (json.result) {
-                        jQuery("#td_cart_quantity" + guid).replaceWith(json.http_quantity);
-                        jQuery("#td_cart_total_price" + guid).replaceWith(json.http_total_price);
-                        jQuery("#td_cart_total_price_ruble" + guid).replaceWith(json.http_total_price_ruble);
+                    if (json.success) {
+                        jQuery("#td_cart_quantity" + guid).replaceWith(json.td_cart_quantity);
+                        jQuery("#td_cart_total_price" + guid).replaceWith(json.td_cart_total_price);
+                        jQuery("#td_cart_total_price_ruble" + guid).replaceWith(json.td_cart_total_price_ruble);
                         if (json.delete) {
                             jQuery("#tr_cart" + guid).replaceWith("");
                             countHeightTableCart();
@@ -174,6 +180,7 @@ class Index {
                             console.error('Ошибка получения данных с сервера');
                         }
                         jQuery("#header_cart").replaceWith(json.header_cart);
+                        jQuery("#user_cart").replaceWith(json.user_cart);
                     }
                 }
             });
@@ -196,7 +203,7 @@ class Index {
 
                 success: function (json) {
                     // Если запрос прошёл успешно и сайт вернул результат
-                    if (json.result) {
+                    if (json.success) {
                         jQuery("#tr_cart" + guid).replaceWith("");
                         countHeightTableCart();
                         updateTables();
@@ -204,6 +211,7 @@ class Index {
                         console.error('Ошибка получения данных с сервера');
                     }
                     jQuery("#header_cart").replaceWith(json.header_cart);
+                    jQuery("#user_cart").replaceWith(json.user_cart);
                 }
             });
         }
@@ -227,8 +235,8 @@ class Index {
 
             success: function (json) {
                 // Если запрос прошёл успешно и сайт вернул результат
-                if (json.result) {
-                    jQuery("#goods_table").replaceWith(json.goods_html);
+                if (json.success) {
+                    jQuery("#goods_table").replaceWith(json.products);
 
                     if (json.section.guid === undefined) {
                         jQuery("#goods").html('Выберите категорию товаров...');
@@ -263,6 +271,7 @@ function AddCart(guid, quantity) {
         return
     }
 
+    jQuery("#tr_goods" + guid).removeClass('current-tr');
     jQuery("#form_enter_quantity").css('display', 'none');
 
     jQuery("#cart").replaceWith("<div id=\"cart\"></div>");
@@ -276,9 +285,10 @@ function AddCart(guid, quantity) {
 
             success: function (json) {
                 // Если запрос прошёл успешно и сайт вернул результат
-                if (json.result) {
+                if (json.success) {
 
-                    jQuery("#cart").replaceWith(json.cart_http);
+                    jQuery("#cart").replaceWith(json.cart);
+                    jQuery("#user_cart").replaceWith(json.user_cart);
 
                     countHeightTableCart();
                     updateTables();

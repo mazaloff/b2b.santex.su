@@ -1,13 +1,11 @@
 {% load format %}
-
 <div id="header_cart">
     {% with total_items=cart|length %}
         {% if cart|length > 0 %}
-            Ваша корзина:
+            Ваш текущий заказ:
             <strong>{{ cart.get_total_quantity|units }}</strong>, на сумму
             <strong>{{ cart.get_total_cost|format:"{0:.2f}" }} руб.</strong>
             &nbsp;{{ cart.view_courses }}&nbsp;&nbsp;
-            <a href="{% url 'order_create' %}" class="button">Разместить заказ</a>
         {% else %}
             Текущий заказ пустой.
         {% endif %}

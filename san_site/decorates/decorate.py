@@ -10,6 +10,7 @@ def page_not_access(func):
     @wraps(func)
     def inner(request, *args, **kwargs):
         if request.user.is_anonymous or not request.user.is_authenticated:
+            request.get_full_path()
             resolved_login_url = resolve_url(settings.LOGIN_URL)
             response = HttpResponseRedirect(resolved_login_url)
             log_response(

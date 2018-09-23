@@ -5,29 +5,31 @@
 {% endblock %}
 
 {% block header %}
-{% include "header.html" %}
+    {% include "header/header.html" %}
 {% endblock %}
 
 {% block content %}
 
 <div id="products" class="column products">
     {% include "cart/cart.html" %}
-    {% for field_error in form.non_field_errors %}
-        <div class="alert alert-danger">{{ field_error }}</div>
-    {% endfor %}
-    <form action="." method="post" class="order-form">
-        {% csrf_token %}
-        <fieldset style="border: none;">
-            {% for field in form %}
-                <div class="control-group{% if field.errors %} has-errors{% endif %}">
-                    <label class="control-label">{{ field.label }}</label>
-                    <div class="control">{{ field }}</div>
-                    {{ field.errors }}
-                </div>
-            {% endfor %}
-            <p><input id="btn_create_order" type="submit" value="Разместить заказ"></p>
-        </fieldset>
-    </form>
+    <div id="form_create_order">
+        {% for field_error in form.non_field_errors %}
+            <div class="alert alert-danger">{{ field_error }}</div>
+        {% endfor %}
+        <form action="." method="post" class="order-form">
+            {% csrf_token %}
+            <fieldset style="border: none;">
+                {% for field in form %}
+                    <div class="control-group{% if field.errors %} has-errors{% endif %}">
+                        <label class="control-label">{{ field.label }}</label>
+                        <div class="control">{{ field }}</div>
+                        {{ field.errors }}
+                    </div>
+                {% endfor %}
+                <p><input id="btn_create_order" type="submit" value="Разместить заказ"></p>
+            </fieldset>
+        </form>
+    </div>
 </div>
 
 {% endblock %}

@@ -7,7 +7,7 @@ var main_goods_height = 99999,
     main_goods_items = 0,
     main_cart_max = false,
     main_user = '',
-    main_goods_html = '',
+    main_products = '',
     app = (function($) {
 
     // Инициализируем нужные переменные
@@ -42,9 +42,12 @@ var main_goods_height = 99999,
 
             guid = data.node.original.href;
 
-            jQuery("#products").replaceWith(main_goods_html);
+            jQuery("#products").replaceWith(main_products);
             recoverOnlyStock();
             recoverOnlyPromo();
+
+            history.pushState(null, null, '/');
+            history.replaceState(null, null, '/');
 
             jQuery("#goods").html('Загрузка товаров...');
 
@@ -65,9 +68,9 @@ var main_goods_height = 99999,
 
                 success : function (json) {
                     // Если запрос прошёл успешно и сайт вернул результат
-                    if (json.result)
+                    if (json.success)
                     {
-                        jQuery("#products").replaceWith(json.goods_html);
+                        jQuery("#products").replaceWith(json.products);
                         recoverOnlyStock();
                         recoverOnlyPromo();
 
@@ -75,9 +78,6 @@ var main_goods_height = 99999,
                             .link('?sections=' + guid));
 
                         console.log('changed node: ', data);
-
-                        history.pushState(null, null, '/');
-                        history.replaceState(null, null, '/');
 
                         jQuery(window).scrollTop(0);
 
@@ -120,10 +120,10 @@ var main_goods_height = 99999,
 
             success: function(json) {
                 // Инициализируем дерево категорий
-                if (json.code === 'success') {
+                if (json.success) {
                     _initTree(json.result);
                     main_user = json.user_name;
-                    main_goods_html = json.goods_html;
+                    main_products = json.products;
                     countHeightTableCart();
                     updateTables();
                 } else {
@@ -142,6 +142,7 @@ var main_goods_height = 99999,
         onlyPromo();
 
     $("html,body").css("overflow","hidden");
+
 
     // Экспортируем наружу
     return {
@@ -172,6 +173,18 @@ function updateTables() {
             cart_table_height -= main_cart_max ? 20 : 0;
             cart_table_height += Math.max(goods_table_height - main_goods_height, 0);
         }
+    } else {
+        if (document.getElementById("form_create_order") === null) {
+            cart_table_height = Math.min((window_height
+                - $('#header_cart').height()
+                - $('#goods_search').height()
+                - header_height) - 80, main_cart_height);
+        } else {
+            cart_table_height = Math.min((window_height
+                - $('#header_cart').height()
+                - $('#form_create_order').height()
+                - header_height) - 20, main_cart_height);
+        }
     }
 
     if (document.getElementById("goods_cart")) {
@@ -196,7 +209,7 @@ function updateTables() {
 
 function widthHeadCart() {
     $('th#cart_table_1 div').stop().animate({width: $('th#cart_table_1').width()});
-    $('th#cart_table_2 div').stop().animate({width: $('th#cart_table_2').width()});
+    $('th#cart_table_2 div').stop().animate({width: $('th#cart_table_2').width() + 20});
     $('th#cart_table_3 div').stop().animate({width: $('th#cart_table_3').width()});
     $('th#cart_table_4 div').stop().animate({width: $('th#cart_table_4').width()});
     $('th#cart_table_5 div').stop().animate({width: $('th#cart_table_5').width()});
@@ -207,7 +220,7 @@ function widthHeadCart() {
 
 function widthHeadGoods() {
     $('th#goods_table_1 div').stop().animate({width: $('th#goods_table_1').width()});
-    $('th#goods_table_2 div').stop().animate({width: $('th#goods_table_2').width()});
+    $('th#goods_table_2 div').stop().animate({width: $('th#goods_table_2').width() + 20});
     $('th#goods_table_3 div').stop().animate({width: $('th#goods_table_3').width()});
     $('th#goods_table_4 div').stop().animate({width: $('th#goods_table_4').width()});
     $('th#goods_table_5 div').stop().animate({width: $('th#goods_table_5').width()});
@@ -256,10 +269,12 @@ function countHeightTableCart() {
         height += $(this).height();
     });
 
-    let limit = document.getElementById("goods_table") ? 3.5 : 2;
-    height = Math.min(height, Math.ceil($(window).height() / limit));
+    if (document.getElementById("goods_table") && main_goods_items !== 0) {
+        let limit = document.getElementById("goods_table") ? 3.5 : 2;
+        height = Math.min(height, Math.ceil($(window).height() / limit));
+        main_cart_max = height >= Math.ceil($(window).height() / limit);
+    }
 
-    main_cart_max = height >= Math.ceil($(window).height() / limit);
     main_cart_height = height
 }
 
@@ -281,8 +296,8 @@ function doNav(theUrl) {
     document.location.href = theUrl;
 }
 
-function addCart(guid) {
-    Index._showFormForQuantity(guid)
+function addCart(guid, id_column) {
+    Index._showFormForQuantity(guid, id_column)
 }
 
 function addQuantityCart(guid) {

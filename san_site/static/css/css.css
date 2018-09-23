@@ -1,7 +1,25 @@
 
 body {
-    font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;;
+    font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
     font-size: 13px;
+    color: #24292e;
+}
+
+input[type="number"], input[type="text"], input[type="password"] {
+    font-family: Lucida Sans Unicode;
+    color: #24292e;
+    height: 17px;
+}
+
+select {
+    font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    height: 23px;
+}
+
+input[type="submit"] {
+    font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    color: #24292e;
+    height: 27px;
 }
 
 .main {
@@ -9,26 +27,25 @@ body {
     margin: 0 auto; /* Центрируем блоки */
 }
 
-#header {
-    display: flex;
-    height: 30px;
+#accounts_login label {
+    vertical-align: text-top;
 }
 
-#header #user-tools {
-    position: absolute;
-    right: 20px;
+#header {
+    display: flex;
+    height: 40px;
 }
 
 #header #branding {
-    flex: 1 50 20%
+    flex: 2 50 215px;
 }
 
 #header #header_menu {
-    flex: 5 1 40%
+    flex: 4 1 400px;
 }
 
-#user_tools {
-    flex: 1 2 30%
+#header #user_tools {
+    flex: 6 1 400px;
 }
 
 .categories {
@@ -57,11 +74,7 @@ div.disabled {
 }
 
 #goods {
-    margin-left: 0;
-}
-
-#accounts_login {
-    margin-left: 0;
+    height: 21px;
 }
 
 #categories {
@@ -86,7 +99,7 @@ div.disabled {
 #goods_table th div {
     position: absolute;
     margin-top: -20px;
-    background: #beebff;
+    background: #FCED6C;
     font-weight: normal
 }
 
@@ -102,7 +115,7 @@ div.disabled {
 #goods_cart th div {
     position: absolute;
     margin-top: -20px;
-    background: #beebff;
+    background: #FCED6C;
     font-weight: normal
 }
 
@@ -118,7 +131,7 @@ div.disabled {
 #list_orders th div {
     position: absolute;
     margin-top: -20px;
-    background: #beebff;
+    background: #FCED6C;
     font-weight: normal
 }
 
@@ -136,7 +149,7 @@ div.disabled {
 }
 
 #goods_table tbody tr:hover {
-    background: #e7f4f9;
+    background: #FCED6C;
 }
 
 #goods_cart {
@@ -153,7 +166,7 @@ div.disabled {
 }
 
 #goods_cart tbody tr:hover {
-    background: #e7f4f9;
+    background: #FCED6C;
 }
 
 #list_orders {
@@ -170,7 +183,7 @@ div.disabled {
 }
 
 #list_orders tbody tr:hover {
-    background: #e7f4f9;
+    background: #FCED6C;
 }
 
 #goods_table th#goods_table_1 {
@@ -419,7 +432,6 @@ div.disabled {
 #header_cart {
     height: 20px;
     margin-top: 5px;
-    margin-left: 10px
 }
 
 #header_table_order {
@@ -469,7 +481,7 @@ ul.errorlist {
 }
 
 #order_status {
-    background-color: #beebff;
+    background-color: #fcffd1;
     padding: 1em;
 }
 
@@ -482,11 +494,10 @@ input.form-control {
     width: 200px;
     border-width: 1px;
     padding-left: 5px;
-    font-family: "Lucida Sans Unicode";
 }
 
 div#goods_search {
-    margin-bottom: 21px;
+    height: 25px;
 }
 
 input#only_stock, input#only_promo {
@@ -522,18 +533,17 @@ div#loading_icon span {
     height: 100%;
     background-color: black;
     z-index: 1001;
-    -moz-opacity: 0.7;
-    opacity: .70;
-    filter: alpha(opacity=70);
+    -moz-opacity: 0.5;
+    opacity: .50;
+    filter: alpha(opacity=50);
 }
 
 .enter-quantity-wrapper {
     position: absolute;
     background: white;
-    padding-left: 18px;
-    padding-top: 10px;
+    padding: 10px 14px 4px 18px;
     width: 192px;
-    height: 105px;
+    height: 85px;
     z-index: 1002;
     top: 50%;
     left: 50%;
@@ -541,18 +551,22 @@ div#loading_icon span {
 
 input#btn_enter_quantity_cart {
     width: 80px;
-    height: 23px;
+    height: 26px;
 }
 
-input#btn_create_order {
-    height: 23px;
+div#user_cart a.order-create {
+    background-color: #fcffd1;
+    text-decoration: none;
 }
 
-#form_enter_quantity input#id_quantity {
-    height: 17px;
-    padding-left: 5px;
+.jstree-default .jstree-hovered {
+    background-color: #fcffd1 !important;
 }
 
-.control-group select {
-    height: 20px;
+.jstree-default .jstree-clicked {
+    background-color: #fbe55e !important;
+}
+
+.current-tr {
+    background-color: #fbe55e;
 }

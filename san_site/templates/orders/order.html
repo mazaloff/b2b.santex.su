@@ -5,14 +5,14 @@
 {% endblock %}
 
 {% block header %}
-    {% include "header.html" %}
+    {% include "header/header.html" %}
 {% endblock %}
 
 {% block content %}
 
     <div id="products" class="column products">
         {% if debug %}
-            <a href="{% url 'order_request' order.id %}">Выгрузить в 1с (POST)</a>
+            <a href="{% url 'order_request' order.id %}">Выгрузить в 1с</a>
         {% endif %}
         {% if created %}
             <p style="color: red">

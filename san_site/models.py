@@ -7,7 +7,9 @@ from django.db import models
 from django.db.models import Prefetch
 from django.utils import timezone
 from django.db.models import Q
+from django.shortcuts import loader
 from django.contrib.auth.models import User
+from django.core.mail import EmailMultiAlternatives
 import requests
 
 json.JSONEncoder.default = lambda self, obj: \
@@ -43,9 +45,51 @@ class Person(models.Model):
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)
     change_password = models.BooleanField(default=False)
+    key = models.CharField(max_length=20, default='xxx')
+
+    class LetterPasswordChangeError(BaseException):
+        pass
 
     def __str__(self):
         return self.name
+
+    def letter_password_change(self, url):
+        new_key = self.make_new_key()
+        html_content = loader.render_to_string(
+            'account/letter_change_password.html', {
+                'person': self,
+                'url': url + new_key + '/'
+            }
+        )
+        text_content = 'This is an important message.'
+        msg = EmailMultiAlternatives(
+            "inform change your password Santex's e-Commerce!",
+            text_content,
+            settings.DEFAULT_FROM_EMAIL,
+            [self.user.email])
+        msg.attach_alternative(html_content, "text/html")
+        try:
+            msg.send()
+        except Exception:
+            if settings.EMAIL_NO_CELERY:
+                return
+            raise self.LetterPasswordChangeError
+
+    def make_new_key(self, syllables=4, add_number=True):
+        import random, string
+        """Alternate random consonants & vowels creating decent memorable passwords
+        """
+        rnd = random.SystemRandom()
+        s = string.ascii_lowercase
+        vowels = 'aeiou'
+        consonants = ''.join([x for x in s if x not in vowels])
+        pwd = ''.join([rnd.choice(consonants) + rnd.choice(vowels)
+                       for x in 'x' * syllables]).title()
+        if add_number:
+            pwd += str(rnd.choice(range(10)))
+        self.key = pwd
+        self.save()
+        return pwd
 
 
 class Section(models.Model):
@@ -521,6 +565,8 @@ class OrderItem(models.Model):
 
 
 def get_customer(user):
-    person = user.person
-    if person:
-        return person.customer
+    try:
+        person = user.person
+    except Person.DoesNotExist:
+        return
+    return person.customer

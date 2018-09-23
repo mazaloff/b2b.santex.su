@@ -17,7 +17,7 @@ def order_create(request):
             if order:
                 return render(request, 'orders/order.html', {'order': order_new, 'created': True})
     else:
-        form = OrderCreateForm
+        form = OrderCreateForm()
 
     return render(request, 'orders/create.html', {'form': form})
 
