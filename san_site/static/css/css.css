@@ -5,6 +5,10 @@ body {
     color: #24292e;
 }
 
+a {
+   color: #24292e;
+}
+
 input[type="number"], input[type="text"], input[type="password"] {
     font-family: Lucida Sans Unicode;
     color: #24292e;
@@ -33,7 +37,7 @@ input[type="submit"] {
 
 #header {
     display: flex;
-    height: 40px;
+    height: 43px;
 }
 
 #header #branding {

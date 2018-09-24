@@ -165,7 +165,7 @@ function updateTables() {
 
     if (document.getElementById("goods_table") && main_goods_items !== 0) {
         goods_table_height = (window_height
-            - $('#header_cart').height()
+            - (document.getElementById("header_cart") ? $('#header_cart').height() : 0)
             - $('#goods_search').height()
             - (document.getElementById("goods_cart") ? (main_cart_height + (main_cart_max ? 0 : 10)) : -5)
             - header_height) - 60;
