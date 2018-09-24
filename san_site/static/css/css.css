@@ -31,8 +31,9 @@ input[type="submit"] {
     margin: 0 auto; /* Центрируем блоки */
 }
 
-#accounts_login label {
-    vertical-align: text-top;
+#accounts_login {
+    margin-left: 10px;
+    margin-top: -10px;
 }
 
 #header {

@@ -2,12 +2,16 @@
 <div id="goods_cart">
     <table>
         <colgroup>
+            <col>
             <col style="background:#fcffd1;">
             <col>
             <col style="background:#fcffd1">
         </colgroup>
         <thead style="background: #ffffff;">
         <tr>
+            <th align=center id="cart_table_8">
+                <div><span>N</span></div>
+            </th>
             <th id="cart_table_1">
                 <div><span>Артикул</span></div>
             </th>
@@ -33,6 +37,7 @@
         </thead>
         {% for goods in order.get_order_list %}
             <tr>
+                <td class="cart_table_8">{{ goods.number }}</td>
                 <td class="cart_table_1">{{ goods.code }}</td>
                 <td class="cart_table_2">{{ goods.name }}</td>
                 <td class="cart_table_3" align=right> {{ goods.quantity }}</td>

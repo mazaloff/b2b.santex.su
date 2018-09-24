@@ -166,7 +166,7 @@ function updateTables() {
     if (document.getElementById("goods_table") && main_goods_items !== 0) {
         goods_table_height = (window_height
             - (document.getElementById("header_cart") ? $('#header_cart').height() : 0)
-            - $('#goods_search').height()
+            - (document.getElementById("goods_search") ? $('#goods_search').height() : 0)
             - (document.getElementById("goods_cart") ? (main_cart_height + (main_cart_max ? 0 : 10)) : -5)
             - header_height) - 60;
         if (document.getElementById("goods_cart")) {
@@ -176,13 +176,13 @@ function updateTables() {
     } else {
         if (document.getElementById("form_create_order") === null) {
             cart_table_height = Math.min((window_height
-                - $('#header_cart').height()
-                - $('#goods_search').height()
+                - (document.getElementById("header_cart") ? $('#header_cart').height() : 0)
+                - (document.getElementById("goods_search") ? $('#goods_search').height() : 0)
                 - header_height) - 80, main_cart_height);
         } else {
             cart_table_height = Math.min((window_height
-                - $('#header_cart').height()
-                - $('#form_create_order').height()
+                - (document.getElementById("header_cart") ? $('#header_cart').height() : 0)
+                - (document.getElementById("form_create_order") ? $('#form_create_order').height() : 0)
                 - header_height) - 20, main_cart_height);
         }
     }

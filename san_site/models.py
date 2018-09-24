@@ -456,8 +456,11 @@ class Order(models.Model):
         return sum(item.quantity for item in self.items.all())
 
     def __iter__(self):
+        number = 0
         for item in self.items.all():
+            number += 1
             dict_ = dict(
+                number=number,
                 product=item.product,
                 code=item.product.code,
                 guid=item.product.guid,
