@@ -5,7 +5,7 @@
     <div id="goods">Выберите категорию товаров...</div>
     {% include "goods/goods_search.html" %}
     {% include "goods/goods_table.html" %}
-    {% if user.is_authenticated %}
+    {% if user.is_authenticated and user.person.allow_order %}
         <div id="form_enter_quantity"></div>
         {% include "cart/cart.html" %}
     {% endif %}

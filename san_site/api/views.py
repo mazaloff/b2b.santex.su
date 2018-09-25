@@ -130,7 +130,8 @@ def api_prices(request):
 
 @csrf_exempt
 def api_users(request):
-    value_response = {'success': True, 'date': [], 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
+    value_response = {'success': True, 'date': [], 'result': [],
+                      'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
 
     try:
         json_str = request.body.decode()
@@ -151,7 +152,7 @@ def api_users(request):
                   message='error json loads', description='')
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
-    update_users(list_load)
+    update_users(list_load, value_response)
 
     value_response['time']['end'] = timezone.now().ctime()
     return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
@@ -460,7 +461,7 @@ def update_courses(load_list, value_response):
             new_object.save()
 
 
-def update_users(load_list):
+def update_users(load_list, value_response):
     filter_username = [element_list['username'] for element_list in load_list]
     filter_object = {t.username: t for t in User.objects.filter(username__in=filter_username)}
 
@@ -501,19 +502,17 @@ def update_users(load_list):
             if new_object.first_name == element_list['first_name'] \
                     and new_object.last_name == element_list['last_name'] \
                     and new_object.email == element_list['email'] \
-                    and new_object.is_active == element_list['is_active']:
-                person = new_object.person
-                if person and not person.change_password:
-                    new_object.set_password(element_list['password'])
+                    and new_object.is_active == element_list['is_active'] \
+                    and not element_list['change_password']:
+                    pass
             else:
                 new_object.first_name = element_list['first_name']
                 new_object.last_name = element_list['last_name']
                 new_object.email = element_list['email']
                 new_object.is_active = element_list['is_active']
-                person = new_object.person
-                if person and not person.change_password:
-                    new_object.set_password(element_list['password'])
 
+                if element_list['change_password']:
+                    new_object.set_password(element_list['password'])
                 new_object.save()
         else:
             new_object = User.objects.create(username=element_list['username'],
@@ -524,8 +523,8 @@ def update_users(load_list):
                                              )
             new_object.created_date = timezone.now()
             new_object.set_password(element_list['password'])
-
             new_object.save()
+
             filter_object[element_list['username']] = new_object
 
         new_object_person = filter_object_person.get(element_list['guid'], None)
@@ -533,12 +532,14 @@ def update_users(load_list):
             if new_object_person.name == element_list['nameCustomer'] \
                     and new_object_person.code == element_list['codeCustomer'] \
                     and new_object_person.sort == int(element_list['sortCustomer']) \
-                    and new_object_person.is_deleted == element_list['is_deletedCustomer']:
+                    and new_object_person.is_deleted == element_list['is_deletedCustomer'] \
+                    and new_object_person.allow_order == element_list['allow_order']:
                 pass
             else:
                 new_object_person.name = element_list['name']
                 new_object_person.code = element_list['code']
                 new_object_person.sort = int(element_list['sort'])
+                new_object_person.allow_order = element_list['allow_order']
                 new_object_person.is_deleted = element_list['is_deleted']
                 new_object_person.save()
         else:
@@ -548,11 +549,14 @@ def update_users(load_list):
                                                       customer=new_object_customer,
                                                       code=element_list['code'],
                                                       sort=int(element_list['sort']),
-                                                      is_deleted=element_list['is_deleted'],
+                                                      allow_order=element_list['allow_order'],
+                                                      is_deleted=element_list['is_deleted']
                                                       )
             new_object_person.created_date = timezone.now()
             new_object_person.save()
             filter_object_person[element_list['guid']] = new_object_person
+
+        value_response['result'].append(dict(guid=element_list['guid']))
 
 
 def update_inventories(load_list, value_response):

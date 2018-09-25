@@ -1,6 +1,4 @@
-import json
-
-from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils.datastructures import MultiValueDictKeyError
@@ -8,21 +6,8 @@ from django.utils.datastructures import MultiValueDictKeyError
 from san_site.cart.cart import Cart
 from san_site.models import Section, Product
 from san_site.forms import EnterQuantity
-
-
-class HttpResponseAjax(HttpResponse):
-    def __init__(self, success=True, **kwargs):
-        kwargs['success'] = success
-        super(HttpResponseAjax, self).__init__(
-            content=json.dumps(kwargs),
-            content_type='application/json',
-            status=200
-        )
-
-
-class HttpResponseAjaxError(HttpResponseAjax):
-    def __init__(self, code='ERROR AJAX', message=''):
-        super(HttpResponseAjaxError, self).__init__(success=False, code=code, message=message)
+from san_site.decorates.decorate import page_not_access_ajax
+from san_site.backend.response import HttpResponseAjax
 
 
 def get_categories(request):
@@ -41,6 +26,7 @@ def get_categories(request):
     )
 
 
+@page_not_access_ajax
 def get_goods(request):
 
     try:
@@ -79,6 +65,7 @@ def get_goods(request):
     )
 
 
+@page_not_access_ajax
 def selection(request):
     try:
         only_stock_ = request.GET.get('only_stock')
@@ -117,6 +104,7 @@ def selection(request):
     )
 
 
+@page_not_access_ajax
 def cart_add(request):
 
     try:
@@ -141,10 +129,11 @@ def cart_add(request):
 
     return HttpResponseAjax(
         cart=render_to_string('cart/cart.html', {'cart': cart}),
-        user_cart=render_to_string('header/user_tools_cart.html', {'cart': cart})
+        user_cart=render_to_string('header/user_tools_cart.html', {'cart': cart, 'user': request.user})
     )
 
 
+@page_not_access_ajax
 def cart_get_form_quantity(request):
     if request.method == 'POST':
         pass
@@ -162,6 +151,7 @@ def cart_get_form_quantity(request):
         )
 
 
+@page_not_access_ajax
 def cart_add_quantity(request):
     try:
         guid = request.GET.get('guid')
@@ -178,11 +168,12 @@ def cart_add_quantity(request):
         td_cart_quantity=render_to_string('cart/td_cart_quantity.html', {'goods': elem_cart}),
         td_cart_total_price=render_to_string('cart/td_cart_total_price.html', {'goods': elem_cart}),
         td_cart_total_price_ruble=render_to_string('cart/td_cart_total_price_ruble.html', {'goods': elem_cart}),
-        header_cart=render_to_string('cart/header_cart.html', {'cart': cart}),
-        user_cart=render_to_string('header/user_tools_cart.html', {'cart': cart})
+        header_cart=render_to_string('cart/header_cart.html', {'cart': cart, 'user': request.user}),
+        user_cart=render_to_string('header/user_tools_cart.html', {'cart': cart, 'user': request.user})
     )
 
 
+@page_not_access_ajax
 def cart_reduce_quantity(request):
     try:
         guid = request.GET.get('guid')
@@ -204,11 +195,12 @@ def cart_reduce_quantity(request):
         td_cart_quantity=render_to_string('cart/td_cart_quantity.html', {'goods': elem_cart}),
         td_cart_total_price=render_to_string('cart/td_cart_total_price.html', {'goods': elem_cart}),
         td_cart_total_price_ruble=render_to_string('cart/td_cart_total_price_ruble.html', {'goods': elem_cart}),
-        header_cart=render_to_string('cart/header_cart.html', {'cart': cart}),
-        user_cart=render_to_string('header/user_tools_cart.html', {'cart': cart})
+        header_cart=render_to_string('cart/header_cart.html', {'cart': cart, 'user': request.user}),
+        user_cart=render_to_string('header/user_tools_cart.html', {'cart': cart, 'user': request.user})
     )
 
 
+@page_not_access_ajax
 def cart_delete_row(request):
     try:
         guid = request.GET.get('guid')
@@ -220,6 +212,6 @@ def cart_delete_row(request):
     cart.remove(product)
 
     return HttpResponseAjax(
-        header_cart=render_to_string('cart/header_cart.html', {'cart': cart}),
-        user_cart=render_to_string('header/user_tools_cart.html', {'cart': cart})
+        header_cart=render_to_string('cart/header_cart.html', {'cart': cart, 'user': request.user}),
+        user_cart=render_to_string('header/user_tools_cart.html', {'cart': cart, 'user': request.user})
     )

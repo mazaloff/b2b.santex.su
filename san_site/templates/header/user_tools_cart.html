@@ -1,7 +1,9 @@
 {% load format %}
 <div id="user_cart">
     {% with total_items=cart|length %}
-        {% if cart|length > 0 %}
+        {% if not user.person.allow_order %}
+            Нет прав делать заказы.
+        {% elif cart|length > 0 %}
             <a class="order-create button" href="{% url 'order_create' %}">Разместить заказ:
                 <strong>{{ cart.get_total_quantity|units }}</strong>, на сумму
                 <strong>{{ cart.get_total_cost|format:"{0:.2f}" }} руб.</strong></a>

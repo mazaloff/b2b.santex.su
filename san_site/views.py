@@ -11,6 +11,7 @@ from .forms import LoginForm, PasswordChangeForm, PasswordResetForm
 from .tasks import letter_password_change as task_letter_password_change
 
 
+@page_not_access
 def index(request):
     return render(request, 'content.html', {})
 

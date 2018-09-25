@@ -1,0 +1,36 @@
+<div id="products" class="column products">
+    <div id="accounts_login">
+
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="{{ message.tags }}">
+                        {{ message|safe }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if next %}
+            {% if user.is_authenticated %}
+            <p>У Вашей учетной записи нет доступа к этой странице.</p>
+            {% else %}
+            <p>Пожалуйста, войдите, чтобы увидеть эту страницу.</p>
+            {% endif %}
+        {% endif %}
+
+        <form action="{% url 'account_login' %}" method="post">
+            {% csrf_token %}
+            <p>Авторизуйтесь, чтобы видеть ваши цены и делать заказы...</p>
+            <p>Если у Вас нет доступа или вы забыли логин обратитесь к вашему менеджеру.</p>
+            {{ form.as_p }}
+            <div>
+              <input type="submit" value="Войти" />
+              <input type="hidden" name="next" value="{{ next }}" />
+            </div>
+        </form>
+
+        <p><a href="{% url 'account_password_reset' %}">Забыли пароль?</a></p>
+
+    </div>
+</div>

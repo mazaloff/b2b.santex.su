@@ -215,7 +215,7 @@ function widthHeadCart() {
     $('th#cart_table_5 div').stop().animate({width: $('th#cart_table_5').width()});
     $('th#cart_table_6 div').stop().animate({width: $('th#cart_table_6').width()});
     $('th#cart_table_7 div').stop().animate({width: $('th#cart_table_7').width()});
-    $('th#cart_table_8 div').stop().animate({width: $('th#cart_table_8').width()});
+    $('th#cart_table_8 div').stop().animate({width: $('th#cart_table_8').width() + 3});
 }
 
 function widthHeadGoods() {
@@ -388,6 +388,11 @@ function recoverOnlyPromo() {
 
 function recoverSearch() {
     $('#text').val(getCookie('string_search'))
+}
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
 }
 
 jQuery(document).ready(app.init);

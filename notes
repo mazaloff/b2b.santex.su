@@ -5,7 +5,7 @@ django-admin startproject mysite
 django-admin startapp blog
 
 # миграция БД
-python manage.py migrate
+python manage.py migrate  / migrate --fake
 
 # создание миграции БД
 python manage.py makemigrations app_name

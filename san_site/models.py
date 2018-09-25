@@ -44,8 +44,9 @@ class Person(models.Model):
     sort = models.IntegerField(default=500)
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)
-    change_password = models.BooleanField(default=False)
+    allow_order = models.BooleanField(default=False)
     key = models.CharField(max_length=20, default='xxx')
+    change_password = models.BooleanField(default=True)
 
     class LetterPasswordChangeError(BaseException):
         pass
@@ -281,7 +282,8 @@ class Product(models.Model):
 
     @classmethod
     def change_relevant_products(cls):
-        sections = Section.objects.filter(is_deleted=False, parent_guid='---')
+
+        sections = Section.objects.filter(parent_guid='---')
         for obj_section in sections:
             goods_list = obj_section.get_goods_list_section(only_available=False)
             filter_guid = [element_list['guid'] for element_list in goods_list]
@@ -305,6 +307,16 @@ class Product(models.Model):
                     if element_list['quantity'] != '':
                         cur_object.is_deleted = True
                         cur_object.save()
+
+        sections = Section.objects.filter()
+        for obj_section in sections:
+            is_active = len(obj_section.get_goods_list_section(only_available=True)) > 0
+            if is_active and obj_section.is_deleted:
+                obj_section.is_deleted = False
+                obj_section.save()
+            elif not is_active and not obj_section.is_deleted:
+                obj_section.is_deleted = True
+                obj_section.save()
 
     def get_price(self, user):
 
