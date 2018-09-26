@@ -7,6 +7,7 @@ from san_site.decorates.decorate import page_not_access
 from san_site.forms import OrderCreateForm
 from san_site.models import Order, get_customer
 from san_site.tasks import order_request as task_order_request
+from san_site.backend.celery import celery_is_up
 
 
 @page_not_access
@@ -54,7 +55,7 @@ def order_request(request, **kwargs):
 
     customer = get_customer(request.user)
     if customer == order_currently.person.customer:
-        if settings.CELERY_NO_CREATE_ORDERS:
+        if settings.CELERY_NO_CREATE_ORDERS or not celery_is_up():
             try:
                 order_currently.request_order()
             except Order.RequestOrderError:

@@ -6,6 +6,7 @@ from django.conf import settings
 from .cart.cart import Cart, Currency
 from .models import Order, OrderItem, Person
 from .tasks import order_request as task_order_request
+from .backend.celery import celery_is_up
 
 import pytz
 
@@ -110,7 +111,7 @@ class OrderCreateForm(forms.ModelForm):
         cart.clear()
 
         order.save()
-        if settings.CELERY_NO_CREATE_ORDERS:
+        if settings.CELERY_NO_CREATE_ORDERS or not celery_is_up():
             try:
                 order.request_order()
             except Order.RequestOrderError:

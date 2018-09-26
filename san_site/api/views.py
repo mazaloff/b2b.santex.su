@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
+from san_site.backend.celery import celery_is_up
 from san_site.tasks import change_relevant_products as task_change_relevant_products
 from san_site.models import \
     Order, Customer, Person, Section, Product, Store, Price, Currency, Inventories, Prices, CustomersPrices, Courses, \
@@ -332,7 +333,10 @@ def update_product(load_list):
         new_object.is_deleted = element_list['is_deleted']
         new_object.save()
 
-    task_change_relevant_products.delay()
+    if celery_is_up():
+        task_change_relevant_products.delay()
+    else:
+        Product.change_relevant_products()
 
 
 def update_store(load_list):
