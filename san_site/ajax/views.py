@@ -157,7 +157,7 @@ def cart_get_form_quantity(request):
 
         inventory = max(product.get_inventory(cart), 0)
         inventory = 999999 if inventory > 10 else inventory
-        if inventory > 0:
+        if is_cart or inventory > 0:
             form = EnterQuantity(initial={'quantity': ''}, max_value=inventory)
         else:
             form = EnterQuantityError()
