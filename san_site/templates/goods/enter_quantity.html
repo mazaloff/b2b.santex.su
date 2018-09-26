@@ -13,7 +13,7 @@
                     {{ field.errors }}
                 </div>
             {% endfor %}
-            {% if inventory > 0 %}
+            {% if inventory > 0 and not is_cart %}
                 <input id="btn_enter_quantity_cart" type="submit" value="ОК">
             {% endif %}
         </form>
