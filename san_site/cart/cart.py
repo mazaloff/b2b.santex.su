@@ -115,3 +115,9 @@ class Cart(object):
             if course != 1:
                 view += ' ;' if len(view) > 0 else '' + currency.name.upper() + ': ' + "{0:.4f}".format(course)
         return view
+
+    def get_quantity_product(self, product_guid):
+        if product_guid not in self.cart:
+            return 0
+        return self.cart[product_guid]['quantity']
+

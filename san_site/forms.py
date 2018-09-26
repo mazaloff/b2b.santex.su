@@ -28,6 +28,22 @@ class PasswordChangeForm(forms.Form):
 class EnterQuantity(forms.Form):
     quantity = forms.IntegerField(min_value=1, required=False, label='Добавить в заказ')
 
+    def __new__(cls, initial, max_value):
+        obj_cls = super(EnterQuantity, cls).__new__(cls)
+        obj_cls.quantity = forms.IntegerField(min_value=1,
+                                              max_value=max_value,
+                                              required=False,
+                                              label='Добавить в заказ')
+        obj_cls.base_fields['quantity'] = obj_cls.quantity
+        return obj_cls
+
+    def __init__(self, *args, **kwargs):
+        super(EnterQuantity, self).__init__()
+
+
+class EnterQuantityError(forms.Form):
+    pass
+
 
 class OrderCreateForm(forms.ModelForm):
     delivery = forms.DateTimeField(

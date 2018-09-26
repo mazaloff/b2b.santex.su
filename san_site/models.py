@@ -318,6 +318,17 @@ class Product(models.Model):
                 obj_section.is_deleted = True
                 obj_section.save()
 
+    def get_inventory(self, cart=None):
+        query_set_inventory = Inventories.objects.filter(product=self)
+        inventory = 0
+        for element in query_set_inventory:
+            inventory += element.quantity
+        if cart:
+            quantity = cart.get_quantity_product(self.guid)
+            if type(quantity) == int:
+                inventory = max(inventory - quantity, 0)
+        return inventory
+
     def get_price(self, user):
 
         current_customer = get_customer(user)

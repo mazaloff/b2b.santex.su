@@ -472,6 +472,10 @@ div.disabled {
     padding-bottom: 7px
 }
 
+.control input {
+    width: 180px
+}
+
 div.control-group.has-errors label {
     color: orangered
 }

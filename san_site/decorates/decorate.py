@@ -4,7 +4,6 @@ from django.conf import settings
 from django.shortcuts import resolve_url
 from django.http import HttpResponseRedirect
 from django.utils.log import log_response
-from django.template.loader import render_to_string
 from django.shortcuts import render
 
 from san_site.backend.response import HttpResponseAjax

@@ -1,6 +1,11 @@
 <div id="form_enter_quantity">
     <div class="enter-quantity-wrapper">
         <form action="." method="post">
+            {% if is_cart %}
+                <p>Товар уже присутствует в текущем заказе...</p>
+            {% elif inventory == 0 %}
+                <p>Данной позиции нет в наличии...</p>
+            {% endif %}
             {% for field in form %}
                 <div class="control-group{% if field.errors %} has-errors{% endif %}">
                     <label class="control-label">{{ field.label }}</label>
@@ -8,7 +13,9 @@
                     {{ field.errors }}
                 </div>
             {% endfor %}
-            <input id="btn_enter_quantity_cart" type="submit" value="ОК">
+            {% if inventory > 0 %}
+                <input id="btn_enter_quantity_cart" type="submit" value="ОК">
+            {% endif %}
         </form>
     </div>
     <div onclick="document.getElementById('form_enter_quantity').style.display='none';

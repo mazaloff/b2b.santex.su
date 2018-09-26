@@ -266,13 +266,13 @@ Index.initGoods();
 
 function AddCart(guid, quantity) {
 
+    jQuery("#tr_goods" + guid).removeClass('current-tr');
+    jQuery("#form_enter_quantity").css('display', 'none');
+
     if (quantity === '' || quantity === '0') {
         jQuery("#id_quantity").focus();
         return
     }
-
-    jQuery("#tr_goods" + guid).removeClass('current-tr');
-    jQuery("#form_enter_quantity").css('display', 'none');
 
     jQuery("#cart").replaceWith("<div id=\"cart\"></div>");
 

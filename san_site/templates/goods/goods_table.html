@@ -37,7 +37,7 @@
             {% for goods in goods_list %}
                 <tr id="tr_goods{{ goods.guid }}" class="goods_tr
                 {% if not goods.relevant %} not_relevant{% endif %}{% if goods.promo %} promo{% endif %}">
-                   <td id="goods_table_1">{{ goods.code }}</td>
+                    <td id="goods_table_1">{{ goods.code }}</td>
                     <td title="Добавить позицию в текущий заказ"
                         onclick="addCart('{{ goods.guid }}', 2)" id="goods_table_2" style="cursor: pointer;">
                         {{ goods.name }}
