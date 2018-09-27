@@ -163,6 +163,7 @@ CELERY_TIMEZONE = TIME_ZONE
 
 CELERY_NO_SEND_EMAIL = True
 CELERY_NO_CREATE_ORDERS = False
+CELERY_NO_GET_STATUS = True
 
 try:
     from .settings_local import *
