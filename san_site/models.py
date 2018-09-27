@@ -286,12 +286,8 @@ class Product(models.Model):
         sections = Section.objects.filter(parent_guid='---')
         for obj_section in sections:
             goods_list = obj_section.get_goods_list_section(only_available=False)
-            filter_guid = [element_list['guid'] for element_list in goods_list]
-            filter_object = {t.guid: t for t in cls.objects.filter(guid__in=filter_guid)}
             for element_list in goods_list:
-                cur_object = filter_object.get(element_list['guid'], None)
-                if not cur_object:
-                    continue
+                cur_object = element_list['product']
                 if not cur_object.is_deleted:
                     if element_list['quantity'] == '' and element_list['price'] == '':
                         cur_object.is_deleted = True
@@ -308,7 +304,7 @@ class Product(models.Model):
                         cur_object.is_deleted = True
                         cur_object.save()
 
-        sections = Section.objects.filter()
+        sections = Section.objects.all()
         for obj_section in sections:
             is_active = len(obj_section.get_goods_list_section(only_available=True)) > 0
             if is_active and obj_section.is_deleted:
