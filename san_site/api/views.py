@@ -599,11 +599,6 @@ def update_inventories(load_list, value_response):
                                                     quantity=quantity)
             new_object.save()
 
-    if celery_is_up():
-        task_change_relevant_products.delay()
-    else:
-        Product.change_relevant_products()
-
 
 def update_prices(load_list, value_response):
     Prices.objects.all().delete()
@@ -669,11 +664,6 @@ def update_prices(load_list, value_response):
                                                    currency=obj_currency,
                                                    value=value_price)
             new_object.save()
-
-    if celery_is_up():
-        task_change_relevant_products.delay()
-    else:
-        Product.change_relevant_products()
 
 
 def update_users_prices(load_list, value_response):
