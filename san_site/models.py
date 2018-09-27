@@ -109,7 +109,7 @@ class Section(models.Model):
 
     def list_with_children(self, list_sections):
         list_sections.append(self)
-        children = Section.objects.filter(parent_guid=self.guid, is_deleted=False)
+        children = Section.objects.filter(parent_guid=self.guid)
         for child in children:
             list_sections.append(child)
             child.list_with_children(list_sections)
