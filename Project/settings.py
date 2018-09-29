@@ -70,6 +70,7 @@ TEMPLATES = [
                 'san_site.context_processors.processor.cart',
                 'san_site.context_processors.processor.user',
                 'san_site.context_processors.processor.debug',
+                'san_site.context_processors.processor.random_css',
             ],
         },
     },

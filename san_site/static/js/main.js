@@ -143,7 +143,6 @@ var main_goods_height = 99999,
 
     $("html,body").css("overflow","hidden");
 
-
     // Экспортируем наружу
     return {
         init: init

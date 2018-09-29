@@ -29,8 +29,8 @@ class PasswordChangeForm(forms.Form):
 class EnterQuantity(forms.Form):
     quantity = forms.IntegerField(min_value=1, required=False, label='Добавить в заказ')
 
-    def __new__(cls, initial, max_value):
-        obj_cls = super(EnterQuantity, cls).__new__(cls)
+    def __new__(cls, initial, max_value, **kwargs):
+        obj_cls = super().__new__(cls, **kwargs)
         obj_cls.quantity = forms.IntegerField(min_value=1,
                                               max_value=max_value,
                                               required=False,
@@ -38,8 +38,8 @@ class EnterQuantity(forms.Form):
         obj_cls.base_fields['quantity'] = obj_cls.quantity
         return obj_cls
 
-    def __init__(self, *args, **kwargs):
-        super(EnterQuantity, self).__init__()
+    def __init__(self, initial, max_value, **kwargs):
+        super().__init__(**kwargs)
 
 
 class EnterQuantityError(forms.Form):
@@ -47,8 +47,8 @@ class EnterQuantityError(forms.Form):
 
 
 class OrderCreateForm(forms.ModelForm):
-    delivery = forms.DateTimeField(
-        widget=forms.SelectDateWidget,
+    delivery = forms.DateField(
+        widget=forms.DateInput,
         initial=datetime.datetime.now(tz=pytz.timezone(settings.TIME_ZONE)) + datetime.timedelta(days=1),
         label='Срок поставки')
     shipment = forms.ChoiceField(choices=settings.SHIPMENT_TYPE, required=True,

@@ -472,8 +472,12 @@ div.disabled {
     padding-bottom: 7px
 }
 
-.control input {
-    width: 180px
+#form_create_order .control input {
+    width: 111px;
+}
+
+#form_create_order .control select {
+    width: 115px;
 }
 
 div.control-group.has-errors label {
@@ -507,6 +511,10 @@ input.form-control {
 
 div#goods_search {
     height: 25px;
+}
+
+#id_quantity {
+    width: 165px;
 }
 
 input#only_stock, input#only_promo {
@@ -578,4 +586,15 @@ div#user_cart a.order-create {
 
 .current-tr {
     background-color: #fbe55e;
+}
+
+#ui-datepicker-div .ui-datepicker-header {
+    background: white;
+    border: none;
+}
+
+#ui-datepicker-div .ui-state-active {
+    background: #fbe55e;
+    border: 1px solid #c5c5c5;
+    color: #24292e;
 }

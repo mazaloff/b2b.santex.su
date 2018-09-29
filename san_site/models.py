@@ -64,7 +64,7 @@ class Person(models.Model):
         )
         text_content = 'This is an important message.'
         msg = EmailMultiAlternatives(
-            "Information for change your password Santex!",
+            "Information for change your password!",
             text_content,
             settings.DEFAULT_FROM_EMAIL,
             [self.user.email])

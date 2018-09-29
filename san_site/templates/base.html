@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <title>{% block title %}Santex's e-Commerce{% endblock %}</title>
     {% block extrahead %}{% endblock %}
-    <link rel="stylesheet" href="{% static 'css/css.css' %}">
+    <link rel="stylesheet" href="{% static 'css/css.css' %}?r={{ random_css }}">
+<link rel="stylesheet" href="{% static 'vendor/jquery/jquery-ui.min.css' %}">
     <link rel="stylesheet" href="{% static 'vendor/jstree/style.min.css' %}">
 </head>
 <body>
@@ -15,8 +16,11 @@
     {% block content %}{% endblock %}
 </div>
 <script src="{% static 'vendor/jquery/jquery.min.js' %}" type="text/javascript"></script>
+<script src="{% static 'vendor/jquery/jquery-ui.min.js' %}" type="text/javascript"></script>
+<script src="{% static 'vendor/jquery/jquery.ui.datepicker-ru.js' %}" type="text/javascript"></script>
 <script src="{% static 'vendor/jstree/jstree.min.js' %}" type="text/javascript"></script>
 <script src="{% static 'js/main.js' %}" type="text/javascript"></script>
 <script src="{% static 'js/index.js' %}" type="text/javascript"></script>
+<script src="{% static 'js/widget.js' %}" type="text/javascript"></script>
 </body>
 </html>
