@@ -74,8 +74,8 @@ var main_goods_height = 99999,
                         recoverOnlyStock();
                         recoverOnlyPromo();
 
-                        jQuery("#goods").html('Товары из категории ' + json.current_section
-                            .link('?sections=' + guid));
+                        jQuery("#goods").html('Товары из категории <strong>' + json.current_section
+                        .link('?sections=' + guid) + '</strong>');
 
                         console.log('changed node: ', data);
 
@@ -187,19 +187,18 @@ function updateTables() {
     }
 
     if (document.getElementById("goods_cart")) {
-        $('#goods_cart').stop().animate({height: cart_table_height});
+        $('#goods_cart').stop().animate({height: cart_table_height, width: $('#goods_cart table').width()+6});
     }
 
     if (document.getElementById("list_orders")) {
-        $('#list_orders').stop().animate({height: list_orders_table_height});
+        $('#list_orders').stop().animate({height: list_orders_table_height, width: $('#list_orders table').width()+6});
     }
 
     goods_table_height = Math.min(goods_table_height, main_goods_height);
 
     if (document.getElementById("goods_table")) {
-        $('#goods_table').stop().animate({height: goods_table_height});
+        $('#goods_table').stop().animate({height: goods_table_height, width: $('#goods_table table').width()+6});
     }
-
 
     if (document.getElementById("categories")) {
         $('#categories').stop().animate({height: categories_height});

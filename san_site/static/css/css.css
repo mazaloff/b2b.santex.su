@@ -9,6 +9,14 @@ a {
    color: #24292e;
 }
 
+strong a {
+   color: #5a3939;
+}
+
+strong {
+    color: #5a3939;
+}
+
 input[type="number"], input[type="text"], input[type="password"] {
     font-family: Lucida Sans Unicode;
     color: #24292e;
@@ -38,7 +46,7 @@ input[type="submit"] {
 
 #header {
     display: flex;
-    height: 43px;
+    height: 45px;
 }
 
 #header #branding {
@@ -597,4 +605,43 @@ div#user_cart a.order-create {
     background: #fbe55e;
     border: 1px solid #c5c5c5;
     color: #24292e;
+}
+
+#id_delivery {
+    background-repeat: no-repeat;
+    background-position: 100% 50%;
+    background-image: url("/static/img/cal.gif");
+    cursor: pointer;
+}
+
+::-webkit-scrollbar-button {
+    background-image: url('');
+    background-repeat: no-repeat;
+    width: 5px;
+    height: 0
+}
+
+::-webkit-scrollbar-track {
+    background-color: #ecedee
+}
+
+::-webkit-scrollbar-thumb {
+    -webkit-border-radius: 0;
+    border-radius: 0;
+    background-color: #ccc;
+}
+
+::-webkit-scrollbar-thumb:hover{
+    background-color: #ccc;
+}
+
+::-webkit-resizer{
+    background-image: url('');
+    background-repeat: no-repeat;
+    width: 4px;
+    height: 0
+}
+
+::-webkit-scrollbar{
+    width: 4px;
 }

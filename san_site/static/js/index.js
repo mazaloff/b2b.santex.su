@@ -45,8 +45,8 @@ class Index {
                     recoverOnlyStock();
                     recoverOnlyPromo();
 
-                    jQuery("#goods").html('Товары из категории ' + json.current_section
-                        .link('?sections=' + guid));
+                    jQuery("#goods").html('Товары из категории <strong>' + json.current_section
+                        .link('?sections=' + guid) + '</strong>');
 
                     jQuery(window).scrollTop(0);
 

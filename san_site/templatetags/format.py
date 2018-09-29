@@ -17,8 +17,8 @@ def format(value, fmt):
 @register.filter(name='units')
 def units(value):
     if value == 1:
-        return str(value) + " штука "
+        return str(value) + " штука"
     elif value <= 4:
-        return str(value) + " штуки "
+        return str(value) + " штуки"
     else:
-        return str(value) + " штук "
+        return str(value) + " штук"
