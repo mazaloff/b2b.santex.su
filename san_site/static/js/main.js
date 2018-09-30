@@ -43,8 +43,11 @@ var main_goods_height = 99999,
             guid = data.node.original.href;
 
             jQuery("#products").replaceWith(main_products);
+
+            $('#only_promo').prop('checked', false);
+            createCookie('is_only_promo', getOnlyPromo(), 30);
+
             recoverOnlyStock();
-            recoverOnlyPromo();
 
             history.pushState(null, null, '/');
             history.replaceState(null, null, '/');
@@ -71,11 +74,11 @@ var main_goods_height = 99999,
                     if (json.success)
                     {
                         jQuery("#products").replaceWith(json.products);
+
                         recoverOnlyStock();
-                        recoverOnlyPromo();
 
                         jQuery("#goods").html('Товары из категории <strong>' + json.current_section
-                        .link('?sections=' + guid) + '</strong>');
+                                .link('?sections=' + guid) + '</strong>');
 
                         console.log('changed node: ', data);
 
@@ -234,6 +237,7 @@ function widthHeadOrders() {
     $('th#orders_table_5 div').stop().animate({width: $('th#orders_table_5').width()});
     $('th#orders_table_6 div').stop().animate({width: $('th#orders_table_6').width()});
     $('th#orders_table_7 div').stop().animate({width: $('th#orders_table_7').width()});
+    $('th#orders_table_8 div').stop().animate({width: $('th#orders_table_8').width()});
 }
 
 function countHeightTableGoods() {
@@ -382,10 +386,6 @@ function recoverOnlyPromo() {
     } else {
         $('#only_promo').prop('checked', false);
     }
-}
-
-function recoverSearch() {
-    $('#text').val(getCookie('string_search'))
 }
 
 function csrfSafeMethod(method) {

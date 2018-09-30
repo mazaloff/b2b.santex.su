@@ -16,8 +16,11 @@ class Index {
         let guid = window.getSectionGUID(path);
 
         jQuery("#products").replaceWith(main_products);
+
+        $('#only_promo').prop('checked', false);
+        createCookie('is_only_promo', getOnlyPromo(), 30);
+
         recoverOnlyStock();
-        recoverOnlyPromo();
 
         history.pushState(null, null, '/');
         history.replaceState(null, null, '/');
@@ -42,11 +45,11 @@ class Index {
                 if (json.success)
                 {
                     jQuery("#products").replaceWith(json.products);
+
                     recoverOnlyStock();
-                    recoverOnlyPromo();
 
                     jQuery("#goods").html('Товары из категории <strong>' + json.current_section
-                        .link('?sections=' + guid) + '</strong>');
+                            .link('?sections=' + guid) + '</strong>');
 
                     jQuery(window).scrollTop(0);
 
@@ -64,7 +67,6 @@ class Index {
                         .forEach(link => link.addEventListener('click', Index._clickHandlerGoods));
                     onlyStock();
                     onlyPromo();
-
                 } else {
                     console.error('Ошибка получения данных с сервера');
                 }

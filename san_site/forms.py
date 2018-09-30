@@ -80,11 +80,11 @@ class OrderCreateForm(forms.ModelForm):
         set_person = Person.objects.filter(user=request.user)
         if len(set_person) > 0:
             person = set_person[0]
-        eastern = pytz.timezone(settings.TIME_ZONE)
-        delivery = self.cleaned_data['delivery'].astimezone(tz=eastern)
+        delivery = self.cleaned_data['delivery']
+        delivery_time = datetime.datetime(delivery.year, delivery.month, delivery.day, 12, 0, 0)
         order = Order.objects.create(
             person=person,
-            delivery=delivery,
+            delivery=delivery_time,
             shipment=self.cleaned_data['shipment'],
             payment=self.cleaned_data['payment'],
             comment=self.cleaned_data['comment']

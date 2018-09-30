@@ -21,6 +21,7 @@
                     <col style="background:#fcffd1">
                     <col>
                     <col>
+                    <col>
                     <col style="background:#fcffd1">
                 </colgroup>
                 <thead style="background: #ffffff;">
@@ -38,12 +39,15 @@
                         <div><span>Вал.</span></div>
                     </th>
                     <th id="orders_table_5">
-                        <div><span>Доставка</span></div>
+                        <div><span>Отправка</span></div>
                     </th>
                     <th id="orders_table_6">
-                        <div><span>Статус</span></div>
+                        <div><span>Срок</span></div>
                     </th>
                     <th id="orders_table_7">
+                        <div><span>Статус</span></div>
+                    </th>
+                    <th id="orders_table_8">
                         <div><span>Комментарий</span></div>
                     </th>
                 </tr>
@@ -54,9 +58,10 @@
                         <td class="orders_table_2">{{ order.date }}</td>
                         <td class="orders_table_3" align=right> {{ order.get_total_cost|format:"{0:.2f}" }}</td>
                         <td class="orders_table_4">руб.</td>
-                        <td class="orders_table_5">{{ order.delivery }}</td>
-                        <td class="orders_table_6">{{ order.status }}</td>
-                        <td class="orders_table_7">{{ order.comment }}</td>
+                        <td class="orders_table_5">{{ order.shipment }}</td>
+                        <td class="orders_table_6">{{ order.delivery|date:"j E Y" }}</td>
+                        <td class="orders_table_7">{{ order.status }}</td>
+                        <td class="orders_table_8">{{ order.comment }}</td>
                     </tr>
                 {% endfor %}
             </table>

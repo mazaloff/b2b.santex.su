@@ -1,0 +1,288 @@
+
+body {
+    font-family: "Lucida Sans Unicode";
+    font-size: 13px;
+    color: #24292e;
+}
+
+a {
+   color: #24292e;
+}
+
+strong a {
+   color: #5a3939;
+}
+
+strong {
+    color: #5a3939;
+}
+
+input[type="number"], input[type="text"], input[type="password"] {
+    font-family: "Lucida Sans Unicode";
+    color: #24292e;
+    height: 17px;
+}
+
+select {
+    font-family: "Lucida Sans Unicode";
+    height: 23px;
+}
+
+input[type="submit"] {
+    font-family: "Lucida Sans Unicode";
+    color: #24292e;
+    height: 27px;
+}
+
+.main {
+    display: flex;
+    margin: 0 auto; /* Центрируем блоки */
+}
+
+#accounts_login {
+    margin-left: 10px;
+    margin-top: -10px;
+}
+
+#header {
+    display: flex;
+    height: 45px;
+}
+
+#header #branding {
+    flex: 2 50 215px;
+}
+
+#header #header_menu {
+    flex: 4 1 400px;
+}
+
+#header #user_tools {
+    flex: 6 1 400px;
+}
+
+.categories {
+    flex: 2 50 200px;
+    display: block;
+    border: 1px solid #ccc;
+    padding: 2px 10px 10px 2px;
+    margin-right: -1px;
+}
+
+.products {
+    flex: 10 1 800px;
+    display: block;
+    padding: 0 8px 8px 10px;
+}
+
+a.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: default;
+}
+
+div.disabled {
+    visibility: hidden;
+    height: 0 !important;
+}
+
+#goods {
+    height: 21px;
+}
+
+#categories {
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto
+}
+
+#categories {
+    border-collapse: collapse;
+}
+
+#goods_table a#cart_add {
+    text-decoration: none;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+#header_cart {
+    height: 20px;
+    margin-top: 5px;
+}
+
+#header_table_order {
+    height: 20px;
+    margin-left: 10px;
+    margin-top: 10px;
+}
+
+#header_order {
+    margin-left: 10px
+}
+
+.control-group {
+    padding-bottom: 7px
+}
+
+#form_create_order .control input {
+    width: 111px;
+}
+
+#form_create_order .control select {
+    width: 115px;
+}
+
+div.control-group.has-errors label {
+    color: orangered
+}
+
+ul.messages li.error {
+    color: orangered
+}
+
+ul.errorlist {
+    margin: 0;
+    color: orangered
+}
+
+#order_status {
+    background-color: #fcffd1;
+    padding: 1em;
+}
+
+div#header_order td {
+    padding-right: 20px;
+}
+
+input.form-control {
+    height: 17px;
+    width: 200px;
+    border-width: 1px;
+    padding-left: 5px;
+}
+
+div#goods_search {
+    height: 25px;
+}
+
+#id_quantity {
+    width: 165px;
+}
+
+input#only_stock, input#only_promo {
+    top: 2px;
+    position: relative;
+}
+
+#goods_table tr.goods_tr.not_relevant {
+    color: gray;
+}
+
+#goods_table tr.goods_tr.promo {
+    color: #c32061;
+}
+
+div#loading_icon {
+    background: url("../vendor/jstree/throbber.gif") left center no-repeat;
+    width: 70px;
+    height: 24px;
+}
+
+div#loading_icon span {
+    position: relative;
+    left: 20px;
+    top: 3px;
+}
+
+.black-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    z-index: 1001;
+    -moz-opacity: 0.5;
+    opacity: .50;
+    filter: alpha(opacity=50);
+}
+
+.enter-quantity-wrapper {
+    position: absolute;
+    background: white;
+    padding: 10px 14px 4px 18px;
+    width: 192px;
+    height: 85px;
+    z-index: 1002;
+    top: 50%;
+    left: 50%;
+}
+
+input#btn_enter_quantity_cart {
+    width: 80px;
+    height: 26px;
+}
+
+div#user_cart a.order-create {
+    background-color: #fcffd1;
+    text-decoration: none;
+}
+
+.jstree-default .jstree-hovered {
+    background-color: #fcffd1 !important;
+}
+
+.jstree-default .jstree-clicked {
+    background-color: #fbe55e !important;
+}
+
+.current-tr {
+    background-color: #fbe55e;
+}
+
+#ui-datepicker-div .ui-datepicker-header {
+    background: white;
+    border: none;
+}
+
+#ui-datepicker-div .ui-state-active {
+    background: #fbe55e;
+    border: 1px solid #c5c5c5;
+    color: #24292e;
+}
+
+#id_delivery {
+    background: url("/static/img/cal.gif") no-repeat 100% 50%;
+    cursor: pointer;
+}
+
+::-webkit-scrollbar-button {
+    width: 5px;
+    height: 0
+}
+
+::-webkit-scrollbar-track {
+    background-color: #ecedee
+}
+
+::-webkit-scrollbar-thumb {
+    -webkit-border-radius: 0;
+    border-radius: 0;
+    background-color: #ccc;
+}
+
+::-webkit-scrollbar-thumb:hover{
+    background-color: #ccc;
+}
+
+::-webkit-resizer{
+    background: url('') no-repeat;
+    width: 4px;
+    height: 0
+}
+
+::-webkit-scrollbar{
+    width: 4px;
+}

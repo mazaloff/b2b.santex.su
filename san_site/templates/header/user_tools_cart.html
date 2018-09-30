@@ -4,7 +4,6 @@
         {% if not user.person.allow_order %}
             Нет прав делать заказы.
         {% elif cart|length > 0 %}
-{#            <input id="btn_create_order" type="submit" value="Разместить заказ: {{ cart.get_total_quantity|units }}, на сумму {{ cart.get_total_cost|format:"{0:.2f}" }} руб.">#}
             <a class="order-create button" href="{% url 'order_create' %}">Разместить заказ:
                 <strong>{{ cart.get_total_quantity|units }}</strong>, на сумму
                 <strong>{{ cart.get_total_cost|format:"{0:.2f}" }} руб.</strong></a>

@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 {% load static %}
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}Santex's e-Commerce{% endblock %}</title>
     {% block extrahead %}{% endblock %}
-    <link rel="stylesheet" href="{% static 'css/css.css' %}?r={{ random_css }}">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}?r={{ random_css }}">
+    <link rel="stylesheet" href="{% static 'css/table.css' %}?r={{ random_css }}">
     <link rel="stylesheet" href="{% static 'vendor/jquery/jquery-ui.min.css' %}">
     <link rel="stylesheet" href="{% static 'vendor/jstree/style.min.css' %}">
 </head>

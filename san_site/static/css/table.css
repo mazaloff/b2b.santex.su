@@ -1,0 +1,409 @@
+
+/* goods table */
+
+#goods_table {
+    height: 100%;
+    overflow: auto;
+}
+
+#goods_table table {
+    border-collapse: collapse;
+}
+
+#goods_table th div {
+    position: absolute;
+    margin-top: -20px;
+    background: #FCED6C;
+    font-weight: normal
+}
+
+#goods_table {
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+#goods_table td {
+    padding: 6px 12px 6px 8px;
+}
+
+#goods_table tr {
+    border-bottom: 1px solid #e8e9eb;
+}
+
+#goods_table tbody tr:hover {
+    background: #FCED6C;
+}
+
+#goods_table th#goods_table_1 {
+    min-width: 100px;
+    max-width: 140px;
+}
+
+#goods_table th#goods_table_2 {
+    min-width: 450px;
+}
+
+#goods_table th#goods_table_3 {
+    width: 70px;
+}
+
+#goods_table th#goods_table_4 {
+    width: 100px;
+}
+
+#goods_table th#goods_table_5 {
+    width: 30px;
+}
+
+#goods_table th#goods_table_6 {
+    width: 20px;
+}
+
+#goods_table th#goods_table_7 {
+    width: 100px;
+}
+
+#goods_table th#goods_table_1 div {
+    margin-left: -1px;
+    padding-right: 3px;
+    text-align: left;
+}
+
+#goods_table th#goods_table_2 div {
+    padding-right: 3px;
+    text-align: left;
+}
+
+#goods_table th#goods_table_3 div {
+    padding-right: 3px;
+    text-align: right;
+}
+
+#goods_table th#goods_table_4 div {
+    padding-right: 3px;
+    text-align: right;
+}
+
+#goods_table th#goods_table_5 div {
+    padding-right: 3px;
+    text-align: center;
+}
+
+#goods_table th#goods_table_6 div {
+    padding-right: 3px;
+    text-align: center;
+}
+
+#goods_table th#goods_table_7 div {
+    padding-right: 3px;
+    text-align: right;
+}
+
+#goods_table th#goods_table_1 span {
+    padding-left: 7px;
+}
+
+#goods_table th#goods_table_2 span {
+    padding-left: 7px;
+}
+
+#goods_table th#goods_table_3 span {
+    padding-right: 10px;
+}
+
+#goods_table th#goods_table_4 span {
+    padding-right: 12px;
+}
+
+#goods_table th#goods_table_7 span {
+    padding-right: 12px;
+}
+
+/* goods cart */
+
+#goods_cart {
+    height: 0;
+    overflow: auto;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+#goods_cart table {
+    border-collapse: collapse;
+}
+
+#goods_cart th div {
+    position: absolute;
+    margin-top: -20px;
+    background: #FCED6C;
+    font-weight: normal
+}
+
+#goods_cart td {
+    padding: 6px 12px 6px 8px;
+}
+
+#goods_cart tr {
+    border-bottom: 1px solid #e8e9eb;
+}
+
+#goods_cart tbody tr:hover {
+    background: #FCED6C;
+}
+
+#goods_cart th#cart_table_1 {
+    min-width: 100px;
+    max-width: 140px;
+}
+
+#goods_cart th#cart_table_2 {
+    min-width: 450px;
+}
+
+#goods_cart th#cart_table_3 {
+    width: 80px;
+}
+
+#goods_cart th#cart_table_4 {
+    width: 100px;
+}
+
+#goods_cart th#cart_table_5 {
+    width: 100px;
+}
+
+#goods_cart th#cart_table_6 {
+    width: 30px;
+}
+
+#goods_cart th#cart_table_7 {
+    width: 100px;
+}
+
+#goods_cart th#cart_table_8 {
+    width: 20px;
+}
+
+#goods_cart td.cart_table_8 a {
+    color: #979797;
+    text-decoration: none;
+}
+
+#goods_cart th#cart_table_1 div {
+    margin-left: -1px;
+    padding-right: 3px;
+    text-align: left;
+}
+
+#goods_cart th#cart_table_2 div {
+    padding-right: 3px;
+    text-align: left;
+}
+
+#goods_cart th#cart_table_3 div {
+    padding-right: 3px;
+    text-align: right;
+}
+
+#goods_cart th#cart_table_4 div {
+    padding-right: 3px;
+    text-align: right;
+}
+
+#goods_cart th#cart_table_5 div {
+    padding-right: 3px;
+    text-align: right;
+}
+
+#goods_cart th#cart_table_6 div {
+    padding-right: 3px;
+    text-align: center;
+}
+
+#goods_cart th#cart_table_7 div {
+    padding-right: 3px;
+    text-align: right;
+}
+
+#goods_cart th#cart_table_1 span {
+    padding-left: 7px;
+}
+
+#goods_cart th#cart_table_2 span {
+    padding-left: 7px;
+}
+
+#goods_cart th#cart_table_3 span {
+    padding-right: 5px;
+}
+
+#goods_cart th#cart_table_4 span {
+    padding-right: 12px;
+}
+
+#goods_cart th#cart_table_5 span {
+    padding-right: 12px;
+}
+
+#goods_cart th#cart_table_7 span {
+    padding-right: 12px;
+}
+
+.cart_table_3_box {
+    display: flex;
+}
+
+.cart_table_3_box_add {
+    flex: 1 1 0;
+    color: #979797;
+    padding-right: 10px;
+}
+
+.cart_table_3_box_reduce {
+    flex: 1 1 0;
+    color: #979797;
+}
+
+.cart_table_3_box_quantity {
+    flex: 5 5;
+}
+
+/* list orders */
+
+#list_orders {
+    height: 0;
+    overflow: auto;
+}
+
+#list_orders table {
+    border-collapse: collapse;
+}
+
+#list_orders th div {
+    position: absolute;
+    margin-top: -20px;
+    background: #FCED6C;
+    font-weight: normal
+}
+
+#list_orders {
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+#list_orders td {
+    padding: 6px 12px 6px 8px;
+}
+
+#list_orders tr {
+    border-bottom: 1px solid #e8e9eb;
+}
+
+#list_orders tbody tr:hover {
+    background: #FCED6C;
+}
+
+#list_orders th#orders_table_1 {
+    width: 80px;
+}
+
+#list_orders th#orders_table_2 {
+    width: 220px;
+}
+
+#list_orders th#orders_table_3 {
+    width: 125px;
+}
+
+#list_orders th#orders_table_4 {
+    width: 55px;
+}
+
+#list_orders th#orders_table_5 {
+    width: 115px;
+}
+
+#list_orders th#orders_table_6 {
+    width: 155px;
+}
+
+#list_orders th#orders_table_7 {
+    width: 115px;
+}
+
+#list_orders th#orders_table_8 {
+    width: 250px;
+}
+
+#list_orders th#orders_table_1 div {
+    margin-left: -1px;
+    padding-right: 3px;
+    text-align: left;
+}
+
+#list_orders th#orders_table_2 div {
+    padding-right: 3px;
+    text-align: left;
+}
+
+#list_orders th#orders_table_3 div {
+    padding-right: 3px;
+    text-align: right;
+}
+
+#list_orders th#orders_table_4 div {
+    padding-right: 3px;
+    text-align: center;
+}
+
+#list_orders th#orders_table_5 div {
+    padding-right: 3px;
+    text-align: left;
+}
+
+#list_orders th#orders_table_6 div {
+    padding-right: 3px;
+    text-align: left;
+}
+
+#list_orders th#orders_table_7 div {
+    padding-right: 3px;
+    text-align: left;
+}
+
+#list_orders th#orders_table_8 div {
+    padding-right: 3px;
+    text-align: left;
+}
+
+#list_orders th#orders_table_1 span {
+    padding-left: 7px;
+}
+
+#list_orders th#orders_table_2 span {
+    padding-left: 7px;
+}
+
+#list_orders th#orders_table_3 span {
+    padding-right: 12px;
+}
+
+#list_orders th#orders_table_4 span {
+    padding-right: 12px;
+}
+
+#list_orders th#orders_table_5 span {
+    padding-left: 7px;
+}
+
+#list_orders th#orders_table_6 span {
+    padding-left: 7px;
+}
+
+#list_orders th#orders_table_7 span {
+    padding-left: 7px;
+}
+
+#list_orders th#orders_table_8 span {
+    padding-left: 7px;
+}

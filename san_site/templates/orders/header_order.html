@@ -5,7 +5,7 @@
     <table>
         <tr>
             <td valign="top">
-                Срок поставки: <strong>{{ order.delivery }}</strong>
+                Срок поставки: <strong>{{ order.delivery|date:"j E Y" }}</strong>
                 <p>Форма оплаты: <strong>{{ order.payment }}</strong></p>
                 <p>Тип доставки: <strong>{{ order.shipment }}</strong></p>
                 <p>Комментарий: <strong>{{ order.comment }}</strong></p>
