@@ -63,7 +63,7 @@ class OrderCreateForm(forms.ModelForm):
 
     def clean_delivery(self):
         now = datetime.date.today()
-        if self.cleaned_data['delivery'].date() < now:
+        if self.cleaned_data['delivery'] < now:
             raise forms.ValidationError(
                 "Срок поставки больше текущей даты."
             )

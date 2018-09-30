@@ -1,6 +1,6 @@
 
 body {
-    font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-family: "Lucida Sans Unicode";
     font-size: 13px;
     color: #24292e;
 }
@@ -18,18 +18,18 @@ strong {
 }
 
 input[type="number"], input[type="text"], input[type="password"] {
-    font-family: Lucida Sans Unicode;
+    font-family: "Lucida Sans Unicode";
     color: #24292e;
     height: 17px;
 }
 
 select {
-    font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-family: "Lucida Sans Unicode";
     height: 23px;
 }
 
 input[type="submit"] {
-    font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-family: "Lucida Sans Unicode";
     color: #24292e;
     height: 27px;
 }
