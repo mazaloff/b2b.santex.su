@@ -11,3 +11,5 @@ __pycache__/
 /celerybeat-schedule.dat
 /celerybeat-schedule.bak
 /celerybeat-schedule.dir
+.idea/
+celery_run/celerybeat.pid
