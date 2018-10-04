@@ -292,3 +292,8 @@ div#user_cart a.order-create:hover {
 ::-webkit-scrollbar{
     width: 4px;
 }
+
+.control_help_text {
+    font-family: Consolas;
+    color: #888888;
+}

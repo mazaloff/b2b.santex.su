@@ -1,6 +1,10 @@
-from django.conf import settings
+from datetime import date
 
+from django.conf import settings
 from san_site.models import Product, Currency
+import datetime
+
+data_now: date = datetime.datetime.now().date()
 
 
 class Cart(object):
@@ -8,6 +12,7 @@ class Cart(object):
     def __init__(self, request):
         self.session = request.session
         self.user = request.user
+        self.price_exchange = False
         cart = self.session.get(settings.CART_SESSION_ID)
         if not cart:
             # save an empty cart in the session
@@ -19,6 +24,7 @@ class Cart(object):
         if product_guid not in self.cart:
             dict_price = product.get_price(self.user)
             self.cart[product_guid] = {
+                'date': datetime.datetime.now().date().isoformat(),
                 'quantity': 0,
                 'price': dict_price['price'],
                 'currency_id': dict_price['currency_id'],
@@ -34,6 +40,7 @@ class Cart(object):
     def save(self):
         self.session[settings.CART_SESSION_ID] = self.cart
         self.session.modified = True
+        self.price_exchange = False
 
     def remove(self, product):
         product_guid = str(product.guid)
@@ -42,8 +49,8 @@ class Cart(object):
             self.save()
 
     def __iter__(self):
-        product_guids = self.cart.keys()
-        products = Product.objects.filter(guid__in=product_guids)
+        product_guid = self.cart.keys()
+        products = Product.objects.filter(guid__in=product_guid)
         number = 0
         for product in products:
             self.cart[str(product.guid)]['product'] = product
@@ -52,6 +59,12 @@ class Cart(object):
             self.cart[str(product.guid)]['guid'] = product.guid
 
         for item in self.cart.values():
+            if 'date' in item:
+                if datetime.datetime.strptime(item['date'], '%Y-%m-%d').date() < data_now:
+                    currency = Currency.objects.get(id=item['currency_id'])
+                    item['price_ruble'] = currency.change_ruble(item['price'])
+                    item['date'] = data_now.isoformat()
+                    self.price_exchange = True
             number += 1
             item['total_price'] = round(item['price'] * item['quantity'], 2)
             item['total_price_ruble'] = round(item['price_ruble'] * item['quantity'], 2)
@@ -63,10 +76,10 @@ class Cart(object):
         return len(self.cart)
 
     def get_total_cost(self):
-        return round(sum(item['total_price_ruble'] for item in self.get_cart_list()), 2)
+        return sum(round(item['price_ruble'] * item['quantity'], 2) for item in self.cart.values())
 
     def get_total_quantity(self):
-        return sum(item['quantity'] for item in self.get_cart_list())
+        return sum(item['quantity'] for item in self.cart.values())
 
     def clear(self):
         del self.session[settings.CART_SESSION_ID]
@@ -76,34 +89,37 @@ class Cart(object):
         list_res_ = []
         for element in self:
             list_res_.append(self.get_tr_cart(element['guid']))
+        if self.price_exchange:
+            self.save()
         return list_res_
 
     def get_tr_cart(self, product_guid):
         if product_guid not in self.cart:
             return
-        element = self.cart[product_guid]
+        item = self.cart[product_guid]
 
-        if 'guid' not in element.keys():
+        if 'guid' not in item.keys():
             try:
                 product = Product.objects.get(guid=product_guid)
             except Product.DoesNotExist:
                 return
 
-            element['code'] = product.code
-            element['name'] = product.name
-            element['guid'] = product.guid
-        element['total_price'] = round(element['price'] * element['quantity'], 2)
-        element['total_price_ruble'] = round(element['price_ruble'] * element['quantity'], 2)
+            item['code'] = product.code
+            item['name'] = product.name
+            item['guid'] = product.guid
 
-        return {'number': element['number'],
-                'guid': element['guid'],
-                'code': element['code'],
-                'name': element['name'],
-                'quantity': element['quantity'],
-                'price': element['price'],
-                'currency': element['currency_name'],
-                'total_price': element['total_price'],
-                'total_price_ruble': element['total_price_ruble'],
+        item['total_price'] = round(item['price'] * item['quantity'], 2)
+        item['total_price_ruble'] = round(item['price_ruble'] * item['quantity'], 2)
+
+        return {'number': item['number'],
+                'guid': item['guid'],
+                'code': item['code'],
+                'name': item['name'],
+                'quantity': item['quantity'],
+                'price': item['price'],
+                'currency': item['currency_name'],
+                'total_price': item['total_price'],
+                'total_price_ruble': item['total_price_ruble'],
                 }
 
     def view_courses(self):

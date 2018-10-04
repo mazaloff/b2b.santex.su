@@ -22,7 +22,9 @@
                 {% for field in form %}
                     <div class="control-group{% if field.errors %} has-errors{% endif %}">
                         <label class="control-label">{{ field.label }}</label>
-                        <div class="control">{{ field }}</div>
+                        <div class="control">
+                            {{ field }} <span class="control_help_text">{{ field.help_text }}</span>
+                        </div>
                         {{ field.errors }}
                     </div>
                 {% endfor %}

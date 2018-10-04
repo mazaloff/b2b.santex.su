@@ -48,8 +48,9 @@ class EnterQuantityError(forms.Form):
 
 class OrderCreateForm(forms.ModelForm):
     delivery = forms.DateField(
+        help_text=' если заказ до 15.00 - поставка на следующий день, иначе через день',
         widget=forms.DateInput,
-        initial=datetime.datetime.now(tz=pytz.timezone(settings.TIME_ZONE)) + datetime.timedelta(days=1),
+        initial=datetime.datetime.now().astimezone(tz=pytz.timezone(settings.TIME_ZONE)) + datetime.timedelta(days=1),
         label='Срок поставки')
     shipment = forms.ChoiceField(choices=settings.SHIPMENT_TYPE, required=True,
                                  initial=settings.SHIPMENT_TYPE[0], label='Способ доставки')
@@ -63,11 +64,13 @@ class OrderCreateForm(forms.ModelForm):
 
     def clean_delivery(self):
         now = datetime.date.today()
-        if self.cleaned_data['delivery'] < now:
+        if self.cleaned_data['delivery'] <= now:
             raise forms.ValidationError(
-                "Срок поставки больше текущей даты."
+                "! на следующий день - заказ до 15.00, иначе через день !"
             )
-        return self.cleaned_data['delivery']
+        delivery = self.cleaned_data['delivery']
+        return datetime.datetime(delivery.year, delivery.month, delivery.day, 12, 0, 0)\
+            .astimezone(tz=pytz.timezone(settings.TIME_ZONE))
 
     def clean(self):
         pass
@@ -80,11 +83,9 @@ class OrderCreateForm(forms.ModelForm):
         set_person = Person.objects.filter(user=request.user)
         if len(set_person) > 0:
             person = set_person[0]
-        delivery = self.cleaned_data['delivery']
-        delivery_time = datetime.datetime(delivery.year, delivery.month, delivery.day, 12, 0, 0)
         order = Order.objects.create(
             person=person,
-            delivery=delivery_time,
+            delivery=self.cleaned_data['delivery'],
             shipment=self.cleaned_data['shipment'],
             payment=self.cleaned_data['payment'],
             comment=self.cleaned_data['comment']
