@@ -65,7 +65,9 @@ input[type="submit"] {
     flex: 2 50 200px;
     display: block;
     border: 1px solid #ccc;
-    padding: 2px 10px 10px 2px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    padding: 4px 10px 10px 2px;
     margin-right: -1px;
 }
 
@@ -228,6 +230,10 @@ input#btn_enter_quantity_cart {
 div#user_cart a.order-create {
     background-color: #fcffd1;
     text-decoration: none;
+}
+
+div#user_cart a.order-create:hover {
+    text-decoration: underline;
 }
 
 .jstree-default .jstree-hovered {

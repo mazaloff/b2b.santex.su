@@ -11,9 +11,6 @@
 {% block content %}
 
     <div id="products" class="column products">
-        {% if debug %}
-            <a href="{% url 'order_request' order.id %}">Выгрузить в 1с</a>
-        {% endif %}
         {% if created %}
             <p style="color: red">
                 Спасибо, Ваш заказ успешно сформирован. Ожидайте, Мы с Вас свяжемся.
@@ -21,6 +18,9 @@
         {% endif %}
         {% include "orders/header_order.html" %}
         {% include "orders/goods_order.html" %}
+        {% if debug %}
+            <p><a href="{% url 'order_request' order.id %}">Выгрузить в 1с</a></p>
+        {% endif %}
     </div>
 
 {% endblock %}
