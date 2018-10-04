@@ -227,12 +227,13 @@ input#btn_enter_quantity_cart {
     height: 26px;
 }
 
-div#user_cart a.order-create {
+a.order-create {
     background-color: #fcffd1;
+    padding: 2px 2px 2px 0;
     text-decoration: none;
 }
 
-div#user_cart a.order-create:hover {
+a.order-create:hover {
     text-decoration: underline;
 }
 
