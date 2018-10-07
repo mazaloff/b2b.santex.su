@@ -97,7 +97,10 @@ class Index {
 
                         form_enter_quantity.replaceWith(json.form_enter_quantity);
                         form_enter_quantity.show();
-                        jQuery('.black-overlay').show();
+
+                        let black_overlay = jQuery('.black-overlay');
+                        black_overlay.fadeOut(10);
+                        black_overlay.fadeIn(500);
 
                         let position = getOffset(document.getElementById('tr_goods' + guid));
                         position.left += $("th#goods_table_1").width();
@@ -110,13 +113,12 @@ class Index {
                         jQuery("#tr_goods" + guid).addClass('current-tr');
 
                         $("#btn_enter_quantity_cart").click(
-                            function () {
+                            () => {
                                 let quantity = jQuery("#id_quantity").val();
                                 AddCart(guid, quantity);
                                 return false;
                             }
                         );
-
                     } else {
                         console.error('Ошибка получения данных с сервера');
                     }
@@ -126,22 +128,26 @@ class Index {
     }
 
     static _helpQuantity(guid) {
-        let help = jQuery('#tr_goods' + guid + ' .help-tip');
-        help.show();
-        jQuery('.black-overlay').show();
+        let help_tip = jQuery('#tr_goods' + guid + ' .help-tip');
+        help_tip.show();
+
+        let black_overlay = jQuery('.black-overlay');
+        black_overlay.fadeOut(10);
+        black_overlay.fadeIn(500);
+
         let position = getOffset(document.getElementById('tr_goods' + guid));
-        help.css('top', position.top);
+        help_tip.css('top', position.top);
     }
 
     static _closeBlackOverlay(guid){
         jQuery('#tr_goods' + guid).removeClass('current-tr');
         jQuery('#form_enter_quantity').hide();
-        jQuery('.black-overlay').hide();
+        jQuery('.black-overlay').fadeOut(0);
     }
 
     static _closeBlackOverlayHelp(){
         jQuery('.help-tip').hide();
-        jQuery('.black-overlay').hide();
+        jQuery('.black-overlay').fadeOut(0);
     }
 
     static _clickQuantityAddCart(guid) {
@@ -280,7 +286,6 @@ class Index {
                 jQuery("#loading_icon").addClass('disabled');
             }
         });
-
     }
 }
 
@@ -288,8 +293,8 @@ Index.initGoods();
 
 function AddCart(guid, quantity) {
 
-    jQuery("#form_enter_quantity").css('display', 'none');
-    jQuery('.black-overlay').css('display', 'none');
+    jQuery("#form_enter_quantity").hide();
+    jQuery('.black-overlay').fadeOut(0);
 
     jQuery("#tr_goods" + guid).removeClass('current-tr');
 
@@ -327,17 +332,14 @@ function AddCart(guid, quantity) {
 }
 
 function getProductGUID(path) {
-
     let arrayOfStrings = path.split('/');
     if (arrayOfStrings.length !== 0) {
         return arrayOfStrings[arrayOfStrings.length - 1];
     }
-
     return undefined
 }
 
 function getSectionGUID(path) {
-
     let wheres_ = path.lastIndexOf("?sections=");
     if (wheres_ !== 0) {
         return path.slice("?sections=".length + wheres_, path.length);
