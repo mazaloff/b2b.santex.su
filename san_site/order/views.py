@@ -8,6 +8,8 @@ from san_site.forms import OrderCreateForm
 from san_site.models import Order, get_customer
 from san_site.tasks import order_request as task_order_request
 from san_site.backend.celery import celery_is_up
+import pytz
+import datetime
 
 
 @page_not_access
@@ -19,7 +21,12 @@ def order_create(request):
             if order:
                 return render(request, 'orders/order.html', {'order': order_new, 'created': True})
     else:
-        form = OrderCreateForm()
+        form = OrderCreateForm(
+            initial={'delivery':
+                     datetime.datetime.now().astimezone(tz=pytz.timezone(settings.TIME_ZONE)) +
+                     datetime.timedelta(days=1)
+                     }
+        )
 
     return render(request, 'orders/create.html', {'form': form})
 
