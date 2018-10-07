@@ -151,7 +151,7 @@ ul.errorlist {
 
 #order_status {
     background-color: #fcffd1;
-    padding: 1em;
+    padding: 5px;
 }
 
 div#header_order td {
@@ -199,6 +199,7 @@ div#loading_icon span {
 }
 
 .black-overlay {
+    display: none;
     position: absolute;
     top: 0;
     left: 0;
@@ -206,12 +207,13 @@ div#loading_icon span {
     height: 100%;
     background-color: black;
     z-index: 1001;
-    -moz-opacity: 0.5;
-    opacity: .50;
-    filter: alpha(opacity=50);
+    -moz-opacity: 0.2;
+    opacity: .20;
+    filter: alpha(opacity=20);
 }
 
 .enter-quantity-wrapper {
+    border: 1px solid #64aeeb;
     position: absolute;
     background: white;
     padding: 10px 14px 4px 18px;
@@ -220,6 +222,7 @@ div#loading_icon span {
     z-index: 1002;
     top: 50%;
     left: 50%;
+    border-radius: 3px;
 }
 
 input#btn_enter_quantity_cart {
@@ -228,7 +231,7 @@ input#btn_enter_quantity_cart {
 }
 
 a.order-create {
-    background-color: #fcffd1;
+    background-color: #e7f4f9;
     padding: 2px 2px 2px 0;
     text-decoration: none;
 }
@@ -297,4 +300,14 @@ a.order-create:hover {
 .control_help_text {
     font-family: Consolas;
     color: #888888;
+}
+
+.help-tip{
+    display: none;
+    position: absolute;
+    background: white;
+    padding: 10px 14px 4px 18px;
+    border: 1px solid #64aeeb;
+    z-index: 1002;
+    border-radius: 3px;
 }

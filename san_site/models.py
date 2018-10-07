@@ -153,7 +153,8 @@ class Section(models.Model):
         only_available = kwargs.get('only_available', True)
 
         list_res_ = []
-        currency_dict = {elem_.id: elem_.name for elem_ in Currency.objects.all()}
+        currency_dict: dict = {elem_.id: elem_.name for elem_ in Currency.objects.all()}
+        store_dict: dict = {elem_.id: elem_.short_name for elem_ in Store.objects.all()}
 
         set_products = Product.objects
 
@@ -182,9 +183,13 @@ class Section(models.Model):
                          queryset=CustomersPrices.objects.filter(customer=current_customer)))
 
             for value_product in products:
+                inventories = {}
                 quantity_sum = 0
                 for product_inventories in value_product.product_inventories.all():
                     quantity_sum += product_inventories.quantity
+                    short_name = store_dict.get(product_inventories.store_id)
+                    quantity = '>10' if product_inventories.quantity > 10 else product_inventories.quantity
+                    inventories.update(dict([(short_name, quantity)]))
                 price_value, price_discount, price_percent = (0, 0, 0)
                 currency_name, promo = ('', False)
                 for product_prices in value_product.product_prices.all():
@@ -209,6 +214,7 @@ class Section(models.Model):
                     'name': value_product.name,
                     'relevant': value_product.is_relevant(),
                     'quantity': '>10' if quantity_sum > 10 else '' if quantity_sum == 0 else quantity_sum,
+                    'inventories': inventories,
                     'price': '' if price_value == 0 else price_value,
                     'promo': promo,
                     'discount': '' if price_discount == 0 else price_discount,
@@ -355,6 +361,7 @@ class Product(models.Model):
 class Store(models.Model):
     guid = models.CharField(max_length=50, db_index=True)
     name = models.CharField(max_length=100)
+    short_name = models.CharField(max_length=50)
     code = models.CharField(max_length=20)
     sort = models.IntegerField(default=500)
     created_date = models.DateTimeField(default=timezone.now)

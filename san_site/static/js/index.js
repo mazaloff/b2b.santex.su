@@ -1,5 +1,9 @@
 class Index {
 
+    constructor(name) {
+        this.currentElem = null;
+    }
+
     static initGoods() {
         document.body.querySelectorAll('#goods')
                 .forEach( link => link.addEventListener('click', Index._clickHandlerGoods) );
@@ -74,7 +78,7 @@ class Index {
         });
     }
 
-    static _showFormForQuantity(guid, id_column) {
+    static _showFormForQuantity(guid) {
 
         guid = window.getProductGUID(guid);
 
@@ -92,18 +96,15 @@ class Index {
                         let form_enter_quantity = jQuery("#form_enter_quantity");
 
                         form_enter_quantity.replaceWith(json.form_enter_quantity);
-                        form_enter_quantity.css('display', 'block');
+                        form_enter_quantity.show();
+                        jQuery('.black-overlay').show();
 
                         let position = getOffset(document.getElementById('tr_goods' + guid));
                         position.left += $("th#goods_table_1").width();
-                        if (id_column === 3) {
-                            position.left += $("th#goods_table_2").width();
-                        } else {
-                            position.left += Math.ceil($("th#goods_table_2").width() / 2);
-                        }
+                        position.left += Math.ceil($("th#goods_table_2").width() / 2);
                         let form_enter_wrapper = jQuery(".enter-quantity-wrapper");
-                        form_enter_wrapper.css('left', position.left - 40);
-                        form_enter_wrapper.css('top', position.top - 40);
+                        form_enter_wrapper.css('left', position.left - 80);
+                        form_enter_wrapper.css('top', position.top - 0);
                         jQuery("#id_quantity").focus();
 
                         jQuery("#tr_goods" + guid).addClass('current-tr');
@@ -122,6 +123,25 @@ class Index {
                 }
             });
         }
+    }
+
+    static _helpQuantity(guid) {
+        let help = jQuery('#tr_goods' + guid + ' .help-tip');
+        help.show();
+        jQuery('.black-overlay').show();
+        let position = getOffset(document.getElementById('tr_goods' + guid));
+        help.css('top', position.top);
+    }
+
+    static _closeBlackOverlay(guid){
+        jQuery('#tr_goods' + guid).removeClass('current-tr');
+        jQuery('#form_enter_quantity').hide();
+        jQuery('.black-overlay').hide();
+    }
+
+    static _closeBlackOverlayHelp(){
+        jQuery('.help-tip').hide();
+        jQuery('.black-overlay').hide();
     }
 
     static _clickQuantityAddCart(guid) {
@@ -268,8 +288,10 @@ Index.initGoods();
 
 function AddCart(guid, quantity) {
 
-    jQuery("#tr_goods" + guid).removeClass('current-tr');
     jQuery("#form_enter_quantity").css('display', 'none');
+    jQuery('.black-overlay').css('display', 'none');
+
+    jQuery("#tr_goods" + guid).removeClass('current-tr');
 
     if (quantity === '' || quantity === '0') {
         jQuery("#id_quantity").focus();

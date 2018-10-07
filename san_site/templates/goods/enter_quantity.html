@@ -18,6 +18,5 @@
             {% endif %}
         </form>
     </div>
-    <div onclick="document.getElementById('form_enter_quantity').style.display='none';
-            jQuery('#tr_goods{{ guid }}').removeClass('current-tr');" class="black-overlay"></div>
+    <div onclick="closeBlackOverlay('{{ guid }}')" class="black-overlay"></div>
 </div>

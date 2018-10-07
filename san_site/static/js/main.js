@@ -298,8 +298,8 @@ function doNav(theUrl) {
     document.location.href = theUrl;
 }
 
-function addCart(guid, id_column) {
-    Index._showFormForQuantity(guid, id_column)
+function addCart(guid) {
+    Index._showFormForQuantity(guid)
 }
 
 function addQuantityCart(guid) {
@@ -386,6 +386,18 @@ function recoverOnlyPromo() {
     } else {
         $('#only_promo').prop('checked', false);
     }
+}
+
+function helpQuantity(guid) {
+    Index._helpQuantity(guid)
+}
+
+function closeBlackOverlay(guid) {
+    Index._closeBlackOverlay(guid)
+}
+
+function closeBlackOverlayHelp() {
+    Index._closeBlackOverlayHelp()
 }
 
 function csrfSafeMethod(method) {

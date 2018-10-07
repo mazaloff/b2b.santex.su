@@ -348,12 +348,14 @@ def update_store(load_list):
         new_object = filter_object.get(element_list['guid'], None)
         if new_object:
             if new_object.name == element_list['name'] \
+                    and new_object.short_name == element_list['short_name'] \
                     and new_object.code == element_list['code'] \
                     and new_object.sort == int(element_list['sort']) \
                     and new_object.is_deleted == element_list['is_deleted']:
                 pass
             else:
                 new_object.name = element_list['name']
+                new_object.short_name = element_list['short_name']
                 new_object.code = element_list['code']
                 new_object.sort = int(element_list['sort'])
                 new_object.is_deleted = element_list['is_deleted']
@@ -362,6 +364,7 @@ def update_store(load_list):
         else:
             new_object = Store.objects.create(guid=element_list['guid'],
                                               name=element_list['name'],
+                                              short_name=element_list['short_name'],
                                               code=element_list['code'],
                                               sort=int(element_list['sort']),
                                               is_deleted=element_list['is_deleted'],

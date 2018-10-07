@@ -39,13 +39,18 @@
                 {% if not goods.relevant %} not_relevant{% endif %}{% if goods.promo %} promo{% endif %}">
                     <td id="goods_table_1">{{ goods.code }}</td>
                     <td title="Добавить позицию в текущий заказ"
-                        onclick="addCart('{{ goods.guid }}', 2)" id="goods_table_2" style="cursor: pointer;">
+                        onclick="addCart('{{ goods.guid }}')" id="goods_table_2" style="cursor: pointer;">
                         {{ goods.name }}
                     </td>
-                    <td title="Добавить позицию в текущий заказ"
-                        onclick="addCart('{{ goods.guid }}', 3)" id="goods_table_3" align=right
-                        style="cursor: pointer;">
+                    <td title="Показать остатки по складам"
+                        onclick="helpQuantity('{{ goods.guid }}')"
+                        id="goods_table_3" align=right style="cursor: pointer;">
                         {{ goods.quantity }}
+                        <div class="help-tip">
+                            {% for key, value in goods.inventories.items %}
+                                {{ key }}: {{ value|units }} <br>
+                            {% endfor %}
+                        </div>
                     </td>
                     <td id="goods_table_4" align=right>{{ goods.price|format:"{0:.2f}" }}</td>
                     <td id="goods_table_5">{{ goods.currency }}</td>
@@ -59,7 +64,15 @@
                 {% if not goods.relevant %} not_relevant{% endif %}{% if goods.promo %} promo{% endif %}">
                    <td id="goods_table_1">{{ goods.code }}</td>
                     <td id="goods_table_2">{{ goods.name }}</td>
-                    <td id="goods_table_3" align=right>{{ goods.quantity }}</td>
+                    <td title="Показать остатки по складам"
+                        onclick="helpQuantity('{{ goods.guid }}')"
+                        id="goods_table_3" align=right>{{ goods.quantity }}
+                        <div class="help-tip">
+                            {% for key, value in goods.inventories.items %}
+                                {{ key }}: {{ value|units }} <br>
+                            {% endfor %}
+                        </div>
+                    </td>
                     <td id="goods_table_4" align=right>{{ goods.price|format:"{0:.2f}" }}</td>
                     <td id="goods_table_5">{{ goods.currency }}</td>
                     <td id="goods_table_6" align=center>{{ goods.percent|format:"{0:.2f}" }}</td>
@@ -72,11 +85,20 @@
                 {% if not goods.relevant %} not_relevant{% endif %}{% if goods.promo %} promo{% endif %}">
                     <td id="goods_table_1">{{ goods.code }}</td>
                     <td id="goods_table_2">{{ goods.name }}</td>
-                    <td id="goods_table_3" align=right>{{ goods.quantity }}</td>
+                    <td title="Показать остатки по складам"
+                        onclick="helpQuantity('{{ goods.guid }}')"
+                        id="goods_table_3" align=right>{{ goods.quantity }}
+                        <div class="help-tip">
+                            {% for key, value in goods.inventories.items %}
+                                {{ key }}: {{ value|units }} <br>
+                            {% endfor %}
+                        </div>
+                    </td>
                     <td id="goods_table_4" align=right>{{ goods.price|format:"{0:.2f}" }}</td>
                     <td id="goods_table_5">{{ goods.currency }}</td>
                 </tr>
             {% endfor %}
         {% endif %}
     </table>
+<div onclick="closeBlackOverlayHelp()" class="black-overlay"></div>
 </div>

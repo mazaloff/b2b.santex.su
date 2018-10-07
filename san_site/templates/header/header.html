@@ -1,6 +1,6 @@
 <div id="header">
     <div id="branding">
-        <b><a class="order-create button" href="/">Santex.B<span style="font-size: smaller">2</span>B-commerce</a></b><br>
+        <b><a style="text-decoration: none" href="/">Santex.B<span style="font-size: smaller">2</span>B-commerce</a></b><br>
         <div style="margin-top: 5px;">Каталог товаров:</div>
     </div>
     <div id="header_menu">
@@ -8,7 +8,7 @@
             {% if user.person.allow_order %}
                 <a href="{% url 'order_list' %}">Список заказов</a> |
             {% endif %}
-            <a href="/">Остатки и цены в excel</a> |
+            <a href="/">Материалы для скачивания</a> |
             <a href="{% url 'account_password_change' %}">Поменять пароль</a> |
             <a href="{% url 'account_logout' %}">Выйти</a>
         {% endif %}
