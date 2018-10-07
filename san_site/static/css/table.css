@@ -135,7 +135,7 @@
 #goods_cart th div {
     position: absolute;
     margin-top: -20px;
-    background: #adf;
+    background: #d7e7fb;
     font-weight: normal
 }
 
@@ -148,7 +148,7 @@
 }
 
 #goods_cart tbody tr:hover {
-    background: #adf;
+    background: #d7e7fb;
 }
 
 #goods_cart th#cart_table_1 {
