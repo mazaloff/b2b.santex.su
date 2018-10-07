@@ -14,7 +14,8 @@
     position: absolute;
     margin-top: -20px;
     background: #FCED6C;
-    font-weight: normal
+    font-weight: normal;
+    height: 20px;
 }
 
 #goods_table {
@@ -136,7 +137,8 @@
     position: absolute;
     margin-top: -20px;
     background: #d7e7fb;
-    font-weight: normal
+    font-weight: normal;
+    height: 20px;
 }
 
 #goods_cart td {
@@ -292,7 +294,8 @@
     position: absolute;
     margin-top: -20px;
     background: #FCED6C;
-    font-weight: normal
+    font-weight: normal;
+    height: 20px;
 }
 
 #list_orders {
