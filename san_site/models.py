@@ -34,6 +34,19 @@ class Customer(models.Model):
     def __str__(self):
         return self.name
 
+    def get_files(self):
+        customers_files = CustomersFiles.objects.filter(customer=self)
+        files = []
+        for elem in customers_files:
+            files.append(dict(
+                    name=elem.name,
+                    view=elem.view,
+                    type=elem.type_file,
+                    url=elem.url + elem.name,
+                    change_date=elem.change_date
+            ))
+        return files
+
 
 class Person(models.Model):
     user = models.OneToOneField(User, db_index=True, on_delete=models.CASCADE)
@@ -148,9 +161,13 @@ class Section(models.Model):
         user = kwargs.get('user', None)
         list_sections = kwargs.get('list_sections', None)
         search = kwargs.get('search', None)
-        only_stock = kwargs.get('only_stock', None)
-        only_promo = kwargs.get('only_promo', None)
-        only_available = kwargs.get('only_available', True)
+        only_stock = kwargs.get('only_stock', 'false')
+        only_promo = kwargs.get('only_promo', 'false')
+        only_available = kwargs.get('only_available', 'true')
+
+        only_stock = True if only_stock == 'true' or only_stock == True else False
+        only_promo = True if only_promo == 'true' or only_promo == True else False
+        only_available = True if only_available == 'true' or only_available == True else False
 
         list_res_ = []
         currency_dict: dict = {elem_.id: elem_.name for elem_ in Currency.objects.all()}
@@ -164,7 +181,7 @@ class Section(models.Model):
         if list_sections is not None:
             set_products = set_products.filter(section__in=list_sections)
 
-        if only_promo == 'true':
+        if only_promo:
             set_products = set_products.filter(id__in=PricesSale.objects.all().values("product_id"))
 
         if search is not None and search != '':
@@ -191,12 +208,13 @@ class Section(models.Model):
                     quantity = '>10' if product_inventories.quantity > 10 else product_inventories.quantity
                     inventories.update(dict([(short_name, quantity)]))
                 price_value, price_discount, price_percent = (0, 0, 0)
-                currency_name, promo = ('', False)
+                currency_name, currency_id, promo = ('', 0, False)
                 for product_prices in value_product.product_prices.all():
                     price_value = product_prices.value
                     price_discount = product_prices.value
                     promo = product_prices.promo
                     currency_name = currency_dict.get(product_prices.currency_id, '')
+                    currency_id = product_prices.currency_id
                 for product_prices in value_product.product_customers_prices.all():
                     price_discount = product_prices.discount
                     price_percent = product_prices.percent
@@ -205,7 +223,8 @@ class Section(models.Model):
                     promo = product_prices.promo
                     if currency_name == '':
                         currency_name = currency_dict.get(product_prices.currency_id, '')
-                if only_stock == 'true' and quantity_sum <= 0:
+                        currency_id = product_prices.currency_id
+                if only_stock and quantity_sum <= 0:
                     continue
                 list_res_.append({
                     'product': value_product,
@@ -219,6 +238,7 @@ class Section(models.Model):
                     'promo': promo,
                     'discount': '' if price_discount == 0 else price_discount,
                     'currency': currency_name,
+                    'currency_id': currency_id,
                     'percent': '' if price_percent == 0 else price_percent,
                 }
                 )
@@ -235,16 +255,18 @@ class Section(models.Model):
                 for product_inventories in value_product.product_inventories.all():
                     quantity_sum += product_inventories.quantity
                 price_value = 0
-                currency_name, promo = ('', False)
+                currency_name, currency_id, promo = ('', 0, False)
                 for product_prices in value_product.product_prices_sale.all():
                     price_value = product_prices.value
                     currency_name = currency_dict.get(product_prices.currency_id, '')
+                    currency_id = product_prices.currency_id
                     promo = True
                 if price_value == 0:
                     for product_prices in value_product.product_prices.all():
                         price_value = product_prices.value
                         currency_name = currency_dict.get(product_prices.currency_id, '')
-                if only_stock == 'true' and quantity_sum <= 0:
+                        currency_id = product_prices.currency_id
+                if only_stock and quantity_sum <= 0:
                     continue
                 list_res_.append({
                     'product': value_product,
@@ -257,6 +279,7 @@ class Section(models.Model):
                     'promo': promo,
                     'discount': '',
                     'currency': currency_name,
+                    'currency_id': currency_id,
                     'percent': '',
                 }
                 )
@@ -446,6 +469,15 @@ class CustomersPrices(models.Model):
     currency = models.ForeignKey(Currency, on_delete=models.PROTECT)
     discount = models.FloatField(default=0)
     percent = models.FloatField(default=0)
+
+
+class CustomersFiles(models.Model):
+    customer = models.ForeignKey(Customer, db_index=True, on_delete=models.PROTECT)
+    name = models.CharField(max_length=50, default='')
+    view = models.CharField(max_length=150, default='')
+    url = models.CharField(max_length=250, default='')
+    change_date = models.DateTimeField(default=timezone.now)
+    type_file = models.CharField(max_length=5, default='')
 
 
 class Courses(models.Model):

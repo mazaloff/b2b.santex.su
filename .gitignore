@@ -13,3 +13,5 @@ __pycache__/
 /celerybeat-schedule.dir
 .idea/
 celery_run/celerybeat.pid
+
+/static/files_for_loading/

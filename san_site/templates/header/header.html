@@ -1,14 +1,13 @@
 <div id="header">
     <div id="branding">
-        <b><a style="text-decoration: none" href="/">Santex.B<span style="font-size: smaller">2</span>B-commerce</a></b><br>
-        <div style="margin-top: -2px;">Каталог товаров:</div>
+        <b><a style="text-decoration: none" href="/">Santex.b<span style="font-size: larger">2</span>b-commerce</a></b><br>
     </div>
     <div id="header_menu">
         {% if user.is_authenticated %}
             {% if user.person.allow_order %}
                 <a href="{% url 'order_list' %}">Список заказов</a> |
             {% endif %}
-            <a href="/">Материалы для скачивания</a> |
+            <a href="{% url 'files_for_loading' %}">Материалы для скачивания</a> |
             <a href="{% url 'account_password_change' %}">Поменять пароль</a> |
             <a href="{% url 'account_logout' %}">Выйти</a>
         {% endif %}

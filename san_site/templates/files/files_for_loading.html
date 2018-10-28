@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ block.super }}
+{% endblock %}
+
+{% block header %}
+    {% include "header/header.html" %}
+{% endblock %}
+
+{% block content %}
+
+    <div id="products" class="column products">
+        <div id="header_files_for_loading">
+            <h3 class="top_h">Материалы для скачивания и загрузки в Ваши учетные системы</h3>
+            {% if files|length > 0 %}
+                {% for file in files %}
+                    <div class="file_for_loading">
+                        <a href="{{ file.url }}"> {{ file.view }} </a>
+                        <span class="control_help_text"> - создан {{ file.change_date }}</span>
+                    </div>
+                {% endfor %}
+            {% else %}
+                Файлы для скачивания еще не созданы.
+            {% endif %}
+            <p><a href="{% url 'files_create' %}">Сгенерировать файлы</a>
+                <span class="control_help_text"> - если нужны свежие данные (занимает 1-2 минуты)</span></p>
+        </div>
+    </div>
+
+{% endblock %}

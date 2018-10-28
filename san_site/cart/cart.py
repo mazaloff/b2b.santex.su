@@ -4,9 +4,6 @@ from django.conf import settings
 from san_site.models import Product, Currency
 import datetime
 
-data_now: date = datetime.datetime.now().date()
-
-
 class Cart(object):
 
     def __init__(self, request):
@@ -57,6 +54,8 @@ class Cart(object):
             self.cart[str(product.guid)]['code'] = product.code
             self.cart[str(product.guid)]['name'] = product.name
             self.cart[str(product.guid)]['guid'] = product.guid
+
+        data_now: date = datetime.datetime.now().date()
 
         for item in self.cart.values():
             if 'date' in item:

@@ -89,10 +89,13 @@ def selection(request):
         try:
             obj_section = Section.objects.get(id=Section.get_current_session(request=request))
         except Section.DoesNotExist:
-            return HttpResponseAjaxError(code=303, message='does not find section')
-        section_dict = {'name': obj_section.full_name, 'guid': obj_section.guid}
-        goods_list = obj_section.get_goods_list_section(
-            user=request.user, only_stock=only_stock_, only_promo=only_promo_)
+            obj_section = None
+        if obj_section is not None:
+            section_dict = {'name': obj_section.full_name, 'guid': obj_section.guid}
+            goods_list = obj_section.get_goods_list_section(
+                user=request.user, only_stock=only_stock_, only_promo=only_promo_)
+        else:
+            goods_list = []
 
     return HttpResponseAjax(
         section=section_dict,

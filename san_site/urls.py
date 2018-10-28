@@ -14,5 +14,6 @@ urlpatterns = [
     url(r'^login/password_change_done/$', views.password_change_done, name='account_password_change_done'),
     url(r'^accounts/', include('django.contrib.auth.urls')),
     url(r'^order/', include('san_site.order.urls')),
+    url(r'files/', include('san_site.files.urls')),
     url(r'^api/', include('san_site.api.urls')),
 ]

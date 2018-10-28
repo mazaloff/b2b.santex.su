@@ -9,6 +9,10 @@ a {
    color: #24292e;
 }
 
+.top_h {
+    margin-top: 0;
+}
+
 strong a {
    color: #5a3939;
 }
@@ -113,7 +117,7 @@ div.disabled {
     margin-top: 10px;
 }
 
-#header_order {
+#header_order, #header_files_for_loading {
     margin-left: 10px
 }
 
@@ -307,6 +311,6 @@ a.order-create:hover {
 
 #branding a {
     font-family: 'Indie Flower';
-    font-size: 21px;
-    padding-left: 15px;
+    font-size: 27px;
+    padding-left: 10px;
 }
