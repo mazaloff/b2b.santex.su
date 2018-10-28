@@ -57,7 +57,7 @@ def write_files(user, path_files_customer):
 
     workbook.close()
 
-    with open(path_file_csv, mode='w', encoding='utf-8') as file:
+    with open(path_file_csv, mode='w', encoding='utf-8-sig') as file:
         file.writelines(list_str)
 
 
