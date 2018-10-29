@@ -31,7 +31,7 @@ def write_files(user, path_files_customer):
 
     list_str = ['code;name;quantity;price_rub' + '\n']
 
-    workbook = xlsxwriter.Workbook(path_file_xls)
+    workbook = xlsxwriter.Workbook(path_file_xls, {'constant_memory': True})
     worksheet = workbook.add_worksheet()
 
     row = 0
