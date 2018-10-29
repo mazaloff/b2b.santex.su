@@ -36,12 +36,12 @@ def write_files(user, path_files_customer):
 
     row = 0
     for obj_section in sections:
-        goods_list = obj_section.get_goods_list_section(only_stock=True)
+        goods_list = obj_section.get_goods_list_section(user=user, only_stock=True)
         for elem in goods_list:
             code = elem['code'].replace(';', '').replace('"', '')
             name = elem['name'].replace(';', '').replace('"', '')
             quantity = str(0 if elem['quantity'] == '' else elem['quantity']).replace('>', '')
-            price = 0 if elem['price'] == '' else elem['price']
+            price = 0 if elem['discount'] == '' else elem['discount']
             course = courses.get(elem['currency_id'], {'course': 1, 'multiplicity': 1})
             price_rub = round(price * course['course'] / course['multiplicity'], 2)
 
@@ -75,7 +75,7 @@ def create_files(user):
     url = f'static/{customer.id}/'
     CustomersFiles.objects.filter(customer=customer).delete()
 
-    view = 'Данные в формате SCV (значения разделенные точкой с запятой)'
+    view = 'Данные в формате CSV (значения разделенные точкой с запятой)'
     CustomersFiles.objects.create(customer=customer,
                                   name='goods_b2b_santex.csv',
                                   view=view,
