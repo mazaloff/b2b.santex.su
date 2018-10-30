@@ -73,7 +73,6 @@ def write_files(user, path_files_customer):
             worksheet.write(row, 4, currency)
             worksheet.write(row, 5, price_rub)
             row += 1
-        break
 
     workbook.close()
 
