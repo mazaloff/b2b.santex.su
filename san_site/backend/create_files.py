@@ -29,31 +29,51 @@ def write_files(user, path_files_customer):
     if os.path.exists(path_file_xls):
         os.remove(path_file_xls)
 
-    list_str = ['code;name;quantity;price_rub' + '\n']
+    list_str = ['Артикул;Название;Остаток;Базовая цена;Валюта;Цена руб. ЦБ' + '\n']
 
     workbook = xlsxwriter.Workbook(path_file_xls, {'constant_memory': True})
     worksheet = workbook.add_worksheet()
 
-    row = 0
+    worksheet.set_column('A:A', 15)
+    worksheet.set_column('B:B', 60)
+    worksheet.set_column('C:C', 10)
+    worksheet.set_column('D:D', 13)
+    worksheet.set_column('E:E', 10)
+    worksheet.set_column('F:F', 13)
+
+    cell_format = workbook.add_format({'bold': True, 'font_color': 'red'})
+    worksheet.write(0, 0, 'Артикул', cell_format)
+    worksheet.write(0, 1, 'Название', cell_format)
+    worksheet.write(0, 2, 'Остаток', cell_format)
+    worksheet.write(0, 3, 'Базовая цена', cell_format)
+    worksheet.write(0, 4, 'Валюта', cell_format)
+    worksheet.write(0, 5, 'Цена руб. ЦБ', cell_format)
+
+    row = 1
     for obj_section in sections:
         goods_list = obj_section.get_goods_list_section(user=user, only_stock=True)
         for elem in goods_list:
             code = elem['code'].replace(';', '').replace('"', '')
             name = elem['name'].replace(';', '').replace('"', '')
             quantity = str(0 if elem['quantity'] == '' else elem['quantity']).replace('>', '')
-            price = 0 if elem['discount'] == '' else elem['discount']
+            price = 0 if elem['price'] == '' else elem['price']
+            discount = 0 if elem['discount'] == '' else elem['discount']
+            currency = elem['currency']
             course = courses.get(elem['currency_id'], {'course': 1, 'multiplicity': 1})
-            price_rub = round(price * course['course'] / course['multiplicity'], 2)
+            price_rub = round(discount * course['course'] / course['multiplicity'], 2)
 
             # for csv
-            list_str.append(f'{code};{name};{quantity};{price_rub}' + '\n')
+            list_str.append(f'{code};{name};{quantity};{price};{currency};{price_rub}' + '\n')
 
             # for excel
             worksheet.write(row, 0, code)
             worksheet.write(row, 1, name)
             worksheet.write(row, 2, int(quantity))
-            worksheet.write(row, 3, price_rub)
+            worksheet.write(row, 3, price)
+            worksheet.write(row, 4, currency)
+            worksheet.write(row, 5, price_rub)
             row += 1
+        break
 
     workbook.close()
 
