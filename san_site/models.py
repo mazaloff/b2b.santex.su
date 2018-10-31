@@ -552,6 +552,7 @@ class Order(models.Model):
                     date=self.date,
                     number=self.id,
                     customer=self.person.customer.guid,
+                    person=self.person.guid,
                     delivery=self.delivery,
                     shipment=self.shipment,
                     payment=self.payment,
