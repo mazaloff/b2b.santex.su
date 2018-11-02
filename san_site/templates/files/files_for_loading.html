@@ -16,7 +16,7 @@
             {% if files|length > 0 %}
                 {% for file in files %}
                     <div class="file_for_loading">
-                        <a href="{{ file.url }}"> {{ file.view }} </a>
+                        <a class="loading" href="{{ file.url }}"> {{ file.view }} </a>
                         <span class="control_help_text"> - создан {{ file.change_date }}</span>
                     </div>
                 {% endfor %}
@@ -25,6 +25,11 @@
             {% endif %}
             <p><a href="{% url 'files_create' %}">Сгенерировать файлы</a>
                 <span class="control_help_text"> - если нужны свежие данные (занимает 1-2 минуты)</span></p>
+            <h3>Воспользуйтесь ссылкой для загрузки Акций и Каталогов:</h3>
+            <div class="file_for_loading">
+                <a class="loading" href="https://yadi.sk/d/uABhPX2k9l8gNQ" target="_blank">
+                    https://yadi.sk/d/uABhPX2k9l8gNQ</a>
+            </div></p>
         </div>
     </div>
 

@@ -6,7 +6,17 @@ body {
 }
 
 a {
-   color: #24292e;
+    color: #24292e;
+}
+
+a.loading {
+    background: transparent;
+    color: #008ac4;
+    text-decoration: none;
+}
+
+a.loading:hover {
+    text-decoration: underline;
 }
 
 .top_h {
@@ -14,7 +24,7 @@ a {
 }
 
 strong a {
-   color: #5a3939;
+    color: #5a3939;
 }
 
 strong {
@@ -313,4 +323,8 @@ a.order-create:hover {
     font-family: 'Indie Flower';
     font-size: 27px;
     padding-left: 10px;
+}
+
+#account_login {
+    padding-left: 3px;
 }
