@@ -24,7 +24,7 @@ python manage.py makemessages
 # скомпилировать файлы локализации
 python manage.py compilemessages
 
-C:\Users\mazal\Python\Project\Environment\Scripts\activate.bat
+C:\Users\mazal\Python\Project\Virtualenv\Scripts\activate.bat
 
 celery -A san_site beat -l info
 celery -A san_site worker -l info -P eventlet
