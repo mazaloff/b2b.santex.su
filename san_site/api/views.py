@@ -690,27 +690,27 @@ def update_users_prices(load_list, value_response):
             obj_product = filter_object_product.get(element_list_price['productGuid'], None)
             if not obj_product:
                 add_error(value_response, code='Product.DoesNotExist',
-                          message='no get product', description=element_list)
+                          message='no get product', description=element_list_price)
                 continue
 
             obj_currency = filter_object_currency.get(element_list_price['currencyGuid'], None)
             if not obj_currency:
                 add_error(value_response, code='Currency.DoesNotExist',
-                          message='no get currency', description=element_list)
+                          message='no get currency', description=element_list_price)
                 continue
 
             try:
                 value_discount = float(element_list_price['discount'])
             except ValueError:
                 add_error(value_response, code='Prices.ValueError',
-                          message='no float discount', description=element_list)
+                          message='no float discount', description=element_list_price)
                 continue
 
             try:
                 value_percent = float(element_list_price['percent'])
             except ValueError:
                 add_error(value_response, code='Prices.ValueError',
-                          message='no float percent', description=element_list)
+                          message='no float percent', description=element_list_price)
                 continue
 
             new_object = CustomersPrices.objects.create(customer=obj_customer,
