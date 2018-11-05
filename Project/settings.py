@@ -90,6 +90,7 @@ DATABASES = {
         'PASSWORD': 'gjkmpf1974',
         'HOST': 'localhost',
         'PORT': '5432',
+        'CONN_MAX_AGE': 60 * 10,  # 10 minutes
     }
 }
 

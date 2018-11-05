@@ -332,7 +332,6 @@ def update_product(load_list):
         new_object.save()
 
 
-
 def update_store(load_list):
     filter_guid = [element_list['guid'] for element_list in load_list]
     filter_object = {t.guid: t for t in Store.objects.filter(guid__in=filter_guid)}
@@ -505,7 +504,7 @@ def update_users(load_list, value_response):
                     and new_object.email == element_list['email'] \
                     and new_object.is_active == element_list['is_active'] \
                     and not element_list['change_password']:
-                    pass
+                pass
             else:
                 new_object.first_name = element_list['first_name']
                 new_object.last_name = element_list['last_name']
@@ -567,6 +566,7 @@ def update_inventories(load_list, value_response):
     filter_object = {t.guid: t for t in Product.objects.filter(guid__in=filter_guid)}
     filter_object_stores = {t.guid: t for t in Store.objects.all()}
 
+    list_obj = []
     for element_list in load_list:
 
         obj_product = filter_object.get(element_list['productGuid'], None)
@@ -591,10 +591,12 @@ def update_inventories(load_list, value_response):
                           message='no int quantity inventories', description=element_list)
                 continue
 
-            new_object = Inventories.objects.create(product=obj_product,
-                                                    store=obj_store,
-                                                    quantity=quantity)
-            new_object.save()
+            new_object = Inventories(product=obj_product,
+                                     store=obj_store,
+                                     quantity=quantity)
+            list_obj.append(new_object)
+
+    Inventories.objects.bulk_create(list_obj, batch_size=10000)
 
 
 def update_prices(load_list, value_response):
@@ -602,9 +604,13 @@ def update_prices(load_list, value_response):
     PricesSale.objects.all().delete()
 
     filter_guid = [element_list['productGuid'] for element_list in load_list]
+
     filter_object = {t.guid: t for t in Product.objects.filter(guid__in=filter_guid)}
     filter_object_prices = {t.guid: t for t in Price.objects.all()}
     filter_object_currency = {t.guid: t for t in Currency.objects.all()}
+
+    list_obj_prices = []
+    list_obj_prices_sale = []
 
     for element_list in load_list:
 
@@ -632,12 +638,12 @@ def update_prices(load_list, value_response):
             except ValueError:
                 value_price = 0
 
-            new_object = Prices.objects.create(product=obj_product,
-                                               price=obj_price,
-                                               currency=obj_currency,
-                                               value=value_price,
-                                               promo=element_list_price['promo'])
-            new_object.save()
+            new_object = Prices(product=obj_product,
+                                price=obj_price,
+                                currency=obj_currency,
+                                value=value_price,
+                                promo=element_list_price['promo'])
+            list_obj_prices.append(new_object)
 
         load_list_sale = element_list['sale']
         for element_list_sale in load_list_sale:
@@ -657,10 +663,13 @@ def update_prices(load_list, value_response):
             if value_price == 0:
                 continue
 
-            new_object = PricesSale.objects.create(product=obj_product,
-                                                   currency=obj_currency,
-                                                   value=value_price)
-            new_object.save()
+            new_object = PricesSale(product=obj_product,
+                                    currency=obj_currency,
+                                    value=value_price)
+            list_obj_prices_sale.append(new_object)
+
+    Prices.objects.bulk_create(list_obj_prices, batch_size=10000)
+    PricesSale.objects.bulk_create(list_obj_prices_sale, batch_size=10000)
 
 
 def update_users_prices(load_list, value_response):
@@ -668,6 +677,8 @@ def update_users_prices(load_list, value_response):
     filter_object = {t.guid: t for t in Customer.objects.filter(guid__in=filter_guid)}
 
     filter_object_currency = {t.guid: t for t in Currency.objects.all()}
+
+    list_obj_prices = []
 
     for element_list in load_list:
 
@@ -713,12 +724,14 @@ def update_users_prices(load_list, value_response):
                           message='no float percent', description=element_list_price)
                 continue
 
-            new_object = CustomersPrices.objects.create(customer=obj_customer,
-                                                        product=obj_product,
-                                                        currency=obj_currency,
-                                                        discount=value_discount,
-                                                        percent=value_percent)
-            new_object.save()
+            new_object = CustomersPrices(customer=obj_customer,
+                                         product=obj_product,
+                                         currency=obj_currency,
+                                         discount=value_discount,
+                                         percent=value_percent)
+            list_obj_prices.append(new_object)
+
+    CustomersPrices.objects.bulk_create(list_obj_prices, batch_size=10000)
 
 
 def update_statuses(load_list, value_response):
@@ -743,3 +756,22 @@ def add_error(value_response, **kwargs):
     value_response['success'] = False
     value_response['errors'].append(kwargs)
     value_response['time']['end'] = timezone.now().ctime()
+
+
+def portion_for_save(list_obj, number=100):
+    i = 0
+    list_create = []
+    for elem in list_obj:
+        list_create.append(elem)
+        i += 1
+        if i == number:
+            yield list_create
+            list_create.clear()
+            i = 0
+    if len(list_create) > 0:
+        yield list_create
+
+
+def handle_save(model, list_obj):
+    for _ in portion_for_save(list_obj):
+        pass

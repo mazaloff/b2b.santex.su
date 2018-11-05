@@ -269,8 +269,8 @@ class Index {
                     if (json.section.guid === undefined) {
                         jQuery("#goods").html('Выберите категорию товаров...');
                     } else {
-                        jQuery("#goods").html('Товары из категории ' + json.section.name
-                            .link('?sections=' + json.section.guid));
+                        jQuery("#goods").html('Товары из категории <strong>' + json.section.name
+                            .link('?sections=' + json.section.guid) + '</strong>');
                     }
 
                     jQuery(window).scrollTop(0);

@@ -12,6 +12,8 @@ from django.contrib.auth.models import User
 from django.core.mail import EmailMultiAlternatives
 import requests
 
+from django.core.cache import cache
+
 json.JSONEncoder.default = lambda self, obj: \
     (obj.isoformat() if isinstance(obj, (datetime.datetime, datetime.date)) else None)
 
@@ -124,7 +126,6 @@ class Section(models.Model):
         list_sections.append(self)
         children = Section.objects.filter(parent_guid=self.guid)
         for child in children:
-            list_sections.append(child)
             child.list_with_children(list_sections)
 
     def add_current_session(self, request):
@@ -170,8 +171,16 @@ class Section(models.Model):
         only_available = True if only_available == 'true' or only_available == True else False
 
         list_res_ = []
-        currency_dict: dict = {elem_.id: elem_.name for elem_ in Currency.objects.all()}
-        store_dict: dict = {elem_.id: elem_.short_name for elem_ in Store.objects.all()}
+
+        currency_dict = cache.get('currency_dict')
+        if currency_dict is None:
+            currency_dict: dict = {elem_.id: elem_.name for elem_ in Currency.objects.all()}
+            cache.set('currency_dict', currency_dict, 8640)
+
+        store_dict = cache.get('store_dict')
+        if store_dict is None:
+            store_dict: dict = {elem_.id: elem_.short_name for elem_ in Store.objects.all()}
+            cache.set('store_dict', store_dict, 8640)
 
         set_products = Product.objects
 
@@ -287,8 +296,13 @@ class Section(models.Model):
         return list_res_
 
     def get_goods_list_section(self, **kwargs):
-        list_sections = []
-        self.list_with_children(list_sections)
+
+        list_sections = cache.get(f'list_sections_{self.id}')
+        if list_sections is None:
+            list_sections = []
+            self.list_with_children(list_sections)
+            cache.set(f'list_sections_{self.id}', list_sections, 8640)
+
         kwargs['list_sections'] = list_sections
         return Section.get_goods_list(**kwargs)
 
@@ -627,8 +641,13 @@ class OrderItem(models.Model):
 
 
 def get_customer(user):
+    customer = cache.get(f'user_customer{user.id}')
+    if customer is not None:
+        return customer
     try:
         person = user.person
     except Person.DoesNotExist:
         return
-    return person.customer
+    customer = person.customer
+    cache.set(f'user_customer{user.id}', customer)
+    return customer

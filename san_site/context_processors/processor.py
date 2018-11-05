@@ -16,4 +16,7 @@ def debug(request):
 
 
 def random_css(request):
-    return {'random_css': random.randint(0, 99999999999999999)}
+    if settings.DEBUG:
+        return {'random_css': random.randint(0, 99999999999999999)}
+    else:
+        return {'random_css': ''}
