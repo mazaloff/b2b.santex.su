@@ -11,10 +11,12 @@ for i in list_:
     if p.name() in kill and os.getpid() != p.pid:
         p.terminate()
 
-subprocess.Popen('SCHTASKS /End /TN \celery\start_worker', shell=True, stdout=sys.stdout)
+subprocess.Popen('SCHTASKS /End /TN \celery\server', shell=True, stdout=sys.stdout)
 subprocess.Popen('SCHTASKS /End /TN \celery\start_beat', shell=True, stdout=sys.stdout)
 subprocess.Popen('SCHTASKS /End /TN \celery\start_flower', shell=True, stdout=sys.stdout)
+subprocess.Popen('SCHTASKS /End /TN \celery\start_flower', shell=True, stdout=sys.stdout)
 
-subprocess.Popen('SCHTASKS /Run /TN \celery\start_worker', shell=True, stdout=sys.stdout)
+subprocess.Popen('SCHTASKS /Run /TN \celery\server', shell=True, stdout=sys.stdout)
 subprocess.Popen('SCHTASKS /Run /TN \celery\start_beat', shell=True, stdout=sys.stdout)
+subprocess.Popen('SCHTASKS /Run /TN \celery\start_flower', shell=True, stdout=sys.stdout)
 subprocess.Popen('SCHTASKS /Run /TN \celery\start_flower', shell=True, stdout=sys.stdout)
