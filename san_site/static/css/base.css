@@ -64,15 +64,15 @@ input[type="submit"] {
 }
 
 #header #branding {
-    flex: 2 50 215px;
+    flex: 2 50 25%;
 }
 
 #header #header_menu {
-    flex: 4 1 400px;
+    flex: 4 1 50%;
 }
 
 #header #user_tools {
-    flex: 6 1 400px;
+    flex: 6 1 30%;
 }
 
 .categories {
@@ -321,7 +321,7 @@ a.order-create:hover {
 
 #branding a {
     font-family: 'Indie Flower';
-    font-size: 27px;
+    font-size: 26px;
     padding-left: 10px;
 }
 

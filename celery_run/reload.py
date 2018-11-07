@@ -7,9 +7,15 @@ list_ = psutil.pids()
 kill = ('python.exe', 'flower.exe', 'celery.exe')
 
 for i in list_:
-    p = psutil.Process(i)
+    try:
+        p = psutil.Process(i)
+    except psutil.NoSuchProcess:
+        continue
     if p.name() in kill and os.getpid() != p.pid:
-        p.terminate()
+        try:
+            p.terminate()
+        except psutil.AccessDenied:
+            continue
 
 subprocess.Popen('SCHTASKS /End /TN \celery\server', shell=True, stdout=sys.stdout)
 subprocess.Popen('SCHTASKS /End /TN \celery\start_worker', shell=True, stdout=sys.stdout)
