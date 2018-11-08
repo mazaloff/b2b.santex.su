@@ -4,6 +4,7 @@ import psutil
 import cherrypy
 import cheroot.wsgi as wsgi_server
 from Project.wsgi import application
+from Project import settings_local as settings
 
 
 def server_http():
@@ -50,7 +51,7 @@ def server_wsgi(address, num_threads=10, server_name=None):
 
 
 def terminate_server(name_server):
-    pid_file = f'server_{name_server}.pid'
+    pid_file = os.path.join(settings.BASE_DIR, f'server_{name_server}.pid')
     if os.path.exists(pid_file):
         with open(pid_file, 'r+') as file:
             list_str = file.readlines()
