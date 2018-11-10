@@ -141,8 +141,8 @@ var main_goods_height = 99999,
         _loadData();
     }
 
-        onlyStock();
-        onlyPromo();
+    onlyStock();
+    onlyPromo();
 
     $("html,body").css("overflow","hidden");
 

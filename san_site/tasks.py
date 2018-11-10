@@ -1,7 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 
 from django.contrib.auth.models import User
-from Project.celery import app
+from Project.celery_mod import app
 from .models import Order, Person
 
 

@@ -8,13 +8,21 @@ __pycache__/
 *$py.class
 
 /Virtualenv/
-/celerybeat-schedule.dat
-/celerybeat-schedule.bak
-/celerybeat-schedule.dir
+/pid/
+
 .idea/
-celery_run/celerybeat.pid
+celery/celerybeat-schedule.bak
+celery/celerybeat-schedule.dat
+celery/celerybeat-schedule.dir
+celerybeat-schedule.bak
+celerybeat-schedule.dat
+celerybeat-schedule.dir
 
 *.pid
 /static/files_for_loading/
-server_nginx.pid
-server_api.pid
+/pid/server_nginx.pid
+/pid/server_api.pid
+/pid/server_beat.pid
+/pid/server_flower.pid
+/pid/server_worker.pid
+/pid/celerybeat.pid
