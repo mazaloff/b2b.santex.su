@@ -1,5 +1,6 @@
 import datetime
 import json
+import requests
 
 from django.db import connection
 from django.conf import settings
@@ -10,8 +11,6 @@ from django.db.models import Q
 from django.shortcuts import loader
 from django.contrib.auth.models import User
 from django.core.mail import EmailMultiAlternatives
-import requests
-
 from django.core.cache import cache
 
 json.JSONEncoder.default = lambda self, obj: \
@@ -155,6 +154,26 @@ class Section(models.Model):
     @staticmethod
     def get_current_session(request):
         return request.session.get('id_current_session')
+
+    @staticmethod
+    def get_sessions():
+        sections = cache.get('sessions')
+        if sections is None:
+            sections = Section.objects.filter(is_deleted=False).order_by('sort', 'name')
+            cache.set('sessions', sections, 3600)
+        return sections
+
+    @staticmethod
+    def get_data_for_tree():
+        data = cache.get('data_for_tree')
+        if data is None:
+            sections = Section.get_sessions()
+            data = []
+            for obj in sections:
+                parent = '#' if obj.parent_guid == '---' else obj.parent_guid
+                data.append({'id': obj.guid, 'parent': parent, 'text': obj.name, 'href': obj.guid})
+            cache.set('data_for_tree', data, 3600)
+        return data
 
     @staticmethod
     def get_goods_list(**kwargs):

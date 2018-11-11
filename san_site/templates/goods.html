@@ -2,7 +2,7 @@
     <div id="loading_icon" class="disabled">
         <span>Loading ...</span>
     </div>
-    <div id="goods">Выберите категорию товаров...</div>
+    <div id="goods"><strong>Выберите категорию товаров...</strong></div>
     {% include "goods/goods_search.html" %}
     {% include "goods/goods_table.html" %}
     {% if user.is_authenticated and user.person.allow_order %}

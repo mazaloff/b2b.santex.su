@@ -10,16 +10,8 @@ from san_site.backend.response import HttpResponseAjax, HttpResponseAjaxError
 
 
 def get_categories(request):
-
-    sections = Section.objects.filter(is_deleted=False).order_by('sort', 'name')
-    data = []
-
-    for obj in sections:
-        parent = '#' if obj.parent_guid == '---' else obj.parent_guid
-        data.append({'id': obj.guid, 'parent': parent, 'text': obj.name, 'href': obj.guid})
-
     return HttpResponseAjax(
-        result=data,
+        result=Section.get_data_for_tree(),
         user_name=request.user.username,
         products=render_to_string('goods.html', {})
     )
