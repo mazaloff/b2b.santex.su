@@ -4,6 +4,7 @@ from django.conf import settings
 from san_site.models import Product, Currency
 import datetime
 
+
 class Cart(object):
 
     def __init__(self, request):

@@ -75,6 +75,10 @@ class OrderCreateForm(forms.ModelForm):
         request = kwargs.get('request', None)
         if request is None:
             return
+        cart = Cart(request)
+        if len(cart) == 0:
+            return
+
         person = None
         set_person = Person.objects.filter(user=request.user)
         if len(set_person) > 0:
@@ -88,7 +92,6 @@ class OrderCreateForm(forms.ModelForm):
         )
         order.save()
 
-        cart = Cart(request)
         for item in cart:
             try:
                 currency = Currency.objects.get(id=item['currency_id'])
@@ -105,9 +108,9 @@ class OrderCreateForm(forms.ModelForm):
             if currency:
                 item.currency = currency
             item.save()
+
         cart.clear()
 
-        order.save()
         if settings.CELERY_NO_CREATE_ORDERS:
             try:
                 order.request_order()
