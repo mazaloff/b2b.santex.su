@@ -7,8 +7,8 @@ from django.utils.log import log_response
 from django.conf import settings
 
 from san_site.decorates.decorate import page_not_access
-from san_site.forms import OrderCreateForm
-from san_site.models import Order, get_customer
+from san_site.forms import OrderCreateForm, OrdersFilterList
+from san_site.models import Order, Customer, get_customer
 from san_site.tasks import order_request as task_order_request
 
 
@@ -21,12 +21,14 @@ def order_create(request):
             if order_new:
                 return render(request, 'orders/order.html', {'order': order_new, 'created': True})
     else:
-        form = OrderCreateForm(
-            initial={'delivery':
-                     datetime.datetime.now().astimezone(tz=pytz.timezone(settings.TIME_ZONE)) +
-                     datetime.timedelta(days=1)
-                     }
-        )
+        form = OrderCreateForm(initial={'delivery':
+                                        datetime.datetime.now().astimezone(tz=pytz.timezone(settings.TIME_ZONE)) +
+                                        datetime.timedelta(days=1)
+                                        }
+                               )
+    customers_choices = Customer.get_customers_all_user(request.user)
+    form.fields['customer'].choices = customers_choices
+    form.base_fields['customer'].choices = customers_choices
 
     return render(request, 'orders/create.html', {'form': form})
 
@@ -82,6 +84,16 @@ def order_request(request, **kwargs):
 
 @page_not_access
 def order_list(request):
+    dict_filters = Order.get_current_filters(request)
+    begin_date = dict_filters['begin_date']
+    end_date = dict_filters['end_date']
+    form = OrdersFilterList(
+        initial={
+            'begin_date': begin_date,
+            'end_date': end_date
+        }
+    )
     return render(request, 'orders/list_orders.html', {
-        'orders_list': Order.get_orders_list(request.user)
+        'orders_list': Order.get_orders_list(request.user, begin_date, end_date),
+        'form': form
     })

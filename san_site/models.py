@@ -1,6 +1,7 @@
 import datetime
 import json
 import requests
+import pytz
 
 from django.db import connection
 from django.conf import settings
@@ -13,11 +14,24 @@ from django.contrib.auth.models import User
 from django.core.mail import EmailMultiAlternatives
 from django.core.cache import cache
 
+# connection.queries
+
+# JSON section
+
 json.JSONEncoder.default = lambda self, obj: \
     (obj.isoformat() if isinstance(obj, (datetime.datetime, datetime.date)) else None)
 
 
-# connection.queries
+def date_hook(json_dict):
+    for (key, value) in json_dict.items():
+        try:
+            json_dict[key] = datetime.datetime.strptime(value, "%Y-%m-%d")
+        except (ValueError, IndexError):
+            pass
+    return json_dict
+
+
+# MODELS section
 
 
 class SectionManager(models.Manager):
@@ -26,6 +40,7 @@ class SectionManager(models.Manager):
 
 class Customer(models.Model):
     guid = models.CharField(max_length=50, db_index=True)
+    guid_owner = models.CharField(max_length=50, db_index=True, default='---')
     name = models.CharField(max_length=200)
     code = models.CharField(max_length=20)
     sort = models.IntegerField(default=500)
@@ -35,16 +50,25 @@ class Customer(models.Model):
     def __str__(self):
         return self.name
 
+    @staticmethod
+    def get_customers_all_user(user):
+        customer = get_customer(user)
+        list_customers = []
+        customers_all = Customer.objects.filter(guid_owner=customer.guid_owner)
+        for elem in customers_all:
+            list_customers.append((elem.guid, elem.name))
+        return list_customers
+
     def get_files(self):
         customers_files = CustomersFiles.objects.filter(customer=self)
         files = []
         for elem in customers_files:
             files.append(dict(
-                    name=elem.name,
-                    view=elem.view,
-                    type=elem.type_file,
-                    url=elem.url + elem.name,
-                    change_date=elem.change_date
+                name=elem.name,
+                view=elem.view,
+                type=elem.type_file,
+                url=elem.url + elem.name,
+                change_date=elem.change_date
             ))
         return files
 
@@ -129,6 +153,7 @@ class Section(models.Model):
 
     def add_current_session(self, request):
         request.session['id_current_session'] = self.id
+        request.session.set_expiry(86400)
         request.session.modified = True
 
     @property
@@ -327,6 +352,8 @@ class Section(models.Model):
 
 
 class Product(models.Model):
+    RELEVANT_MATRIX = ('Акция', 'Заказной', 'Основной')
+
     guid = models.CharField(max_length=50, db_index=True)
     name = models.CharField(max_length=200, db_index=True)
     code = models.CharField(max_length=30, db_index=True)
@@ -340,7 +367,7 @@ class Product(models.Model):
         return self.name
 
     def is_relevant(self):
-        return self.matrix in settings.RELEVANT_MATRIX
+        return self.matrix in Product.RELEVANT_MATRIX
 
     @classmethod
     def change_relevant_products(cls):
@@ -521,14 +548,19 @@ class Courses(models.Model):
 
 
 class Order(models.Model):
+    PAYMENT_FORM = (('Наличные', 'Наличные'), ('Безналичные', 'Безналичные'))
+    SHIPMENT_TYPE = (('Самовывоз', 'Самовывоз'), ('Доставка', 'Доставка'))
+    STATUS_ORDER = (('Новый', 'Новый'), ('ВОбработке', 'В обработке'), ('Выполнен', 'Выполнен'), ('Отменен', 'Отменен'))
+
     date = models.DateTimeField(auto_now_add=True, db_index=True)
     person = models.ForeignKey(Person, db_index=True, on_delete=models.PROTECT)
+    customer = models.ForeignKey(Customer, db_index=True, on_delete=models.PROTECT, null=True)
     guid = models.CharField(max_length=50, db_index=True, default='')
     updated = models.DateTimeField(auto_now=True)
     delivery = models.DateTimeField(null=True)
-    shipment = models.CharField(max_length=50, choices=settings.SHIPMENT_TYPE, null=True)
-    payment = models.CharField(max_length=50, choices=settings.PAYMENT_FORM, null=True)
-    status = models.CharField(max_length=50, choices=settings.STATUS_ORDER, default='Новый')
+    shipment = models.CharField(max_length=50, choices=SHIPMENT_TYPE, null=True)
+    payment = models.CharField(max_length=50, choices=PAYMENT_FORM, null=True)
+    status = models.CharField(max_length=50, choices=STATUS_ORDER, default=STATUS_ORDER[0][1])
     comment = models.TextField(null=True)
 
     class RequestOrderError(BaseException):
@@ -573,18 +605,48 @@ class Order(models.Model):
         return list_res_
 
     @staticmethod
-    def get_orders_list(user):
+    def get_current_filters(request):
+        json_str = request.session.get('get_current_filters')
+        try:
+            return json.loads(json_str, object_hook=date_hook)
+        except TypeError:
+            end_date = datetime.date.today()
+            begin_date = datetime.date(day=end_date.day, month=end_date.month - 1, year=end_date.year)
+            return dict(begin_date=begin_date, end_date=end_date)
+
+    @staticmethod
+    def add_current_session(request, begin_date=None, end_date=None):
+        request.session['get_current_filters'] = json.dumps(
+            dict(begin_date=begin_date, end_date=end_date))
+        request.session.set_expiry(86400)
+        request.session.modified = True
+
+    @staticmethod
+    def get_orders_list(user, begin_date=None, end_date=None):
         set_person = Person.objects.filter(user=user)
         if len(set_person) == 0:
             return []
         orders = Order.objects.filter(person=set_person[0])
+        if begin_date and end_date:
+            try:
+                begin_datetime = datetime.datetime(begin_date.year, begin_date.month, begin_date.day, 0, 0, 0) \
+                    .astimezone(tz=pytz.timezone(settings.TIME_ZONE))
+                end_date_datetime = datetime.datetime(end_date.year, end_date.month, end_date.day, 23, 59, 59) \
+                    .astimezone(tz=pytz.timezone(settings.TIME_ZONE))
+                orders = orders.filter(date__range=(begin_datetime, end_date_datetime)).order_by('-date')
+            except AttributeError:
+                pass
         return orders
 
     def get_json_for_request(self):
+        if self.customer:
+            customer = self.customer.guid
+        else:
+            customer = self.person.customer.guid
         rest = dict(guid=self.guid,
                     date=self.date,
                     number=self.id,
-                    customer=self.person.customer.guid,
+                    customer=customer,
                     person=self.person.guid,
                     delivery=self.delivery,
                     shipment=self.shipment,

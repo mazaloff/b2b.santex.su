@@ -1,9 +1,11 @@
+import datetime
+
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils.datastructures import MultiValueDictKeyError
 
 from san_site.cart.cart import Cart
-from san_site.models import Section, Product
+from san_site.models import Section, Product, Order
 from san_site.forms import EnterQuantity, EnterQuantityError
 from san_site.decorates.decorate import page_not_access_ajax
 from san_site.backend.response import HttpResponseAjax, HttpResponseAjaxError
@@ -19,7 +21,6 @@ def get_categories(request):
 
 @page_not_access_ajax
 def get_goods(request):
-
     try:
         guid = request.GET.get('guid')
     except MultiValueDictKeyError:
@@ -100,7 +101,6 @@ def selection(request):
 
 @page_not_access_ajax
 def cart_add(request):
-
     try:
         guid = request.GET.get('guid')
     except MultiValueDictKeyError:
@@ -153,7 +153,7 @@ def cart_get_form_quantity(request):
         inventory = max(product.get_inventory(cart), 0)
         inventory = 999999 if inventory > 10 else inventory
         if not is_cart and inventory > 0:
-            form = EnterQuantity(initial={'quantity': ''}, max_value=inventory)
+            form = EnterQuantity(initial={'quantity': 1}, max_value=inventory)
         else:
             form = EnterQuantityError()
 
@@ -161,7 +161,8 @@ def cart_get_form_quantity(request):
             guid=guid,
             inventory=inventory,
             form_enter_quantity=render_to_string('goods/enter_quantity.html',
-                            {'form': form, 'guid': guid, 'inventory': inventory, 'is_cart': is_cart})
+                                                 {'form': form, 'guid': guid, 'inventory': inventory,
+                                                  'is_cart': is_cart})
         )
 
 
@@ -234,4 +235,33 @@ def cart_delete_row(request):
     return HttpResponseAjax(
         header_cart=render_to_string('cart/header_cart.html', {'cart': cart, 'user': request.user}),
         user_cart=render_to_string('header/user_tools_cart.html', {'cart': cart, 'user': request.user})
+    )
+
+
+@page_not_access_ajax
+def get_orders_list(request):
+    try:
+        begin_date = request.GET.get('begin_date')
+    except MultiValueDictKeyError:
+        return HttpResponseAjaxError(code=302, message='no request GET begin_date')
+    try:
+        end_date = request.GET.get('end_date')
+    except MultiValueDictKeyError:
+        return HttpResponseAjaxError(code=302, message='no request GET end_date')
+
+    begin_date = datetime.date(int(begin_date.split('.')[2]),
+                               int(begin_date.split('.')[1]),
+                               int(begin_date.split('.')[0]))
+
+    end_date = datetime.date(int(end_date.split('.')[2]),
+                             int(end_date.split('.')[1]),
+                             int(end_date.split('.')[0]))
+
+    Order.add_current_session(request, begin_date, end_date)
+
+    orders_list = Order.get_orders_list(request.user, begin_date, end_date)
+    return HttpResponseAjax(
+        list_orders=render_to_string('orders/list_orders_table.html', {
+            'orders_list': orders_list
+        })
     )

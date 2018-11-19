@@ -1,7 +1,5 @@
 {% extends "base.html" %}
 
-{% load format %}
-
 {% block title %}
     {{ block.super }}
 {% endblock %}
@@ -13,59 +11,12 @@
 {% block content %}
 
     <div id="products" class="column products">
-        <div id="list_orders">
-            <table>
-                <colgroup>
-                    <col style="background:#fcffd1;">
-                    <col>
-                    <col style="background:#fcffd1">
-                    <col>
-                    <col>
-                    <col>
-                    <col style="background:#fcffd1">
-                </colgroup>
-                <thead style="background: #ffffff;">
-                <tr>
-                    <th id="orders_table_1">
-                        <div><span>Номер</span></div>
-                    </th>
-                    <th id="orders_table_2">
-                        <div><span>Дата</span></div>
-                    </th>
-                    <th id="orders_table_3">
-                        <div><span>Сумма</span></div>
-                    </th>
-                    <th id="orders_table_4">
-                        <div><span>Вал.</span></div>
-                    </th>
-                    <th id="orders_table_5">
-                        <div><span>Отправка</span></div>
-                    </th>
-                    <th id="orders_table_6">
-                        <div><span>Срок</span></div>
-                    </th>
-                    <th id="orders_table_7">
-                        <div><span>Статус</span></div>
-                    </th>
-                    <th id="orders_table_8">
-                        <div><span>Комментарий</span></div>
-                    </th>
-                </tr>
-                </thead>
-                {% for order in orders_list %}
-                    <tr style="cursor: pointer;" onclick="doNav('{{ order.id }}')">
-                        <td class="orders_table_1">{{ order.id }}</td>
-                        <td class="orders_table_2">{{ order.date }}</td>
-                        <td class="orders_table_3" align=right> {{ order.get_total_cost|format:"{0:.2f}" }}</td>
-                        <td class="orders_table_4">руб.</td>
-                        <td class="orders_table_5">{{ order.shipment }}</td>
-                        <td class="orders_table_6">{{ order.delivery|date:"j E Y" }}</td>
-                        <td class="orders_table_7">{{ order.status }}</td>
-                        <td class="orders_table_8">{{ order.comment }}</td>
-                    </tr>
-                {% endfor %}
-            </table>
+        <div id="list_filter">
+            <label class="control-label">Период:</label>
+            {{ form.begin_date }} <label class="control-label">-</label>
+            {{ form.end_date }}
         </div>
+        {% include "orders/list_orders_table.html" %}
     </div>
 
 {% endblock %}

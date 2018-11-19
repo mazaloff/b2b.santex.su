@@ -238,6 +238,7 @@ function widthHeadOrders() {
     $('th#orders_table_6 div').stop().animate({width: $('th#orders_table_6').width()});
     $('th#orders_table_7 div').stop().animate({width: $('th#orders_table_7').width()});
     $('th#orders_table_8 div').stop().animate({width: $('th#orders_table_8').width()});
+    $('th#orders_table_9 div').stop().animate({width: $('th#orders_table_9').width()});
 }
 
 function countHeightTableGoods() {

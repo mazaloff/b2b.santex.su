@@ -287,6 +287,36 @@ class Index {
             }
         });
     }
+
+    static _changeFiltersOfOrdersList(begin_date, end_date) {
+
+        jQuery("#list_orders").replaceWith("<div id=\"list_orders\"></div>");
+
+        jQuery.ajax({
+            url: "ajax/order/get_orders_list/",
+            type: 'GET',
+            data: {
+                'begin_date': begin_date,
+                'end_date': end_date
+            },
+            dataType: 'json',
+
+            success: function (json) {
+                // Если запрос прошёл успешно и сайт вернул результат
+                if (json.success) {
+                    jQuery("#list_orders").replaceWith(json.list_orders);
+
+                    jQuery(window).scrollTop(0);
+
+                    updateTables();
+                    widthHeadOrders();
+
+                } else {
+                    console.error('Ошибка получения данных с сервера');
+                }
+            }
+        });
+    }
 }
 
 Index.initGoods();

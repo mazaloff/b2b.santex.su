@@ -156,11 +156,6 @@ ul.errorlist {
     color: orangered
 }
 
-#order_status {
-    background-color: #fcffd1;
-    padding: 5px;
-}
-
 div#header_order td {
     padding-right: 20px;
 }
@@ -190,7 +185,7 @@ input#only_stock, input#only_promo {
 }
 
 #goods_table tr.goods_tr.promo {
-    color: #c32061;
+    color: #c52626;
 }
 
 div#loading_icon {
@@ -270,9 +265,17 @@ a.order-create:hover {
     color: #24292e;
 }
 
-#id_delivery {
+#id_delivery, #id_begin_date, #id_end_date {
     background: url("/static/img/cal.gif") no-repeat 100% 50%;
     cursor: pointer;
+}
+
+#id_begin_date, #id_end_date {
+    width: 100px;
+}
+
+#list_filter {
+    margin-bottom: 23px;
 }
 
 ::-webkit-scrollbar-button {
@@ -327,4 +330,23 @@ a.order-create:hover {
 
 #account_login {
     padding-left: 3px;
+}
+
+div.inf_created, .order_field {
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+span.inf_created, .order_field.status {
+    background-color: #fcffd1;
+}
+
+div.inf_created {
+    margin-left: 10px;
+    margin-bottom: 10px;
+}
+
+span.inf_created {
+    font-weight: bolder;
+    color: #207bbd;
 }

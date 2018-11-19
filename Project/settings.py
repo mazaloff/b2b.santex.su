@@ -48,7 +48,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
 ]
 
 ROOT_URLCONF = 'Project.urls'
@@ -153,12 +152,6 @@ EMAIL_HOST_PASSWORD = ''
 
 DEFAULT_FROM_EMAIL = 'mazaloff@bk.ru'
 DEFAULT_TO_EMAIL = 'mazaloff@bk.ru'
-
-
-PAYMENT_FORM = (('Наличные', 'Наличные'), ('Безналичные', 'Безналичные'))
-SHIPMENT_TYPE = (('Самовывоз', 'Самовывоз'), ('Доставка', 'Доставка'))
-STATUS_ORDER = (('Новый', 'Новый'), ('ВОбработке', 'В обработке'), ('Выполнен', 'Выполнен'), ('Отменен', 'Отменен'))
-RELEVANT_MATRIX = ('Акция', 'Заказной', 'Основной')
 
 API_URL = 'http://185.46.154.84:8080/UprTest/hs/'
 

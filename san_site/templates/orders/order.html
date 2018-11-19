@@ -10,17 +10,15 @@
 
 {% block content %}
 
-    <div id="products" class="column products">
+    <div id="products" class="column products" xmlns="http://www.w3.org/1999/html">
         {% if created %}
-            <p style="color: red">
-                Спасибо, Ваш заказ успешно сформирован. Ожидайте, Мы с Вас свяжемся.
-            </p>
+            <div class="inf_created">
+                <span class="inf_created">Спасибо, Ваш заказ успешно сформирован. Ожидайте, Мы с Вас свяжемся.</span>
+                <br>
+            </div>
         {% endif %}
         {% include "orders/header_order.html" %}
         {% include "orders/goods_order.html" %}
-        {% if debug %}
-            <p><a href="{% url 'order_request' order.id %}">Выгрузить в 1с</a></p>
-        {% endif %}
     </div>
 
 {% endblock %}

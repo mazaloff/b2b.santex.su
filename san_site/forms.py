@@ -4,7 +4,7 @@ from django import forms
 from django.conf import settings
 
 from .cart.cart import Cart, Currency
-from .models import Order, OrderItem, Person
+from .models import Order, OrderItem, Person, Customer
 from .tasks import order_request as task_order_request
 
 import pytz
@@ -26,8 +26,8 @@ class PasswordChangeForm(forms.Form):
 
 
 class EnterQuantity(forms.Form):
-    def __new__(cls, initial, max_value, **kwargs):
-        obj_cls = super().__new__(cls, **kwargs)
+    def __new__(cls, initial, max_value):
+        obj_cls = super().__new__(cls)
         obj_cls.quantity = forms.IntegerField(min_value=1,
                                               max_value=max_value,
                                               required=False,
@@ -43,20 +43,36 @@ class EnterQuantityError(forms.Form):
     pass
 
 
+class OrdersFilterList(forms.Form):
+    begin_date = forms.DateField(widget=forms.DateInput)
+    end_date = forms.DateField(widget=forms.DateInput)
+
+
 class OrderCreateForm(forms.ModelForm):
+    customer = forms.ChoiceField(choices=[], required=True, label='Покупатель',
+                                 widget=forms.Select(attrs={'style':  'width: 300px;'}))
     delivery = forms.DateField(
         help_text=' если заказ до 15.00 - поставка на следующий день, иначе через день',
         widget=forms.DateInput,
         label='Срок поставки')
-    shipment = forms.ChoiceField(choices=settings.SHIPMENT_TYPE, required=True,
-                                 initial=settings.SHIPMENT_TYPE[0], label='Способ доставки')
-    payment = forms.ChoiceField(choices=settings.PAYMENT_FORM, required=True,
-                                initial=settings.PAYMENT_FORM[1], label='Форма оплаты')
+    shipment = forms.ChoiceField(choices=Order.SHIPMENT_TYPE, required=True,
+                                 initial=Order.SHIPMENT_TYPE[0], label='Способ доставки')
+    payment = forms.ChoiceField(choices=Order.PAYMENT_FORM, required=True,
+                                initial=Order.PAYMENT_FORM[1], label='Форма оплаты')
     comment = forms.CharField(widget=forms.Textarea, label='Комментарий к заказу', required=False)
 
     class Meta:
         model = Order
-        fields = ['delivery', 'shipment', 'payment', 'comment']
+        fields = ['customer', 'delivery', 'shipment', 'payment', 'comment']
+
+    def clean_customer(self):
+        guid = self.cleaned_data['customer']
+        try:
+            return Customer.objects.get(guid=guid)
+        except Customer.DoesNotExist:
+            raise forms.ValidationError(
+                "ошибка! нет такого покупателя"
+            )
 
     def clean_delivery(self):
         now = datetime.date.today()
@@ -65,7 +81,7 @@ class OrderCreateForm(forms.ModelForm):
                 "! на следующий день - заказ до 15.00, иначе через день !"
             )
         delivery = self.cleaned_data['delivery']
-        return datetime.datetime(delivery.year, delivery.month, delivery.day, 12, 0, 0)\
+        return datetime.datetime(delivery.year, delivery.month, delivery.day, 12, 0, 0) \
             .astimezone(tz=pytz.timezone(settings.TIME_ZONE))
 
     def clean(self):
@@ -85,6 +101,7 @@ class OrderCreateForm(forms.ModelForm):
             person = set_person[0]
         order = Order.objects.create(
             person=person,
+            customer=self.cleaned_data['customer'],
             delivery=self.cleaned_data['delivery'],
             shipment=self.cleaned_data['shipment'],
             payment=self.cleaned_data['payment'],

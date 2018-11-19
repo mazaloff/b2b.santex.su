@@ -1,21 +1,28 @@
 {% load format %}
 
 <div id="header_order">
-    <h3 class="top_h">Заказ N {{ order.id }} от {{ order.date }}</h3>
+    <h3 class="top_h" style="margin-bottom: 10px;">Заказ N {{ order.id }} от {{ order.date }}</h3>
     <table>
         <tr>
             <td valign="top">
-                Срок поставки: <strong>{{ order.delivery|date:"j E Y" }}</strong>
-                <p>Форма оплаты: <strong>{{ order.payment }}</strong></p>
-                <p>Тип доставки: <strong>{{ order.shipment }}</strong></p>
-                <p>Комментарий: <strong>{{ order.comment }}</strong></p>
+                <div id="order_fields">
+                    <div class="order_field">Покупатель: <strong>{{ order.customer }}</strong></div>
+                    <div class="order_field">Срок поставки: <strong>{{ order.delivery|date:"j E Y" }}</strong></div>
+                    <div class="order_field">Форма оплаты: <strong>{{ order.payment }}</strong></div>
+                    <div class="order_field">Тип доставки: <strong>{{ order.shipment }}</strong></div>
+                    <div class="order_field">Комментарий: <strong>{{ order.comment }}</strong></div>
+                    {% if 1 == 2 %}
+                        <div class="order_field">Guid 1c: <strong>{{ order.guid }}</strong></div>
+                    {% endif %}
+                </div>
             </td>
             <td valign="top">
-                <div id="order_status">Статус: <strong>{{ order.status }}</strong></div>
-                {% if debug %}
-                    <p>Guid 1c: <strong>{{ order.guid }}</strong></p>
+                <div class="order_field status">Статус: <strong>{{ order.status }}</strong></div>
+                {% if 1 == 2 %}
+                    <div class="order_field"><a href="{% url 'order_request' order.id %}">Выгрузить в 1с</a></div>
                 {% endif %}
             </td>
         </tr>
     </table>
 </div>
+<br>

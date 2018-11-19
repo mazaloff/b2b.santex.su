@@ -468,34 +468,43 @@ def update_users(load_list, value_response):
     filter_guid = [element_list['guid'] for element_list in load_list]
     filter_object_person = {t.guid: t for t in Person.objects.filter(guid__in=filter_guid)}
 
-    filter_guid = [element_list['guidCustomer'] for element_list in load_list]
+    filter_guid = []
+    for element_list in load_list:
+        element_list_customers = element_list['customers']
+        for element_list_customer in element_list_customers:
+            filter_guid.append(element_list_customer['guid'])
     filter_object_customer = {t.guid: t for t in Customer.objects.filter(guid__in=filter_guid)}
 
     for element_list in load_list:
 
-        new_object_customer = filter_object_customer.get(element_list['guidCustomer'], None)
-        if new_object_customer:
-            if new_object_customer.name == element_list['nameCustomer'] \
-                    and new_object_customer.code == element_list['codeCustomer'] \
-                    and new_object_customer.sort == int(element_list['sortCustomer']) \
-                    and new_object_customer.is_deleted == element_list['is_deletedCustomer']:
-                pass
+        element_list_customers = element_list['customers']
+        for element_list_customer in element_list_customers:
+            new_object_customer = filter_object_customer.get(element_list_customer['guid'], None)
+            if new_object_customer:
+                if new_object_customer.name == element_list_customer['name'] \
+                        and new_object_customer.guid_owner == element_list_customer['guidOwner'] \
+                        and new_object_customer.code == element_list_customer['code'] \
+                        and new_object_customer.sort == int(element_list_customer['sort']) \
+                        and new_object_customer.is_deleted == element_list_customer['is_deleted']:
+                    pass
+                else:
+                    new_object_customer.name = element_list_customer['name']
+                    new_object_customer.guid_owner = element_list_customer['guidOwner']
+                    new_object_customer.code = element_list_customer['code']
+                    new_object_customer.sort = int(element_list_customer['sort'])
+                    new_object_customer.is_deleted = element_list_customer['is_deleted']
+                    new_object_customer.save()
             else:
-                new_object_customer.name = element_list['nameCustomer']
-                new_object_customer.code = element_list['codeCustomer']
-                new_object_customer.sort = int(element_list['sortCustomer'])
-                new_object_customer.is_deleted = element_list['is_deletedCustomer']
+                new_object_customer = Customer.objects.create(guid=element_list_customer['guid'],
+                                                              guid_owner=element_list_customer['guidOwner'],
+                                                              name=element_list_customer['name'],
+                                                              code=element_list_customer['code'],
+                                                              sort=int(element_list_customer['sort']),
+                                                              is_deleted=element_list_customer['is_deleted'],
+                                                              )
+                new_object_customer.created_date = timezone.now()
                 new_object_customer.save()
-        else:
-            new_object_customer = Customer.objects.create(guid=element_list['guidCustomer'],
-                                                          name=element_list['nameCustomer'],
-                                                          code=element_list['codeCustomer'],
-                                                          sort=int(element_list['sortCustomer']),
-                                                          is_deleted=element_list['is_deletedCustomer'],
-                                                          )
-            new_object_customer.created_date = timezone.now()
-            new_object_customer.save()
-            filter_object_customer[element_list['guidCustomer']] = new_object_customer
+                filter_object_customer[element_list_customer['guid']] = new_object_customer
 
         new_object = filter_object.get(element_list['username'], None)
         if new_object:
@@ -529,10 +538,10 @@ def update_users(load_list, value_response):
 
         new_object_person = filter_object_person.get(element_list['guid'], None)
         if new_object_person:
-            if new_object_person.name == element_list['nameCustomer'] \
-                    and new_object_person.code == element_list['codeCustomer'] \
-                    and new_object_person.sort == int(element_list['sortCustomer']) \
-                    and new_object_person.is_deleted == element_list['is_deletedCustomer'] \
+            if new_object_person.name == element_list['name'] \
+                    and new_object_person.code == element_list['code'] \
+                    and new_object_person.sort == int(element_list['sort']) \
+                    and new_object_person.is_deleted == element_list['is_deleted'] \
                     and new_object_person.allow_order == element_list['allow_order']:
                 pass
             else:
@@ -546,7 +555,7 @@ def update_users(load_list, value_response):
             new_object_person = Person.objects.create(guid=element_list['guid'],
                                                       name=element_list['name'],
                                                       user=new_object,
-                                                      customer=new_object_customer,
+                                                      customer=filter_object_customer[element_list['guidOwner']],
                                                       code=element_list['code'],
                                                       sort=int(element_list['sort']),
                                                       allow_order=element_list['allow_order'],
