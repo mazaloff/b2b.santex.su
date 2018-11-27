@@ -85,6 +85,7 @@ class Person(models.Model):
     allow_order = models.BooleanField(default=False)
     key = models.CharField(max_length=20, default='xxx')
     change_password = models.BooleanField(default=True)
+    lock_order = models.BooleanField(default=False)
 
     class LetterPasswordChangeError(BaseException):
         pass
@@ -129,6 +130,17 @@ class Person(models.Model):
         self.key = pwd
         self.save()
         return pwd
+
+    @property
+    def lock(self):
+        return self.lock_order
+
+    @lock.setter
+    def lock(self, value):
+        if self.lock_order == value:
+            return
+        self.lock_order = value
+        self.save()
 
 
 class Section(models.Model):
@@ -566,6 +578,9 @@ class Order(models.Model):
     class RequestOrderError(BaseException):
         pass
 
+    class LockOrderError(BaseException):
+        pass
+
     class Meta:
         ordering = ('-date',)
 
@@ -631,9 +646,9 @@ class Order(models.Model):
             try:
                 begin_datetime = datetime.datetime(begin_date.year, begin_date.month, begin_date.day, 0, 0, 0) \
                     .astimezone(tz=pytz.timezone(settings.TIME_ZONE))
-                end_date_datetime = datetime.datetime(end_date.year, end_date.month, end_date.day, 23, 59, 59) \
+                end_datetime = datetime.datetime(end_date.year, end_date.month, end_date.day, 23, 59, 59) \
                     .astimezone(tz=pytz.timezone(settings.TIME_ZONE))
-                orders = orders.filter(date__range=(begin_datetime, end_date_datetime)).order_by('-date')
+                orders = orders.filter(date__range=(begin_datetime, end_datetime)).order_by('-date')
             except AttributeError:
                 pass
         return orders
@@ -732,3 +747,11 @@ def get_customer(user):
     customer = person.customer
     cache.set(f'user_customer{user.id}', customer)
     return customer
+
+
+def get_person(user):
+    try:
+        person = user.person
+    except Person.DoesNotExist:
+        return
+    return person

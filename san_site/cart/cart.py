@@ -1,7 +1,7 @@
 from datetime import date
 
 from django.conf import settings
-from san_site.models import Product, Currency
+from san_site.models import Product, Currency, get_person
 import datetime
 
 
@@ -39,6 +39,9 @@ class Cart(object):
         self.session[settings.CART_SESSION_ID] = self.cart
         self.session.modified = True
         self.price_exchange = False
+        person = get_person(self.user)
+        if person:
+            person.lock = False
 
     def remove(self, product):
         product_guid = str(product.guid)
@@ -136,4 +139,3 @@ class Cart(object):
         if product_guid not in self.cart:
             return 0
         return self.cart[product_guid]['quantity']
-

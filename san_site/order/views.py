@@ -8,7 +8,7 @@ from django.conf import settings
 
 from san_site.decorates.decorate import page_not_access
 from san_site.forms import OrderCreateForm, OrdersFilterList
-from san_site.models import Order, Customer, get_customer
+from san_site.models import Order, Customer, get_customer, get_person
 from san_site.tasks import order_request as task_order_request
 
 
@@ -17,9 +17,26 @@ def order_create(request):
     if request.method == 'POST':
         form = OrderCreateForm(request.POST)
         if form.is_valid():
-            order_new = form.save(request=request)
+            order_new = None
+            try:
+                order_new = form.save(request=request)
+            except Order.LockOrderError:
+                print('LockOrderError')
+                person = get_person(request.user)
+                if person:
+                    today = datetime.date.today()
+                    begin_datetime = datetime.datetime(today.year, today.month, today.day, 0, 0, 0) \
+                        .astimezone(tz=pytz.timezone(settings.TIME_ZONE))
+                    end_datetime = datetime.datetime(today.year, today.month, today.day, 23, 59, 59) \
+                        .astimezone(tz=pytz.timezone(settings.TIME_ZONE))
+                    set_orders = Order.objects.filter(person=person, date__range=(begin_datetime, end_datetime)) \
+                        .order_by('-id')
+                    if len(set_orders) > 0:
+                        order_new = set_orders[0]
             if order_new:
                 return render(request, 'orders/order.html', {'order': order_new, 'created': True})
+            else:
+                return render(request, 'orders/create.html', {'form': form})
     else:
         form = OrderCreateForm(initial={'delivery':
                                         datetime.datetime.now().astimezone(tz=pytz.timezone(settings.TIME_ZONE)) +

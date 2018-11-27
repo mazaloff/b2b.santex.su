@@ -4,7 +4,7 @@ from django import forms
 from django.conf import settings
 
 from .cart.cart import Cart, Currency
-from .models import Order, OrderItem, Person, Customer
+from .models import Order, OrderItem, Person, Customer, get_person
 from .tasks import order_request as task_order_request
 
 import pytz
@@ -91,14 +91,20 @@ class OrderCreateForm(forms.ModelForm):
         request = kwargs.get('request', None)
         if request is None:
             return
+
         cart = Cart(request)
         if len(cart) == 0:
             return
 
-        person = None
-        set_person = Person.objects.filter(user=request.user)
-        if len(set_person) > 0:
-            person = set_person[0]
+        person = get_person(request.user)
+        if person is None:
+            return
+        if person.lock:
+            cart.clear()
+            raise Order.LockOrderError
+        else:
+            person.lock = True
+
         order = Order.objects.create(
             person=person,
             customer=self.cleaned_data['customer'],
