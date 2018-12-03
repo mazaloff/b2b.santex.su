@@ -25,7 +25,6 @@ def create(request):
     return for_loading(request)
 
 
-@page_not_access
 def inventories(request, **kwargs):
     name_file = kwargs.get('name_file', 0)
     url = resolve_url(f'san_site\\static\\files_for_loading\\inventories\\{name_file}')
