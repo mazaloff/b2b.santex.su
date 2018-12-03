@@ -26,6 +26,20 @@ def create(request):
 
 
 @page_not_access
+def inventories(request, **kwargs):
+    name_file = kwargs.get('name_file', 0)
+    url = resolve_url(f'san_site\\static\\files_for_loading\\inventories\\{name_file}')
+    file_path = os.path.join(settings.BASE_DIR, url)
+    if not os.path.exists(file_path):
+        raise Http404()
+    content_type = 'application/vnd.ms-excel'
+    response = HttpResponse(open(file_path, mode='rb'), content_type=content_type)
+    response['Content-Disposition'] = f'attachment; filename={name_file}'
+    response['Content-Length'] = os.path.getsize(file_path)
+    return response
+
+
+@page_not_access
 def static(request, **kwargs):
     customer_id = kwargs.get('id', 0)
     try:
