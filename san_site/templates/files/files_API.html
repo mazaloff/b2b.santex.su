@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ block.super }}
+{% endblock %}
+
+{% block header %}
+    {% include "header/header.html" %}
+{% endblock %}
+
+{% block content %}
+
+    <div id="products" class="column products">
+        <div id="header_files_for_loading">
+            <h3 class="top_h">Вы можете использовать наш API для того, чтобы</h3>
+            <ul>
+                <li>
+                    скачивать остатками в нужном формате БЕЗ АВТОРИЗАЦИИ и входа на сайт
+                </li>
+                <li>
+                    напрямую запрашивать сведения по артикулам, например, <br>
+                    запрос HTTP:GET//адрес сайта/параметры - ответ (JSON)
+                </li>
+            </ul>
+            <h3>Прямые ссылки на файлы с вашим UID ключом</h3>
+            {% if files|length > 0 %}
+                {% for file in files %}
+                    <div class="file_for_loading">
+                        {{ file.url }}
+                    </div>
+                {% endfor %}
+            {% else %}
+                Файлы для скачивания еще не созданы.
+            {% endif %}
+            <h4>UID - ваш секретный ключ</h4>
+            {% if uid != 'xxx' %}
+                {{ uid }} <span class="control_help_text">   - ваш UID, служит для авторизации запросов</span>
+            {% else %}
+                Ваш ключ еще не создан.
+            {% endif %}
+            <h4>TYPE - тип файла с остатками и ценами</h4>
+            xlsx <span class="control_help_text"> - для полученния файла в формате EXCEL (Microsoft Office Excel)</span><br>
+            csv <span class="control_help_text"> - для полученния файла в формате CSV (значения разделенные точкой с запятой)</span>
+        </div>
+    </div>
+
+{% endblock %}

@@ -2,6 +2,7 @@ import datetime
 import json
 import requests
 import pytz
+import uuid
 
 from django.db import connection
 from django.conf import settings
@@ -84,6 +85,7 @@ class Person(models.Model):
     is_deleted = models.BooleanField(default=False)
     allow_order = models.BooleanField(default=False)
     key = models.CharField(max_length=20, default='xxx')
+    uid = models.CharField(max_length=50, default='xxx')
     change_password = models.BooleanField(default=True)
     lock_order = models.BooleanField(default=False)
 
@@ -140,6 +142,10 @@ class Person(models.Model):
         if self.lock_order == value:
             return
         self.lock_order = value
+        self.save()
+
+    def create_uid(self):
+        self.uid = str(uuid.uuid4()).replace('-', '')
         self.save()
 
 

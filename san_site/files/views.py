@@ -1,11 +1,11 @@
+import os
+
 from django.shortcuts import render, Http404, HttpResponse
 from san_site.decorates.decorate import page_not_access
 from san_site.backend.create_files import create_files
 from san_site.models import get_customer, Customer, CustomersFiles
 from django.shortcuts import resolve_url
 from django.conf import settings
-
-import os
 
 
 @page_not_access

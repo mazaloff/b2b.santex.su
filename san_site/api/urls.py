@@ -10,4 +10,6 @@ urlpatterns = [
     url(r'v1/courses$', views.api_courses, name='api_courses'),
     url(r'v1/users_prices$', views.api_users_prices, name='api_users_prices'),
     url(r'v1/statuses', views.api_statuses, name='api_statuses'),
+    url(r'v1/outside[/]$', views.outside, name='outside'),
+    url(r'our_api$', views.our_api, name='our_api'),
 ]
