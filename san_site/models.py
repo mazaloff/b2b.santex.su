@@ -497,19 +497,35 @@ class Currency(models.Model):
 
     @staticmethod
     def get_ruble():
+        currency = cache.get('ruble_currency_id')
+        if currency is not None:
+            return currency
         try:
             currency = Currency.objects.get(code='643')
         except Currency.DoesNotExist:
             return
+        cache.set('ruble_currency_id', currency.id, 3600)
         return currency.id
 
     def get_today_course(self):
+        json_str = cache.get('today_course_ruble')
+        if json_str is not None:
+            try:
+                return json.loads(json_str)
+            except TypeError:
+                pass
         from django.db.models import Max
         dict_max_date = Courses.objects.filter(currency=self).aggregate(max_date=Max('date'))
         if not dict_max_date['max_date'] is None:
             set_course = Courses.objects.filter(currency=self).filter(date=dict_max_date['max_date'])
             if len(set_course) > 0:
+                cache.set('today_course_ruble',
+                          json.dumps(
+                              {'course': set_course[0].course,
+                               'multiplicity': set_course[0].multiplicity}
+                          ), 3600)
                 return {'course': set_course[0].course, 'multiplicity': set_course[0].multiplicity}
+        cache.set('today_course_ruble', json.dumps({'course': 1, 'multiplicity': 1}), 3600)
         return {'course': 1, 'multiplicity': 1}
 
     def change_ruble(self, value):
