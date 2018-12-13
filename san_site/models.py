@@ -282,19 +282,19 @@ class Section(models.Model):
                 currency_name, currency_id, promo = ('', 0, False)
                 for product_prices in value_product.product_prices.all():
                     price_value = product_prices.value
-                    price_discount = product_prices.value
+                    price_discount = price_value
                     promo = product_prices.promo
-                    currency_name = currency_dict.get(product_prices.currency_id, '')
                     currency_id = product_prices.currency_id
+                    currency_name = currency_dict.get(currency_id, '')
                 for product_prices in value_product.product_customers_prices.all():
                     price_discount = product_prices.discount
                     price_percent = product_prices.percent
-                for product_prices in value_product.product_prices.all():
-                    price_value = product_prices.value
-                    promo = product_prices.promo
-                    if currency_name == '':
-                        currency_name = currency_dict.get(product_prices.currency_id, '')
-                        currency_id = product_prices.currency_id
+                # for product_prices in value_product.product_prices.all():
+                #     price_value = product_prices.value
+                #     promo = product_prices.promo
+                #     if currency_name == '':
+                #         currency_name = currency_dict.get(product_prices.currency_id, '')
+                #         currency_id = product_prices.currency_id
                 if only_stock and quantity_sum <= 0:
                     continue
                 list_res_.append({
@@ -329,14 +329,14 @@ class Section(models.Model):
                 currency_name, currency_id, promo = ('', 0, False)
                 for product_prices in value_product.product_prices_sale.all():
                     price_value = product_prices.value
-                    currency_name = currency_dict.get(product_prices.currency_id, '')
                     currency_id = product_prices.currency_id
+                    currency_name = currency_dict.get(currency_id, '')
                     promo = True
                 if price_value == 0:
                     for product_prices in value_product.product_prices.all():
                         price_value = product_prices.value
-                        currency_name = currency_dict.get(product_prices.currency_id, '')
                         currency_id = product_prices.currency_id
+                        currency_name = currency_dict.get(currency_id, '')
                 if only_stock and quantity_sum <= 0:
                     continue
                 list_res_.append({
