@@ -11,15 +11,15 @@ __pycache__/
 /pid/
 
 .idea/
-celery/celerybeat-schedule.bak
-celery/celerybeat-schedule.dat
-celery/celerybeat-schedule.dir
+/celery/celerybeat-schedule.bak
+/celery/celerybeat-schedule.dat
+/celery/celerybeat-schedule.dir
 celerybeat-schedule.bak
 celerybeat-schedule.dat
 celerybeat-schedule.dir
 
 *.pid
-/static/files_for_loading/
+/san_site/static/files_for_loading/
 /pid/server_nginx.pid
 /pid/server_api.pid
 /pid/server_beat.pid
