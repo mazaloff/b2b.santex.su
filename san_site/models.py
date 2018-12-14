@@ -271,6 +271,7 @@ class Section(models.Model):
                          queryset=CustomersPrices.objects.filter(customer=current_customer)))
 
             for value_product in products:
+
                 inventories = {}
                 quantity_sum = 0
                 for product_inventories in value_product.product_inventories.all():
@@ -278,25 +279,33 @@ class Section(models.Model):
                     short_name = store_dict.get(product_inventories.store_id)
                     quantity = '>10' if product_inventories.quantity > 10 else product_inventories.quantity
                     inventories.update(dict([(short_name, quantity)]))
+
                 price_value, price_discount, price_percent = (0, 0, 0)
-                currency_name, currency_id, promo = ('', 0, False)
+                currency_name, currency_id, currency_id_sale, promo = ('', 0, 0, False)
+                currency, currency_sale = (None, None)
                 for product_prices in value_product.product_prices.all():
                     price_value = product_prices.value
                     price_discount = price_value
                     promo = product_prices.promo
                     currency_id = product_prices.currency_id
-                    currency_name = currency_dict.get(currency_id, '')
+                    currency = product_prices.currency
                 for product_prices in value_product.product_customers_prices.all():
                     price_discount = product_prices.discount
                     price_percent = product_prices.percent
-                # for product_prices in value_product.product_prices.all():
-                #     price_value = product_prices.value
-                #     promo = product_prices.promo
-                #     if currency_name == '':
-                #         currency_name = currency_dict.get(product_prices.currency_id, '')
-                #         currency_id = product_prices.currency_id
+                    currency_id_sale = product_prices.currency_id
+                    currency_sale = product_prices.currency
+
+                if currency_id != currency_id_sale and price_discount != 0 \
+                        and currency_sale is not None and currency is not None:
+                    currency_name = currency_dict.get(currency_id_sale, '')
+                    price_discount = currency_sale.recalculation(currency, price_discount)
+                    price_percent = - round(0 if price_value == 0 else price_discount * 100 / price_value, 1)
+                else:
+                    currency_name = currency_dict.get(currency_id, '')
+
                 if only_stock and quantity_sum <= 0:
                     continue
+
                 list_res_.append({
                     'product': value_product,
                     'guid': value_product.guid,
@@ -507,9 +516,9 @@ class Currency(models.Model):
         cache.set('ruble_currency_id', currency.id, 3600)
         return currency.id
 
-    def get_today_course(self):
-        json_str = cache.get('today_course_ruble')
-        if json_str is not None:
+    def get_today_course(self, update_cache=False):
+        json_str = cache.get(f'today_course_{self.id}')
+        if json_str is not None and not update_cache:
             try:
                 return json.loads(json_str)
             except TypeError:
@@ -519,18 +528,26 @@ class Currency(models.Model):
         if not dict_max_date['max_date'] is None:
             set_course = Courses.objects.filter(currency=self).filter(date=dict_max_date['max_date'])
             if len(set_course) > 0:
-                cache.set('today_course_ruble',
+                cache.set(f'today_course_{self.id}',
                           json.dumps(
                               {'course': set_course[0].course,
                                'multiplicity': set_course[0].multiplicity}
                           ), 3600)
                 return {'course': set_course[0].course, 'multiplicity': set_course[0].multiplicity}
-        cache.set('today_course_ruble', json.dumps({'course': 1, 'multiplicity': 1}), 3600)
+        cache.set(f'today_course_{self.id}', json.dumps({'course': 1, 'multiplicity': 1}), 3600)
         return {'course': 1, 'multiplicity': 1}
 
     def change_ruble(self, value):
         course = self.get_today_course()
         return round(value * course['course'] / course['multiplicity'], 2)
+
+    def recalculation(self, to, value):
+        if to is not None:
+            return value
+        course_from = self.get_today_course()
+        course_to = to.get_today_course()
+        return round((value * course_from['course'] / course_to['multiplicity']) /
+                     (course_to['course'] * course_from['multiplicity']), 2)
 
 
 class Inventories(models.Model):
