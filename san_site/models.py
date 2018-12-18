@@ -281,27 +281,16 @@ class Section(models.Model):
                     inventories.update(dict([(short_name, quantity)]))
 
                 price_value, price_discount, price_percent = (0, 0, 0)
-                currency_name, currency_id, currency_id_sale, promo = ('', 0, 0, False)
-                currency, currency_sale = (None, None)
+                currency_name, currency_id, promo = ('', 0, False)
                 for product_prices in value_product.product_prices.all():
                     price_value = product_prices.value
                     price_discount = price_value
                     promo = product_prices.promo
                     currency_id = product_prices.currency_id
-                    currency = product_prices.currency
+                    currency_name = currency_dict.get(currency_id, '')
                 for product_prices in value_product.product_customers_prices.all():
                     price_discount = product_prices.discount
-                    price_percent = product_prices.percent
-                    currency_id_sale = product_prices.currency_id
-                    currency_sale = product_prices.currency
-
-                if currency_id != currency_id_sale and price_discount != 0 \
-                        and currency_sale is not None and currency is not None:
-                    currency_name = currency_dict.get(currency_id_sale, '')
-                    price_discount = currency_sale.recalculation(currency, price_discount)
-                    price_percent = - round(0 if price_value == 0 else price_discount * 100 / price_value, 1)
-                else:
-                    currency_name = currency_dict.get(currency_id, '')
+                    price_percent = min(product_prices.percent, 0)
 
                 if only_stock and quantity_sum <= 0:
                     continue
@@ -314,7 +303,7 @@ class Section(models.Model):
                     'relevant': value_product.is_relevant(),
                     'quantity': '>10' if quantity_sum > 10 else '' if quantity_sum == 0 else quantity_sum,
                     'inventories': inventories,
-                    'price': '' if price_value == 0 else price_value,
+                    'price': '' if price_value == 0 or price_value == 0.01 else price_value,
                     'promo': promo,
                     'discount': '' if price_discount == 0 else price_discount,
                     'currency': currency_name,
@@ -562,7 +551,7 @@ class Prices(models.Model):
                                 db_index=True, on_delete=models.PROTECT)
     promo = models.BooleanField(default=False)
     price = models.ForeignKey(Price, on_delete=models.PROTECT)
-    currency = models.ForeignKey(Currency, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
     value = models.FloatField(default=0)
 
 
@@ -574,12 +563,16 @@ class PricesSale(models.Model):
 
 
 class CustomersPrices(models.Model):
-    customer = models.ForeignKey(Customer, db_index=True, on_delete=models.PROTECT)
     product = models.ForeignKey(Product, related_name='product_customers_prices',
-                                db_index=True, on_delete=models.PROTECT)
-    currency = models.ForeignKey(Currency, on_delete=models.PROTECT)
+                                db_index=False, on_delete=models.PROTECT)
+    customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT,
+                                 db_index=False)
     discount = models.FloatField(default=0)
     percent = models.FloatField(default=0)
+
+    class Meta:
+        unique_together = (("product", "customer"),)
 
 
 class CustomersFiles(models.Model):
