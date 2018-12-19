@@ -791,6 +791,8 @@ def update_users_prices(load_list, value_response):
                           message='no float percent', description=element_list_price)
                 continue
 
+            if value_discount == 0:
+                continue
             new_object = CustomersPrices(customer=obj_customer,
                                          product=obj_product,
                                          currency=obj_currency,

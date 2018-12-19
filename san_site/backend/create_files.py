@@ -115,7 +115,7 @@ def create_files(user):
                                   name='goods_b2b_santex.xlsx',
                                   view=view,
                                   url=url,
-                                  type_file='exlx')
+                                  type_file='xlsx')
 
 
 def create_files_inventories():

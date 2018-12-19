@@ -199,7 +199,7 @@ class Section(models.Model):
         return request.session.get('id_current_session')
 
     @staticmethod
-    def get_sessions():
+    def get_sections():
         sections = cache.get('sessions')
         if sections is None:
             sections = Section.objects.filter(is_deleted=False).order_by('sort', 'name')
@@ -210,7 +210,7 @@ class Section(models.Model):
     def get_data_for_tree():
         data = cache.get('data_for_tree')
         if data is None:
-            sections = Section.get_sessions()
+            sections = Section.get_sections()
             data = []
             for obj in sections:
                 parent = '#' if obj.parent_guid == '---' else obj.parent_guid
