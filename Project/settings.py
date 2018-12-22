@@ -142,6 +142,7 @@ LOGIN_URL = '/login/'
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 2147483648
 
+SERVER_EMAIL = 'mazaloff@bk.ru'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
