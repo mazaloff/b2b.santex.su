@@ -658,7 +658,14 @@ class Order(models.Model):
             return json.loads(json_str, object_hook=date_hook)
         except TypeError:
             end_date = datetime.date.today()
-            begin_date = datetime.date(day=end_date.day, month=end_date.month - 1, year=end_date.year)
+            previous_month = end_date.month
+            previous_year = end_date.year
+            if previous_month == 1:
+                previous_month = 12
+                previous_year -= 1
+            else:
+                previous_month -= 1
+            begin_date = datetime.date(day=end_date.day, month=previous_month - 1, year=previous_year)
             return dict(begin_date=begin_date, end_date=end_date)
 
     @staticmethod
