@@ -705,10 +705,16 @@ def update_prices(load_list, value_response):
             except ValueError:
                 value_price = 0
 
+            try:
+                value_rrp = float(element_list_price['rrp'])
+            except ValueError:
+                value_rrp = 0
+
             new_object = Prices(product=obj_product,
                                 price=obj_price,
                                 currency=obj_currency,
                                 value=value_price,
+                                rrp=value_rrp,
                                 promo=element_list_price['promo'])
             list_obj_prices.append(new_object)
 

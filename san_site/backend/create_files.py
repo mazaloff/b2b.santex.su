@@ -30,7 +30,7 @@ def write_files(path_files_customer, user=None):
         os.remove(path_file_xls)
 
     if user:
-        list_str = ['Артикул;Название;Остаток;Базовая цена;Валюта;Цена руб. ЦБ' + '\n']
+        list_str = ['Артикул;Название;Остаток;Базовая цена;Валюта;Цена руб. ЦБ;РРЦ руб.' + '\n']
     else:
         list_str = ['Артикул;Название;Остаток' + '\n']
 
@@ -44,6 +44,7 @@ def write_files(path_files_customer, user=None):
         worksheet.set_column('D:D', 13)
         worksheet.set_column('E:E', 10)
         worksheet.set_column('F:F', 13)
+        worksheet.set_column('G:G', 13)
 
     cell_format = workbook.add_format({'bold': True, 'font_color': 'red'})
     worksheet.write(0, 0, 'Артикул', cell_format)
@@ -53,6 +54,7 @@ def write_files(path_files_customer, user=None):
         worksheet.write(0, 3, 'Базовая цена', cell_format)
         worksheet.write(0, 4, 'Валюта', cell_format)
         worksheet.write(0, 5, 'Цена руб. ЦБ', cell_format)
+        worksheet.write(0, 6, 'РРЦ руб.', cell_format)
 
     row = 1
     for obj_section in sections:
@@ -62,6 +64,7 @@ def write_files(path_files_customer, user=None):
             name = elem['name'].replace(';', '').replace('"', '')
             quantity = str(0 if elem['quantity'] == '' else elem['quantity']).replace('>', '')
             price = 0 if elem['price'] == '' else elem['price']
+            price_rrp = 0 if elem['price_rrp'] == '' else elem['price_rrp']
             discount = 0 if elem['discount'] == '' else elem['discount']
             currency = elem['currency']
             course = courses.get(elem['currency_id'], {'course': 1, 'multiplicity': 1})
@@ -69,7 +72,7 @@ def write_files(path_files_customer, user=None):
 
             # for csv
             if user:
-                list_str.append(f'{code};{name};{quantity};{price};{currency};{price_rub}' + '\n')
+                list_str.append(f'{code};{name};{quantity};{price};{currency};{price_rub};{price_rrp}' + '\n')
             else:
                 list_str.append(f'{code};{name};{quantity}' + '\n')
 
@@ -81,6 +84,7 @@ def write_files(path_files_customer, user=None):
                 worksheet.write(row, 3, price)
                 worksheet.write(row, 4, currency)
                 worksheet.write(row, 5, price_rub)
+                worksheet.write(row, 6, price_rrp)
             row += 1
 
     workbook.close()

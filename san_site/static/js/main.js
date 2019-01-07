@@ -227,6 +227,7 @@ function widthHeadGoods() {
     $('th#goods_table_5 div').stop().animate({width: $('th#goods_table_5').width()});
     $('th#goods_table_6 div').stop().animate({width: $('th#goods_table_6').width()});
     $('th#goods_table_7 div').stop().animate({width: $('th#goods_table_7').width()});
+    $('th#goods_table_8 div').stop().animate({width: $('th#goods_table_8').width()});
 }
 
 function widthHeadOrders() {
