@@ -310,8 +310,47 @@ class Section(models.Model):
                     'discount': '' if price_discount == 0 else price_discount,
                     'currency': currency_name,
                     'currency_id': currency_id,
-                    'percent': '' if price_percent == 0 else price_percent,
-                }
+                    'percent': '' if price_percent == 0 else price_percent}
+                )
+        else:
+
+            products = set_products.order_by('code').prefetch_related(
+                Prefetch('product_inventories', queryset=Inventories.objects.all()),
+                Prefetch('product_prices', queryset=Prices.objects.all()),
+                Prefetch('product_prices_sale', queryset=PricesSale.objects.all()))
+
+            for value_product in products:
+                quantity_sum = 0
+                for product_inventories in value_product.product_inventories.all():
+                    quantity_sum += product_inventories.quantity
+                price_value = 0
+                currency_name, currency_id, promo = ('', 0, False)
+                for product_prices in value_product.product_prices_sale.all():
+                    price_value = product_prices.value
+                    currency_id = product_prices.currency_id
+                    currency_name = currency_dict.get(currency_id, '')
+                    promo = True
+                if price_value == 0:
+                    for product_prices in value_product.product_prices.all():
+                        price_value = product_prices.value
+                        currency_id = product_prices.currency_id
+                        currency_name = currency_dict.get(currency_id, '')
+                if only_stock and quantity_sum <= 0:
+                    continue
+                list_res_.append({
+                    'product': value_product,
+                    'guid': value_product.guid,
+                    'code': value_product.code,
+                    'relevant': value_product.is_relevant(),
+                    'name': value_product.name,
+                    'quantity': '>10' if quantity_sum > 10 else '' if quantity_sum == 0 else quantity_sum,
+                    'price': '' if price_value == 0 else price_value,
+                    'price_rrp': '',
+                    'promo': promo,
+                    'discount': '',
+                    'currency': currency_name,
+                    'currency_id': currency_id,
+                    'percent': ''}
                 )
 
         return list_res_
