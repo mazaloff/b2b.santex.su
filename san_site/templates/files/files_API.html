@@ -18,22 +18,21 @@
                     скачивать остатками в нужном формате БЕЗ АВТОРИЗАЦИИ и входа на сайт
                 </li>
                 <li>
-                    напрямую запрашивать сведения по артикулам, например, <br>
-                    запрос HTTP:GET//адрес сайта/параметры - ответ (JSON)
+                    запросить у нас необходимый вашей системе API интерфейс.
                 </li>
             </ul>
             <h3>Прямые ссылки на файлы с вашим UID ключом</h3>
             {% if files|length > 0 %}
                 {% for file in files %}
                     <div class="file_for_loading">
-                        {{ file.url }}
+                        <a class="loading" href="{{ file.url }}"> {{ file.view }} </a>
                     </div>
                 {% endfor %}
             {% else %}
                 Файлы для скачивания еще не созданы.
             {% endif %}
             <p>
-                <strong>UID - ваш секретный ключ</strong><br>
+                <h5>UID - ваш секретный ключ</h5>
                 {% if uid != 'xxx' %}
                     {{ uid }} <span class="control_help_text">   - ваш UID, служит для авторизации запросов</span>
                 {% else %}
@@ -41,7 +40,7 @@
                 {% endif %}
             </p>
             <p>
-                <strong>TYPE - тип файла с остатками и ценами</strong><br>
+                <h5>TYPE - тип файла с остатками и ценами</h5>
                 xlsx <span class="control_help_text"> - для полученния файла в формате EXCEL (Microsoft Office Excel)</span><br>
                 csv <span class="control_help_text"> - для полученния файла в формате CSV (значения разделенные точкой с запятой)</span>
             </p>
