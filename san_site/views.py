@@ -59,7 +59,7 @@ def password_reset(request):
         if form.is_valid():
             cd = form.cleaned_data
             email = cd['email']
-            set_query = User.objects.filter(email=email)
+            set_query = User.objects.filter(email__iexact=email)
             if len(set_query) == 0:
                 messages.error(request, 'Не найден акаунт с таким email.')
                 return render(request, 'account/password_reset.html', {'form': form})
