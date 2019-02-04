@@ -666,7 +666,7 @@ class Order(models.Model):
                 previous_year -= 1
             else:
                 previous_month -= 1
-            begin_date = datetime.date(day=end_date.day, month=previous_month - 1, year=previous_year)
+            begin_date = datetime.date(day=end_date.day, month=previous_month, year=previous_year)
             return dict(begin_date=begin_date, end_date=end_date)
 
     @staticmethod
