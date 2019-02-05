@@ -756,6 +756,8 @@ def update_users_prices(load_list, value_response):
     for element_list in load_list:
 
         obj_customer = filter_object.get(element_list['guid'], None)
+        all_clean = element_list['allClean']
+
         if not obj_customer:
             add_error(value_response, code='Customer.DoesNotExist',
                       message='no get customer', description=element_list)
@@ -766,8 +768,11 @@ def update_users_prices(load_list, value_response):
         filter_guid = [element_list['productGuid'] for element_list in load_list_prices]
         filter_object_product = {t.guid: t for t in Product.objects.filter(guid__in=filter_guid)}
 
-        CustomersPrices.objects.filter(customer=obj_customer) \
-            .filter(product__in=[t for guid, t in filter_object_product.items()]).delete()
+        if all_clean:
+            CustomersPrices.objects.filter(customer=obj_customer).delete()
+        else:
+            CustomersPrices.objects.filter(customer=obj_customer) \
+                .filter(product__in=[t for guid, t in filter_object_product.items()]).delete()
 
         for element_list_price in load_list_prices:
 
