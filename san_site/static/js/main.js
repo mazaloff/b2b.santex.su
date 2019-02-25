@@ -8,150 +8,149 @@ var main_goods_height = 99999,
     main_cart_max = false,
     main_user = '',
     main_products = '',
-    app = (function($) {
+    app = (function ($) {
 
-    // Инициализируем нужные переменные
-    let ui = {
+        // Инициализируем нужные переменные
+        let ui = {
             $categories: $('#categories'),
             $goods: $('#goods')
         };
 
-    $(window).resize(function() {
-        updateTables();
-        widthHeadGoods();
-        widthHeadCart();
-        widthHeadOrders();
-    });
+        $(window).resize(function () {
+            updateTables();
+            widthHeadGoods();
+            widthHeadCart();
+            widthHeadOrders();
+        });
 
-    // Инициализация дерева категорий с помощью jstree
-    function _initTree(data) {
-        let guid;
-        ui.$categories.jstree({
-            core: {
-                check_callback: true,
-                multiple: false,
-                data: data
-            },
-            types: {
-                default : {
-                    valid_children : ["default","file"]
+        // Инициализация дерева категорий с помощью jstree
+        function _initTree(data) {
+            let guid;
+            ui.$categories.jstree({
+                core: {
+                    check_callback: true,
+                    multiple: false,
+                    data: data
                 },
-            }
+                types: {
+                    default: {
+                        valid_children: ["default", "file"]
+                    },
+                }
 
-        }).bind('changed.jstree', function(e, data) {
+            }).bind('changed.jstree', function (e, data) {
 
-            guid = data.node.original.href;
+                guid = data.node.original.href;
 
-            jQuery("#products").replaceWith(main_products);
+                jQuery("#products").replaceWith(main_products);
 
-            $('#only_promo').prop('checked', false);
-            createCookie('is_only_promo', getOnlyPromo(), 30);
+                $('#only_promo').prop('checked', false);
+                createCookie('is_only_promo', getOnlyPromo(), 30);
 
-            recoverOnlyStock();
+                recoverOnlyStock();
 
-            history.pushState(null, null, '/');
-            history.replaceState(null, null, '/');
+                history.pushState(null, null, '/');
+                history.replaceState(null, null, '/');
 
-            jQuery("#goods").html('Загрузка товаров...');
+                jQuery("#goods").html('Загрузка товаров...');
 
-            jQuery("#categories ul li a").addClass('disabled');
-            jQuery("#loading_icon").removeClass('disabled');
+                jQuery("#categories ul li a").addClass('disabled');
+                jQuery("#loading_icon").removeClass('disabled');
 
-            document.getElementById('goods_table').style.display = 'none';
+                document.getElementById('goods_table').style.display = 'none';
 
-            jQuery.ajax({
-                url: "ajax/get_goods/",
-                type: 'GET',
-                data: {
-                    'guid': guid,
-                    'only_stock': getOnlyStock(),
-                    'only_promo': getOnlyPromo()
-                },
-                dataType: 'json', // забираем номер страницы, которую нужно отобразить
+                jQuery.ajax({
+                    url: "ajax/get_goods/",
+                    type: 'GET',
+                    data: {
+                        'guid': guid,
+                        'only_stock': getOnlyStock(),
+                        'only_promo': getOnlyPromo()
+                    },
+                    dataType: 'json', // забираем номер страницы, которую нужно отобразить
 
-                success : function (json) {
-                    // Если запрос прошёл успешно и сайт вернул результат
-                    if (json.success)
-                    {
-                        jQuery("#products").replaceWith(json.products);
+                    success: function (json) {
+                        // Если запрос прошёл успешно и сайт вернул результат
+                        if (json.success) {
+                            jQuery("#products").replaceWith(json.products);
 
-                        recoverOnlyStock();
+                            recoverOnlyStock();
 
-                        jQuery("#goods").html('Товары из категории <strong>' + json.current_section
+                            jQuery("#goods").html('Товары из категории <strong>' + json.current_section
                                 .link('?sections=' + guid) + '</strong>');
 
-                        console.log('changed node: ', data);
+                            console.log('changed node: ', data);
 
-                        jQuery(window).scrollTop(0);
+                            jQuery(window).scrollTop(0);
 
-                        countHeightTableGoods();
+                            countHeightTableGoods();
+                            countHeightTableCart();
+
+                            updateTables();
+
+                            widthHeadGoods();
+                            widthHeadCart();
+
+                        } else {
+                            console.error('Ошибка получения данных с сервера');
+                        }
+                        jQuery("#categories ul li a").removeClass('disabled');
+                        jQuery("#loading_icon").addClass('disabled');
+                        document.body.querySelectorAll('#goods')
+                            .forEach(link => link.addEventListener('click', Index._clickHandlerGoods));
+                        onlyStock();
+                        onlyPromo();
+                    }
+                });
+            });
+        }
+
+        // Загрузка категорий с сервера
+        function _loadData() {
+
+            widthHeadGoods();
+            widthHeadCart();
+            widthHeadOrders();
+            recoverOnlyStock();
+            recoverOnlyPromo();
+            countHeightListOrders();
+
+            $.ajax({
+                url: 'ajax/get_categories',
+                method: 'GET',
+                dataType: 'json',
+
+                success: function (json) {
+                    // Инициализируем дерево категорий
+                    if (json.success) {
+                        _initTree(json.result);
+                        main_user = json.user_name;
+                        main_products = json.products;
                         countHeightTableCart();
-
                         updateTables();
-
-                        widthHeadGoods();
-                        widthHeadCart();
-
                     } else {
                         console.error('Ошибка получения данных с сервера');
                     }
-                    jQuery("#categories ul li a").removeClass('disabled');
-                    jQuery("#loading_icon").addClass('disabled');
-                    document.body.querySelectorAll('#goods')
-                        .forEach( link => link.addEventListener('click', Index._clickHandlerGoods) );
-                    onlyStock();
-                    onlyPromo();
-                }
+                },
             });
-        });
-    }
+        }
 
-    // Загрузка категорий с сервера
-    function _loadData() {
+        // Инициализация приложения
+        function init() {
+            _loadData();
+        }
 
-        widthHeadGoods();
-        widthHeadCart();
-        widthHeadOrders();
-        recoverOnlyStock();
-        recoverOnlyPromo();
-        countHeightListOrders();
+        onlyStock();
+        onlyPromo();
 
-        $.ajax({
-            url: 'ajax/get_categories',
-            method: 'GET',
-            dataType: 'json',
+        $("html,body").css("overflow", "hidden");
 
-            success: function(json) {
-                // Инициализируем дерево категорий
-                if (json.success) {
-                    _initTree(json.result);
-                    main_user = json.user_name;
-                    main_products = json.products;
-                    countHeightTableCart();
-                    updateTables();
-                } else {
-                    console.error('Ошибка получения данных с сервера');
-                }
-            },
-        });
-    }
+        // Экспортируем наружу
+        return {
+            init: init
+        }
 
-    // Инициализация приложения
-    function init() {
-        _loadData();
-    }
-
-    onlyStock();
-    onlyPromo();
-
-    $("html,body").css("overflow","hidden");
-
-    // Экспортируем наружу
-    return {
-        init: init
-    }
-
-})(jQuery);
+    })(jQuery);
 
 function updateTables() {
 
@@ -161,7 +160,7 @@ function updateTables() {
         goods_table_height = 0;
 
     let categories_height = window_height - header_height - 28;
-    let list_orders_table_height = window_height - header_height - 34;
+    let list_orders_table_height = window_height - header_height - $('#list_filter').height() - 34;
 
     let cart_table_height = main_cart_height;
 
@@ -190,17 +189,20 @@ function updateTables() {
     }
 
     if (document.getElementById("goods_cart")) {
-        $('#goods_cart').stop().animate({height: cart_table_height, width: $('#goods_cart table').width()+6});
+        $('#goods_cart').stop().animate({height: cart_table_height, width: $('#goods_cart table').width() + 6});
     }
 
     if (document.getElementById("list_orders")) {
-        $('#list_orders').stop().animate({height: list_orders_table_height, width: $('#list_orders table').width()+6});
+        $('#list_orders').stop().animate({
+            height: list_orders_table_height,
+            width: $('#list_orders table').width() + 6
+        });
     }
 
     goods_table_height = Math.min(goods_table_height, main_goods_height);
 
     if (document.getElementById("goods_table")) {
-        $('#goods_table').stop().animate({height: goods_table_height, width: $('#goods_table table').width()+6});
+        $('#goods_table').stop().animate({height: goods_table_height, width: $('#goods_table table').width() + 6});
     }
 
     if (document.getElementById("categories")) {
@@ -367,8 +369,7 @@ let createCookie = function (name, value, days) {
         let date = new Date();
         date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
         expires = "; expires=" + date.toUTCString();
-    }
-    else {
+    } else {
         expires = "";
     }
     document.cookie = name + "=" + value + expires + "; path=/";

@@ -6,10 +6,10 @@ class Index {
 
     static initGoods() {
         document.body.querySelectorAll('#goods')
-                .forEach( link => link.addEventListener('click', Index._clickHandlerGoods) );
+            .forEach(link => link.addEventListener('click', Index._clickHandlerGoods));
     }
 
-    static _clickHandlerGoods(event){
+    static _clickHandlerGoods(event) {
         event.preventDefault();
 
         let html_view_category = jQuery("#goods").html();
@@ -44,16 +44,15 @@ class Index {
             },
             dataType: 'json',
 
-            success : function (json) {
+            success: function (json) {
                 // Если запрос прошёл успешно и сайт вернул результат
-                if (json.success)
-                {
+                if (json.success) {
                     jQuery("#products").replaceWith(json.products);
 
                     recoverOnlyStock();
 
                     jQuery("#goods").html('Товары из категории <strong>' + json.current_section
-                            .link('?sections=' + guid) + '</strong>');
+                        .link('?sections=' + guid) + '</strong>');
 
                     jQuery(window).scrollTop(0);
 
@@ -139,13 +138,13 @@ class Index {
         help_tip.css('top', position.top);
     }
 
-    static _closeBlackOverlay(guid){
+    static _closeBlackOverlay(guid) {
         jQuery('#tr_goods' + guid).removeClass('current-tr');
         jQuery('#form_enter_quantity').hide();
         jQuery('.black-overlay').fadeOut(0);
     }
 
-    static _closeBlackOverlayHelp(){
+    static _closeBlackOverlayHelp() {
         jQuery('.help-tip').hide();
         jQuery('.black-overlay').fadeOut(0);
     }
