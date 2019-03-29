@@ -659,14 +659,7 @@ class Order(models.Model):
             return json.loads(json_str, object_hook=date_hook)
         except TypeError:
             end_date = datetime.date.today()
-            previous_month = end_date.month
-            previous_year = end_date.year
-            if previous_month == 1:
-                previous_month = 12
-                previous_year -= 1
-            else:
-                previous_month -= 1
-            begin_date = datetime.date(day=end_date.day, month=previous_month, year=previous_year)
+            begin_date = end_date - datetime.timedelta(days=60)
             return dict(begin_date=begin_date, end_date=end_date)
 
     @staticmethod
