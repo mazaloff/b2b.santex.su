@@ -64,8 +64,11 @@ class Cart(object):
         for item in self.cart.values():
             if 'date' in item:
                 if datetime.datetime.strptime(item['date'], '%Y-%m-%d').date() < data_now:
-                    currency = Currency.objects.get(id=item['currency_id'])
-                    item['price_ruble'] = currency.change_ruble(item['price'])
+                    try:
+                        currency = Currency.objects.get(id=item['currency_id'])
+                        item['price_ruble'] = currency.change_ruble(item['price'])
+                    except Currency.DoesNotExist:
+                        pass
                     item['date'] = data_now.isoformat()
                     self.price_exchange = True
             number += 1

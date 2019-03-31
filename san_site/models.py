@@ -220,6 +220,13 @@ class Section(models.Model):
 
     @staticmethod
     def get_goods_list(**kwargs):
+        if settings.GET_GOODS_LIST_RAW:
+            return Section.__get_goods_list_raw(kwargs)
+        else:
+            return Section.__get_goods_list_orm(kwargs)
+
+    @staticmethod
+    def __get_goods_list_orm(kwargs):
 
         user = kwargs.get('user', None)
         list_sections = kwargs.get('list_sections', None)
@@ -351,6 +358,138 @@ class Section(models.Model):
                     'currency': currency_name,
                     'currency_id': currency_id,
                     'percent': ''}
+                )
+
+        return list_res_
+
+    @staticmethod
+    def __get_goods_list_raw(kwargs):
+
+        user = kwargs.get('user', None)
+        list_sections = kwargs.get('list_sections', None)
+        search = kwargs.get('search', '')
+
+        only_stock = kwargs.get('only_stock', 'false') in ('true', True)
+        only_promo = kwargs.get('only_promo', 'false') in ('true', True)
+        only_available = kwargs.get('only_available', 'true') in ('true', True)
+        only_list_sections = list_sections is not None
+        only_search = search != ''
+
+        list_res_ = []
+        if only_list_sections:
+            list_sections_id = [element.id for element in list_sections]
+        else:
+            list_sections_id = []
+
+        current_customer = get_customer(user)
+        if current_customer is None:
+            return list_res_
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """ WITH _prise AS (
+                      SELECT _product.id                      AS id,
+                             _product.code                    AS code,
+                             _product.name                    AS name,
+                             _product.guid                    AS guid,
+                             _product.matrix                  AS matrix,
+                             COALESCE(_prices.value, 0)       AS price,
+                             COALESCE(_prices.value, 0)       AS discount,
+                             COALESCE(_prices.rrp, 0)         AS price_rrp,
+                             COALESCE(_prices.promo, FALSE)   AS promo,
+                             COALESCE(_prices.currency_id, 0) AS currency_id,
+                             COALESCE(_currency.name, '')     AS currency
+                      FROM san_site_product _product
+                             LEFT JOIN san_site_prices _prices ON _product.id = _prices.product_id
+                             LEFT JOIN san_site_currency _currency ON _prices.currency_id = _currency.id
+                      WHERE _product.is_deleted = %s
+                        AND (%s = FALSE
+                                OR _product.section_id = ANY (%s))
+                        AND (%s = FALSE
+                                OR COALESCE (_prices.promo, FALSE) = TRUE
+                        )
+                        AND (%s = FALSE
+                                OR UPPER(_product.code::text) LIKE UPPER(%s)
+                                OR UPPER(_product.name::text) LIKE UPPER(%s)
+                        )
+                    ),
+                         _prise_store AS (
+                           SELECT _prise.id                          AS id,
+                                  _prise.code                        AS code,
+                                  _prise.name                        AS name,
+                                  _prise.guid                        AS guid,
+                                  _prise.matrix                      AS matrix,
+                                  _prise.price                       AS price,
+                                  _prise.discount                    AS discount,
+                                  _prise.price_rrp                   AS price_rrp,
+                                  _prise.promo                       AS promo,
+                                  _prise.currency_id                 AS currency_id,
+                                  _prise.currency                    AS currency,
+                                  COALESCE(_store.short_name, '')    AS store,
+                                  COALESCE(_inventories.quantity, 0) AS quantity
+                           FROM _prise
+                                  LEFT JOIN san_site_inventories _inventories ON _prise.id = _inventories.product_id
+                                  LEFT JOIN san_site_store _store ON _inventories.store_id = _store.id
+                           WHERE %s = FALSE OR COALESCE(_inventories.quantity, 0) > 0 
+                         ),
+                         result AS (
+                           SELECT _prise_store.id                                         AS id,
+                                  _prise_store.code                                       AS code,
+                                  _prise_store.name                                       AS name,
+                                  _prise_store.guid                                       AS guid,
+                                  _prise_store.matrix                                     AS matrix,
+                                  _prise_store.price                                      AS price,
+                                  COALESCE(_prices.percent, 0)                            AS percent,
+                                  COALESCE(_prices.discount, _prise_store.discount)       AS discount,
+                                  _prise_store.price_rrp                                  AS price_rrp,
+                                  _prise_store.promo                                      AS promo,
+                                  COALESCE(_prices.currency_id, _prise_store.currency_id) AS currency_id,
+                                  COALESCE(currency.name, _prise_store.currency)          AS currency,
+                                  _prise_store.store                                      AS store,
+                                  _prise_store.quantity                                   AS quantity
+                           FROM _prise_store
+                                  LEFT JOIN san_site_customersprices _prices ON
+                             _prise_store.id = _prices.product_id AND _prices.customer_id = %s
+                                  LEFT JOIN san_site_currency currency ON _prices.currency_id = currency.id
+                         )
+                    SELECT *
+                    FROM result
+                    ORDER BY result.code, result.store;
+                """,
+                [not only_available, only_list_sections, list_sections_id, only_promo, only_search, f'{search}%',
+                 f'%{search}%', only_stock,
+                 current_customer.id, ])
+
+            rows = cursor.fetchall()
+            dict_row = {}
+
+            for row in rows:
+                if row[0] in dict_row:
+                    sel_row = dict_row[row[0]]
+                    sel_row.quantity += row[13]
+                else:
+                    sel_row = SelectRow(*row)
+                    dict_row[row[0]] = sel_row
+                if row[13] > 0:
+                    quantity = '>10' if row[13] > 10 else '' if row[13] == 0 else row[13]
+                    sel_row.inventories.update(dict([(row[12], quantity)]))
+
+            for sel_row in dict_row.values():
+                list_res_.append({
+                    'product': sel_row,
+                    'guid': sel_row.guid,
+                    'code': sel_row.code,
+                    'name': sel_row.name,
+                    'relevant': sel_row.matrix in Product.RELEVANT_MATRIX,
+                    'quantity': '>10' if sel_row.quantity > 10 else '' if sel_row.quantity == 0 else sel_row.quantity,
+                    'inventories': sel_row.inventories,
+                    'price': '' if sel_row.price == 0 or sel_row.price == 0.01 else sel_row.price,
+                    'price_rrp': '' if sel_row.price_rrp == 0 or sel_row.price_rrp == 0.01 else sel_row.price_rrp,
+                    'promo': sel_row.promo,
+                    'discount': '' if sel_row.discount == 0 else sel_row.discount,
+                    'currency': sel_row.currency,
+                    'currency_id': sel_row.currency_id,
+                    'percent': '' if sel_row.percent == 0 else sel_row.percent}
                 )
 
         return list_res_
@@ -788,3 +927,23 @@ def get_person(user):
     except Person.DoesNotExist:
         return
     return person
+
+
+class SelectRow:
+    def __init__(self, id, code, name, guid, matrix, price, percent, discount, price_rrp, promo, currency_id, currency,
+                 store, quantity):
+        self.id: int = id
+        self.code: str = code
+        self.name: str = name
+        self.guid: str = guid
+        self.matrix: str = matrix
+        self.price: float = price
+        self.percent: float = percent
+        self.discount: float = discount
+        self.price_rrp: float = price_rrp
+        self.promo: bool = promo
+        self.currency_id: int = currency_id
+        self.currency: str = currency
+        self.store: str = store
+        self.quantity: int = quantity
+        self.inventories = {}
