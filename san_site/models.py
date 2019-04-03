@@ -155,19 +155,69 @@ class Section(models.Model):
     code = models.CharField(max_length=20)
     sort = models.IntegerField(default=500)
     parent_guid = models.CharField(max_length=50, db_index=True)
+    group = models.ForeignKey('self', db_index=True, null=True, on_delete=models.SET_NULL)
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False, db_index=True)
+    is_inventories = models.BooleanField(default=True, db_index=True)
 
     objects = SectionManager()
 
     def __str__(self):
         return self.name
 
-    def list_with_children(self, list_sections):
-        list_sections.append(self)
-        children = Section.objects.filter(parent_guid=self.guid)
-        for child in children:
-            child.list_with_children(list_sections)
+    @classmethod
+    def change_is_inventories(cls):
+        sections = Section.objects.all()
+        for obj_section in sections:
+            is_active = len(obj_section.get_goods_list_section(only_stock=True)) > 0
+            if is_active and not obj_section.is_inventories:
+                obj_section.is_inventories = True
+                obj_section.save()
+            elif not is_active and obj_section.is_inventories:
+                obj_section.is_inventories = False
+                obj_section.save()
+
+    @classmethod
+    def change_is_deleted(cls):
+        sections = Section.objects.all()
+        for obj_section in sections:
+            is_active = len(obj_section.get_goods_list_section(only_available=True)) > 0
+            if is_active and obj_section.is_deleted:
+                obj_section.is_deleted = False
+                obj_section.save()
+            elif not is_active and not obj_section.is_deleted:
+                obj_section.is_deleted = True
+                obj_section.save()
+
+    def list_with_children(self):
+        result = Section.objects.raw("""
+            WITH RECURSIVE Bfs AS (
+              SELECT section.id       AS id,
+                     section.name     AS name,
+                     section.group_id AS group_id,
+                     0                AS level
+              FROM san_site_section AS section
+              WHERE section.id = %s
+              UNION ALL
+              SELECT section.id       AS id,
+                     section.name     AS name,
+                     section.group_id AS group_id,
+                     Bfs.level + 1    AS level
+              FROM san_site_section AS section
+                     JOIN Bfs ON section.group_id = Bfs.id AND section.is_deleted = FALSE
+            )
+            SELECT Bfs.id                    AS id,
+                   Bfs.name                  AS name,
+                   COALESCE(Bfs.group_id, 0) AS group_id,
+                   Bfs.level                 AS level
+            FROM Bfs
+            ORDER BY Bfs.level, Bfs.name;
+            """, [self.id, ])
+
+        list_sections = []
+        for value in result:
+            list_sections.append(value)
+        return list_sections
 
     def add_current_session(self, request):
         request.session['id_current_session'] = self.id
@@ -175,23 +225,15 @@ class Section(models.Model):
         request.session.modified = True
 
     @property
-    def parent(self):
-        if self.parent_guid != '---':
-            try:
-                return Section.objects.get(guid=self.parent_guid)
-            except Section.DoesNotExist:
-                return None
-
-    @property
     def full_name(self):
-        parents_name = self.create_parents_name()
+        parents_name = self.__create_parents_name()
         return parents_name + ('' if parents_name == '' else '/') + self.name
 
-    def create_parents_name(self, full_name=''):
-        parent = self.parent
+    def __create_parents_name(self, full_name=''):
+        parent = self.group
         if parent or None:
             full_name = parent.name + ('' if full_name == '' else '/') + full_name
-            full_name = parent.create_parents_name(full_name)
+            full_name = parent.__create_parents_name(full_name)
         return full_name
 
     @staticmethod
@@ -199,168 +241,44 @@ class Section(models.Model):
         return request.session.get('id_current_session')
 
     @staticmethod
-    def get_sections():
-        sections = cache.get('sessions')
-        if sections is None:
-            sections = Section.objects.filter(is_deleted=False).order_by('sort', 'name')
-            cache.set('sessions', sections, 3600)
-        return sections
-
-    @staticmethod
-    def get_data_for_tree():
-        data = cache.get('data_for_tree')
-        if data is None:
-            sections = Section.get_sections()
-            data = []
-            for obj in sections:
-                parent = '#' if obj.parent_guid == '---' else obj.parent_guid
-                data.append({'id': obj.guid, 'parent': parent, 'text': obj.name, 'href': obj.guid})
-            cache.set('data_for_tree', data, 3600)
+    def get_data_for_tree(only_stock):
+        data = []
+        with connection.cursor() as cursor:
+            cursor.execute("""
+            WITH RECURSIVE Bfs AS (
+              SELECT section.id       AS id,
+                     section.name     AS name,
+                     section.group_id AS group_id,
+                     0                AS level
+              FROM san_site_section AS section
+              WHERE section.group_id ISNULL
+                AND section.is_deleted = FALSE
+                AND (%s = FALSE OR section.is_inventories = TRUE)
+              UNION ALL
+              SELECT section.id       AS id,
+                     section.name     AS name,
+                     section.group_id AS group_id,
+                     Bfs.level + 1    AS level
+              FROM san_site_section AS section
+                     JOIN Bfs ON section.group_id = Bfs.id
+                      AND section.is_deleted = FALSE
+                      AND (%s = FALSE OR section.is_inventories = TRUE)
+            )
+            SELECT Bfs.id                    AS id,
+                   Bfs.name                  AS name,
+                   COALESCE(Bfs.group_id, 0) AS group_id,
+                   Bfs.level                 AS level
+            FROM Bfs
+            ORDER BY Bfs.level, Bfs.name;
+            """, [only_stock, only_stock])
+            rows = cursor.fetchall()
+            for row in rows:
+                data.append({'id': row[0], 'parent': '#' if row[2] == 0 else row[2], 'text': row[1], 'href': row[0]})
         return data
 
     @staticmethod
     def get_goods_list(**kwargs):
-        if settings.GET_GOODS_LIST_RAW:
-            return Section.__get_goods_list_raw(kwargs)
-        else:
-            return Section.__get_goods_list_orm(kwargs)
-
-    @staticmethod
-    def __get_goods_list_orm(kwargs):
-
-        user = kwargs.get('user', None)
-        list_sections = kwargs.get('list_sections', None)
-        search = kwargs.get('search', None)
-        only_stock = kwargs.get('only_stock', 'false')
-        only_promo = kwargs.get('only_promo', 'false')
-        only_available = kwargs.get('only_available', 'true')
-
-        only_stock = True if only_stock == 'true' or only_stock == True else False
-        only_promo = True if only_promo == 'true' or only_promo == True else False
-        only_available = True if only_available == 'true' or only_available == True else False
-
-        list_res_ = []
-
-        currency_dict = cache.get('currency_dict')
-        if currency_dict is None:
-            currency_dict: dict = {elem_.id: elem_.name for elem_ in Currency.objects.all()}
-            cache.set('currency_dict', currency_dict, 8640)
-
-        store_dict = cache.get('store_dict')
-        if store_dict is None:
-            store_dict: dict = {elem_.id: elem_.short_name for elem_ in Store.objects.all()}
-            cache.set('store_dict', store_dict, 8640)
-
-        set_products = Product.objects
-
-        if only_available:
-            set_products = set_products.filter(is_deleted=False)
-
-        if list_sections is not None:
-            set_products = set_products.filter(section__in=list_sections)
-
-        if only_promo:
-            set_products = set_products.filter(id__in=PricesSale.objects.all().values("product_id"))
-
-        if search is not None and search != '':
-            set_products = set_products.filter(Q(code__icontains=search) | Q(name__icontains=search))
-
-        if user is not None and user.is_authenticated:
-
-            current_customer = get_customer(user)
-            if current_customer is None:
-                return list_res_
-
-            products = set_products.order_by('code').prefetch_related(
-                Prefetch('product_inventories', queryset=Inventories.objects.all()),
-                Prefetch('product_prices', queryset=Prices.objects.all()),
-                Prefetch('product_customers_prices',
-                         queryset=CustomersPrices.objects.filter(customer=current_customer)))
-
-            for value_product in products:
-
-                inventories = {}
-                quantity_sum = 0
-                for product_inventories in value_product.product_inventories.all():
-                    quantity_sum += product_inventories.quantity
-                    short_name = store_dict.get(product_inventories.store_id)
-                    quantity = '>10' if product_inventories.quantity > 10 else product_inventories.quantity
-                    inventories.update(dict([(short_name, quantity)]))
-
-                price_rrp, price_value, price_discount, price_percent = (0, 0, 0, 0)
-                currency_name, currency_id, promo = ('', 0, False)
-                for product_prices in value_product.product_prices.all():
-                    price_value = product_prices.value
-                    price_rrp = product_prices.rrp
-                    price_discount = price_value
-                    promo = product_prices.promo
-                    currency_id = product_prices.currency_id
-                    currency_name = currency_dict.get(currency_id, '')
-                for product_prices in value_product.product_customers_prices.all():
-                    price_discount = product_prices.discount
-                    price_percent = min(product_prices.percent, 0)
-
-                if only_stock and quantity_sum <= 0:
-                    continue
-
-                list_res_.append({
-                    'product': value_product,
-                    'guid': value_product.guid,
-                    'code': value_product.code,
-                    'name': value_product.name,
-                    'relevant': value_product.is_relevant(),
-                    'quantity': '>10' if quantity_sum > 10 else '' if quantity_sum == 0 else quantity_sum,
-                    'inventories': inventories,
-                    'price': '' if price_value == 0 or price_value == 0.01 else price_value,
-                    'price_rrp': '' if price_rrp == 0 or price_rrp == 0.01 else price_rrp,
-                    'promo': promo,
-                    'discount': '' if price_discount == 0 else price_discount,
-                    'currency': currency_name,
-                    'currency_id': currency_id,
-                    'percent': '' if price_percent == 0 else price_percent}
-                )
-        else:
-
-            products = set_products.order_by('code').prefetch_related(
-                Prefetch('product_inventories', queryset=Inventories.objects.all()),
-                Prefetch('product_prices', queryset=Prices.objects.all()),
-                Prefetch('product_prices_sale', queryset=PricesSale.objects.all()))
-
-            for value_product in products:
-                quantity_sum = 0
-                for product_inventories in value_product.product_inventories.all():
-                    quantity_sum += product_inventories.quantity
-                price_value = 0
-                currency_name, currency_id, promo = ('', 0, False)
-                for product_prices in value_product.product_prices_sale.all():
-                    price_value = product_prices.value
-                    currency_id = product_prices.currency_id
-                    currency_name = currency_dict.get(currency_id, '')
-                    promo = True
-                if price_value == 0:
-                    for product_prices in value_product.product_prices.all():
-                        price_value = product_prices.value
-                        currency_id = product_prices.currency_id
-                        currency_name = currency_dict.get(currency_id, '')
-                if only_stock and quantity_sum <= 0:
-                    continue
-                list_res_.append({
-                    'product': value_product,
-                    'guid': value_product.guid,
-                    'code': value_product.code,
-                    'relevant': value_product.is_relevant(),
-                    'name': value_product.name,
-                    'quantity': '>10' if quantity_sum > 10 else '' if quantity_sum == 0 else quantity_sum,
-                    'price': '' if price_value == 0 else price_value,
-                    'price_rrp': '',
-                    'promo': promo,
-                    'discount': '',
-                    'currency': currency_name,
-                    'currency_id': currency_id,
-                    'percent': ''}
-                )
-
-        return list_res_
+        return Section.__get_goods_list_raw(kwargs)
 
     @staticmethod
     def __get_goods_list_raw(kwargs):
@@ -369,9 +287,9 @@ class Section(models.Model):
         list_sections = kwargs.get('list_sections', None)
         search = kwargs.get('search', '')
 
-        only_stock = kwargs.get('only_stock', 'false') in ('true', True)
-        only_promo = kwargs.get('only_promo', 'false') in ('true', True)
-        only_available = kwargs.get('only_available', 'true') in ('true', True)
+        only_stock = kwargs.get('only_stock', False)
+        only_promo = kwargs.get('only_promo', False)
+        only_available = kwargs.get('only_available', True)
         only_list_sections = list_sections is not None
         only_search = search != ''
 
@@ -382,8 +300,9 @@ class Section(models.Model):
             list_sections_id = []
 
         current_customer = get_customer(user)
-        if current_customer is None:
-            return list_res_
+        current_customer_id = 0
+        if current_customer:
+            current_customer_id = current_customer.id
 
         with connection.cursor() as cursor:
             cursor.execute(
@@ -393,6 +312,7 @@ class Section(models.Model):
                              _product.name                    AS name,
                              _product.guid                    AS guid,
                              _product.matrix                  AS matrix,
+                             _product.is_deleted              AS is_deleted,
                              COALESCE(_prices.value, 0)       AS price,
                              COALESCE(_prices.value, 0)       AS discount,
                              COALESCE(_prices.rrp, 0)         AS price_rrp,
@@ -402,16 +322,15 @@ class Section(models.Model):
                       FROM san_site_product _product
                              LEFT JOIN san_site_prices _prices ON _product.id = _prices.product_id
                              LEFT JOIN san_site_currency _currency ON _prices.currency_id = _currency.id
-                      WHERE _product.is_deleted = %s
+                      WHERE (%s = FALSE 
+                                OR _product.is_deleted = FALSE)
                         AND (%s = FALSE
                                 OR _product.section_id = ANY (%s))
                         AND (%s = FALSE
-                                OR COALESCE (_prices.promo, FALSE) = TRUE
-                        )
+                                OR COALESCE (_prices.promo, FALSE) = TRUE)
                         AND (%s = FALSE
                                 OR UPPER(_product.code::text) LIKE UPPER(%s)
-                                OR UPPER(_product.name::text) LIKE UPPER(%s)
-                        )
+                                OR UPPER(_product.name::text) LIKE UPPER(%s))
                     ),
                          _prise_store AS (
                            SELECT _prise.id                          AS id,
@@ -419,6 +338,7 @@ class Section(models.Model):
                                   _prise.name                        AS name,
                                   _prise.guid                        AS guid,
                                   _prise.matrix                      AS matrix,
+                                  _prise.is_deleted                  AS is_deleted,
                                   _prise.price                       AS price,
                                   _prise.discount                    AS discount,
                                   _prise.price_rrp                   AS price_rrp,
@@ -438,6 +358,7 @@ class Section(models.Model):
                                   _prise_store.name                                       AS name,
                                   _prise_store.guid                                       AS guid,
                                   _prise_store.matrix                                     AS matrix,
+                                  _prise_store.is_deleted                                 AS is_deleted,
                                   _prise_store.price                                      AS price,
                                   COALESCE(_prices.percent, 0)                            AS percent,
                                   COALESCE(_prices.discount, _prise_store.discount)       AS discount,
@@ -456,9 +377,9 @@ class Section(models.Model):
                     FROM result
                     ORDER BY result.code, result.store;
                 """,
-                [not only_available, only_list_sections, list_sections_id, only_promo, only_search, f'{search}%',
+                [only_available, only_list_sections, list_sections_id, only_promo, only_search, f'{search}%',
                  f'%{search}%', only_stock,
-                 current_customer.id, ])
+                 current_customer_id, ])
 
             rows = cursor.fetchall()
             dict_row = {}
@@ -466,13 +387,13 @@ class Section(models.Model):
             for row in rows:
                 if row[0] in dict_row:
                     sel_row = dict_row[row[0]]
-                    sel_row.quantity += row[13]
+                    sel_row.quantity += row[14]
                 else:
                     sel_row = SelectRow(*row)
                     dict_row[row[0]] = sel_row
-                if row[13] > 0:
-                    quantity = '>10' if row[13] > 10 else '' if row[13] == 0 else row[13]
-                    sel_row.inventories.update(dict([(row[12], quantity)]))
+                if row[14] > 0:
+                    quantity = '>10' if row[14] > 10 else '' if row[14] == 0 else row[14]
+                    sel_row.inventories.update(dict([(row[13], quantity)]))
 
             for sel_row in dict_row.values():
                 list_res_.append({
@@ -495,14 +416,7 @@ class Section(models.Model):
         return list_res_
 
     def get_goods_list_section(self, **kwargs):
-
-        list_sections = cache.get(f'list_sections_{self.id}')
-        if list_sections is None:
-            list_sections = []
-            self.list_with_children(list_sections)
-            cache.set(f'list_sections_{self.id}', list_sections, 8640)
-
-        kwargs['list_sections'] = list_sections
+        kwargs['list_sections'] = self.list_with_children()
         return Section.get_goods_list(**kwargs)
 
 
@@ -527,36 +441,39 @@ class Product(models.Model):
     @classmethod
     def change_relevant_products(cls):
 
-        sections = Section.objects.filter(parent_guid='---')
+        sections = Section.objects.filter(group__isnull=True)
         for obj_section in sections:
             goods_list = obj_section.get_goods_list_section(only_available=False)
+            filter_guid = [element_list['guid'] for element_list in goods_list]
+            filter_object = {t.guid: t for t in Product.objects.filter(guid__in=filter_guid)}
             for element_list in goods_list:
-                cur_object = element_list['product']
-                if not cur_object.is_deleted:
+                raw = element_list['product']
+                if not raw.is_deleted:
                     if element_list['quantity'] == '' and element_list['price'] == '':
-                        cur_object.is_deleted = True
-                        cur_object.save()
+                        cur_object = filter_object.get(element_list['guid'], None)
+                        if cur_object:
+                            cur_object.is_deleted = True
+                            cur_object.save()
                     elif element_list['quantity'] == '' and not element_list['relevant']:
-                        cur_object.is_deleted = True
-                        cur_object.save()
+                        cur_object = filter_object.get(element_list['guid'], None)
+                        if cur_object:
+                            cur_object.is_deleted = True
+                            cur_object.save()
                 elif element_list['relevant']:
                     if element_list['quantity'] != '' or element_list['price'] != '':
-                        cur_object.is_deleted = False
-                        cur_object.save()
+                        cur_object = filter_object.get(element_list['guid'], None)
+                        if cur_object:
+                            cur_object.is_deleted = False
+                            cur_object.save()
                 else:
                     if element_list['quantity'] != '':
-                        cur_object.is_deleted = True
-                        cur_object.save()
+                        cur_object = filter_object.get(element_list['guid'], None)
+                        if cur_object:
+                            cur_object.is_deleted = True
+                            cur_object.save()
 
-        sections = Section.objects.all()
-        for obj_section in sections:
-            is_active = len(obj_section.get_goods_list_section(only_available=True)) > 0
-            if is_active and obj_section.is_deleted:
-                obj_section.is_deleted = False
-                obj_section.save()
-            elif not is_active and not obj_section.is_deleted:
-                obj_section.is_deleted = True
-                obj_section.save()
+        Section.change_is_deleted()
+        Section.change_is_inventories()
 
     def get_inventory(self, cart=None):
         query_set_inventory = Inventories.objects.filter(product=self)
@@ -909,6 +826,8 @@ class OrderItem(models.Model):
 
 
 def get_customer(user):
+    if user is None:
+        return user
     customer = cache.get(f'user_customer{user.id}')
     if customer is not None:
         return customer
@@ -922,6 +841,8 @@ def get_customer(user):
 
 
 def get_person(user):
+    if user is None:
+        return user
     try:
         person = user.person
     except Person.DoesNotExist:
@@ -930,13 +851,15 @@ def get_person(user):
 
 
 class SelectRow:
-    def __init__(self, id, code, name, guid, matrix, price, percent, discount, price_rrp, promo, currency_id, currency,
+    def __init__(self, id, code, name, guid, matrix, is_deleted, price, percent, discount, price_rrp, promo,
+                 currency_id, currency,
                  store, quantity):
         self.id: int = id
         self.code: str = code
         self.name: str = name
         self.guid: str = guid
         self.matrix: str = matrix
+        self.is_deleted: bool = is_deleted
         self.price: float = price
         self.percent: float = percent
         self.discount: float = discount

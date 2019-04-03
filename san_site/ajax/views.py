@@ -9,11 +9,22 @@ from san_site.models import Section, Product, Order
 from san_site.forms import EnterQuantity, EnterQuantityError
 from san_site.decorates.decorate import page_not_access_ajax
 from san_site.backend.response import HttpResponseAjax, HttpResponseAjaxError
+from san_site.backend.tools import str2bool
 
 
 def get_categories(request):
+    try:
+        only_stock_ = str2bool(request.GET.get('only_stock'))
+    except MultiValueDictKeyError:
+        only_stock_ = False
+    try:
+        obj_section = Section.objects.get(id=Section.get_current_session(request=request))
+        guid_initially = obj_section.id
+    except Section.DoesNotExist:
+        guid_initially = ''
     return HttpResponseAjax(
-        result=Section.get_data_for_tree(),
+        result=Section.get_data_for_tree(only_stock=only_stock_),
+        guid_initially=guid_initially,
         user_name=request.user.username,
         products=render_to_string('goods.html', {})
     )
@@ -27,17 +38,17 @@ def get_goods(request):
         return HttpResponseAjaxError(code=302, message='no request GET guid')
 
     try:
-        only_stock_ = request.GET.get('only_stock')
+        only_stock_ = str2bool(request.GET.get('only_stock'))
     except MultiValueDictKeyError:
-        only_stock_ = None
+        only_stock_ = False
 
     try:
-        only_promo_ = request.GET.get('only_promo')
+        only_promo_ = str2bool(request.GET.get('only_promo'))
     except MultiValueDictKeyError:
-        only_promo_ = None
+        only_promo_ = False
 
     try:
-        obj_section = Section.objects.get(guid=guid)
+        obj_section = Section.objects.get(id=guid)
     except Section.DoesNotExist:
         return HttpResponseAjaxError(code=303, message='does not find section')
 
@@ -60,22 +71,22 @@ def get_goods(request):
 @page_not_access_ajax
 def selection(request):
     try:
-        only_stock_ = request.GET.get('only_stock')
+        only_stock_ = str2bool(request.GET.get('only_stock'))
     except MultiValueDictKeyError:
-        only_stock_ = None
+        only_stock_ = False
 
     try:
-        only_promo_ = request.GET.get('only_promo')
+        only_promo_ = str2bool(request.GET.get('only_promo'))
     except MultiValueDictKeyError:
-        only_promo_ = None
+        only_promo_ = False
 
     try:
         search = request.GET.get('search')
     except MultiValueDictKeyError:
-        search = None
+        search = ''
 
     section_dict = {}
-    if search != '' or only_promo_ == 'true':
+    if search != '' or only_promo_:
         goods_list = Section.get_goods_list(
             user=request.user, search=search, only_stock=only_stock_, only_promo=only_promo_)
     else:
@@ -84,7 +95,7 @@ def selection(request):
         except Section.DoesNotExist:
             obj_section = None
         if obj_section is not None:
-            section_dict = {'name': obj_section.full_name, 'guid': obj_section.guid}
+            section_dict = {'name': obj_section.full_name, 'guid': obj_section.id}
             goods_list = obj_section.get_goods_list_section(
                 user=request.user, only_stock=only_stock_, only_promo=only_promo_)
         else:

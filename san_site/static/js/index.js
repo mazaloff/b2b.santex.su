@@ -274,6 +274,8 @@ class Index {
 
                     jQuery(window).scrollTop(0);
 
+                    initiallySelectTree(json.section.guid);
+
                     countHeightTableGoods();
                     updateTables();
                     widthHeadGoods();

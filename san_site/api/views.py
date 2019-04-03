@@ -306,16 +306,16 @@ def update_section(load_list):
     filter_guid = [element_list['guid'] for element_list in load_list]
     filter_object = {t.guid: t for t in Section.objects.filter(guid__in=filter_guid)}
 
-    for element_list in load_list:
+    filter_group_guid = [element_list['parentGuid'] for element_list in load_list if element_list['parentGuid'] != '']
+    filter_group_object = {t.guid: t for t in Section.objects.filter(guid__in=filter_group_guid)}
 
-        parent_guid = '---' if element_list['parentGuid'] == '' else element_list['parentGuid']
+    for element_list in load_list:
 
         new_object = filter_object.get(element_list['guid'], None)
         if new_object:
             if new_object.name == element_list['name'] \
                     and new_object.code == element_list['code'] \
                     and new_object.sort == int(element_list['sort']) \
-                    and new_object.parent_guid == parent_guid \
                     and new_object.is_deleted == element_list['is_deleted']:
                 continue
         else:
@@ -323,7 +323,6 @@ def update_section(load_list):
                                                 name=element_list['name'],
                                                 code=element_list['code'],
                                                 sort=int(element_list['sort']),
-                                                parent_guid=parent_guid,
                                                 is_deleted=element_list['is_deleted'],
                                                 )
             new_object.created_date = timezone.now()
@@ -334,8 +333,21 @@ def update_section(load_list):
         new_object.name = element_list['name']
         new_object.code = element_list['code']
         new_object.sort = int(element_list['sort'])
-        new_object.parent_guid = parent_guid
         new_object.is_deleted = element_list['is_deleted']
+        new_object.save()
+
+    for element_list in load_list:
+        if element_list['parentGuid'] == '':
+            continue
+        new_object = filter_object.get(element_list['guid'], None)
+        if new_object is None:
+            continue
+        parent_object = filter_group_object.get(element_list['parentGuid'], None)
+        if parent_object is None:
+            continue
+        if new_object.group == parent_object:
+            continue
+        new_object.group = parent_object
         new_object.save()
 
 
@@ -664,6 +676,9 @@ def update_inventories(load_list, value_response):
             list_obj.append(new_object)
 
     Inventories.objects.bulk_create(list_obj, batch_size=10000)
+
+    Section.change_is_inventories()
+    Section.change_is_deleted()
 
 
 def update_prices(load_list, value_response):

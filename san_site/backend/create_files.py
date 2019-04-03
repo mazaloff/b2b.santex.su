@@ -24,7 +24,7 @@ def write_files(path_files_customer, user=None):
 
     path_file_csv = os.path.join(path_files_customer, 'goods_b2b_santex.csv')
     path_file_xls = os.path.join(path_files_customer, 'goods_b2b_santex.xlsx')
-    sections = Section.objects.filter(parent_guid='---')
+    sections = Section.objects.filter(group__isnull=True)
 
     if os.path.exists(path_file_xls):
         os.remove(path_file_xls)

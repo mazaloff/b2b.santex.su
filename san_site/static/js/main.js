@@ -30,7 +30,7 @@ var main_goods_height = 99999,
                 core: {
                     check_callback: true,
                     multiple: false,
-                    data: data
+                    data: data.result
                 },
                 types: {
                     default: {
@@ -79,7 +79,7 @@ var main_goods_height = 99999,
                             jQuery("#goods").html('Товары из категории <strong>' + json.current_section
                                 .link('?sections=' + guid) + '</strong>');
 
-                            console.log('changed node: ', data);
+                            // console.log('changed node: ', data);
 
                             jQuery(window).scrollTop(0);
 
@@ -103,6 +103,10 @@ var main_goods_height = 99999,
                     }
                 });
             });
+            ui.$categories.on('loaded.jstree', function() {
+                ui.$categories.jstree(true).deselect_all(true);
+                ui.$categories.jstree('select_node', '' + data.guid_initially, true);
+            });
         }
 
         // Загрузка категорий с сервера
@@ -118,12 +122,15 @@ var main_goods_height = 99999,
             $.ajax({
                 url: 'ajax/get_categories',
                 method: 'GET',
+                data: {
+                    'only_stock': getOnlyStockFromCookie()
+                },
                 dataType: 'json',
 
                 success: function (json) {
                     // Инициализируем дерево категорий
                     if (json.success) {
-                        _initTree(json.result);
+                        _initTree(json);
                         main_user = json.user_name;
                         main_products = json.products;
                         countHeightTableCart();
@@ -322,6 +329,14 @@ function getOnlyStock() {
     return ($('#only_stock').is(':checked'));
 }
 
+function getOnlyStockFromCookie() {
+    if (getCookie('is_only_stock') === 'true') {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 function getOnlyPromo() {
     return ($('#only_promo').is(':checked'));
 }
@@ -338,6 +353,7 @@ function onlyStock() {
     $('#only_stock').click(function () {
         createCookie('is_only_stock', getOnlyStock(), 30);
         Index._changeSelections();
+        refreshTree();
     });
 }
 
@@ -406,6 +422,37 @@ function closeBlackOverlayHelp() {
 function csrfSafeMethod(method) {
     // these HTTP methods do not require CSRF protection
     return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+function refreshTree() {
+    $.ajax({
+        url: 'ajax/get_categories',
+        method: 'GET',
+        data: {
+            'only_stock': getOnlyStock()
+        },
+        dataType: 'json',
+
+        success: function (json) {
+            if (json.success) {
+                let ui = {
+                    $categories: $('#categories'),
+                };
+                ui.$categories.jstree(true).settings.core.data = json.result;
+                ui.$categories.jstree(true).refresh(false, true);
+                ui.$categories.on("refresh.jstree", function(e) {
+                    ui.$categories.jstree(true).deselect_all(true);
+                    ui.$categories.jstree('select_node', '' + json.guid_initially, true);
+                 });
+            } else {
+                console.error('Ошибка получения данных с сервера');
+            }
+        },
+    });
+}
+
+function initiallySelectTree(select_node) {
+    $('#categories').jstree("select_node", '' + select_node, true);
 }
 
 jQuery(document).ready(app.init);
