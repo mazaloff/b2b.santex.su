@@ -2,6 +2,7 @@ import datetime
 
 from django import forms
 from django.conf import settings
+from django.db import transaction, IntegrityError
 
 from .cart.cart import Cart, Currency
 from .models import Order, OrderItem, Person, Customer, get_person
@@ -99,38 +100,42 @@ class OrderCreateForm(forms.ModelForm):
         person = get_person(request.user)
         if person is None:
             return
-        if person.lock:
-            cart.clear()
-            raise Order.LockOrderError
-        else:
-            person.lock = True
+        try:
+            with transaction.atomic():
 
-        order = Order.objects.create(
-            person=person,
-            customer=self.cleaned_data['customer'],
-            delivery=self.cleaned_data['delivery'],
-            shipment=self.cleaned_data['shipment'],
-            payment=self.cleaned_data['payment'],
-            comment=self.cleaned_data['comment']
-        )
-        order.save()
+                if person.lock:
+                    cart.clear()
+                    raise Order.LockOrderError
+                else:
+                    person.lock = True
 
-        for item in cart:
-            try:
-                currency = Currency.objects.get(id=item['currency_id'])
-            except Currency.DoesNotExist:
-                currency = None
-                pass
-            item = OrderItem.objects.create(
-                order=order,
-                product=item['product'],
-                price=item['price'],
-                price_ruble=item['price_ruble'],
-                quantity=item['quantity']
-            )
-            if currency:
-                item.currency = currency
-            item.save()
+                order = Order.objects.create(
+                    person=person,
+                    customer=self.cleaned_data['customer'],
+                    delivery=self.cleaned_data['delivery'],
+                    shipment=self.cleaned_data['shipment'],
+                    payment=self.cleaned_data['payment'],
+                    comment=self.cleaned_data['comment']
+                )
+                order.save()
+
+                for item in cart:
+                    try:
+                        currency = Currency.objects.get(id=item['currency_id'])
+                    except Currency.DoesNotExist:
+                        raise IntegrityError("do not fount to get the currency_id")
+                    item = OrderItem.objects.create(
+                        order=order,
+                        product=item['product'],
+                        price=item['price'],
+                        price_ruble=item['price_ruble'],
+                        quantity=item['quantity']
+                    )
+                    if currency:
+                        item.currency = currency
+                    item.save()
+        except IntegrityError:
+            return None
 
         cart.clear()
 

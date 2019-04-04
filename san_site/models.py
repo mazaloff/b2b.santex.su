@@ -154,7 +154,6 @@ class Section(models.Model):
     name = models.CharField(max_length=200)
     code = models.CharField(max_length=20)
     sort = models.IntegerField(default=500)
-    parent_guid = models.CharField(max_length=50, db_index=True)
     group = models.ForeignKey('self', db_index=True, null=True, on_delete=models.SET_NULL)
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False, db_index=True)
