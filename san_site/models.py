@@ -283,29 +283,54 @@ class Section(models.Model):
     def __get_goods_list_raw(kwargs):
 
         user = kwargs.get('user', None)
-        list_sections = kwargs.get('list_sections', None)
+        id_section = kwargs.get('id_section', 0)
         search = kwargs.get('search', '')
 
         only_stock = kwargs.get('only_stock', False)
         only_promo = kwargs.get('only_promo', False)
         only_available = kwargs.get('only_available', True)
-        only_list_sections = list_sections is not None
-        only_search = search != ''
 
         list_res_ = []
-        if only_list_sections:
-            list_sections_id = [element.id for element in list_sections]
-        else:
-            list_sections_id = []
+
+        param = []
 
         current_customer = get_customer(user)
         current_customer_id = 0
         if current_customer:
             current_customer_id = current_customer.id
 
+        select_request_section = ''
+        where_request_section = ' TRUE '
+        if id_section != 0:
+            param.append(id_section)
+
+            select_request_section = """
+            RECURSIVE Bfs AS (
+              SELECT section.id AS id
+              FROM san_site_section AS section
+              WHERE section.id = %s
+              UNION ALL
+              SELECT section.id AS id
+              FROM san_site_section AS section
+                     JOIN Bfs ON section.group_id = Bfs.id AND section.is_deleted = FALSE
+            ),"""
+
+            where_request_section = '_product.section_id IN (SELECT Bfs.id FROM Bfs)'
+
+        param += [only_available, only_promo, only_stock]
+
+        where_request_search = 'TRUE'
+        if search != '':
+            where_request_search = """(UPPER(_product.code::text) LIKE UPPER(%s)
+                                        OR UPPER(_product.name::text) LIKE UPPER(%s))
+            """
+            param += [f'{search}%', f'%{search}%']
+
+        param.append(current_customer_id)
+
         with connection.cursor() as cursor:
             cursor.execute(
-                """ WITH _prise AS (
+                f""" WITH {select_request_section} _prise_store AS (
                       SELECT _product.id                      AS id,
                              _product.code                    AS code,
                              _product.name                    AS name,
@@ -317,40 +342,23 @@ class Section(models.Model):
                              COALESCE(_prices.rrp, 0)         AS price_rrp,
                              COALESCE(_prices.promo, FALSE)   AS promo,
                              COALESCE(_prices.currency_id, 0) AS currency_id,
-                             COALESCE(_currency.name, '')     AS currency
+                             COALESCE(_currency.name, '')     AS currency,
+                             COALESCE(_store.short_name, '')    AS store,
+                             COALESCE(_inventories.quantity, 0) AS quantity
                       FROM san_site_product _product
                              LEFT JOIN san_site_prices _prices ON _product.id = _prices.product_id
                              LEFT JOIN san_site_currency _currency ON _prices.currency_id = _currency.id
+                             LEFT JOIN san_site_inventories _inventories ON _product.id = _inventories.product_id
+                             LEFT JOIN san_site_store _store ON _inventories.store_id = _store.id
                       WHERE (%s = FALSE 
                                 OR _product.is_deleted = FALSE)
-                        AND (%s = FALSE
-                                OR _product.section_id = ANY (%s))
+                        AND {where_request_section}
                         AND (%s = FALSE
                                 OR COALESCE (_prices.promo, FALSE) = TRUE)
-                        AND (%s = FALSE
-                                OR UPPER(_product.code::text) LIKE UPPER(%s)
-                                OR UPPER(_product.name::text) LIKE UPPER(%s))
+                        AND (%s = FALSE 
+                                OR COALESCE(_inventories.quantity, 0) > 0)        
+                        AND {where_request_search}
                     ),
-                         _prise_store AS (
-                           SELECT _prise.id                          AS id,
-                                  _prise.code                        AS code,
-                                  _prise.name                        AS name,
-                                  _prise.guid                        AS guid,
-                                  _prise.matrix                      AS matrix,
-                                  _prise.is_deleted                  AS is_deleted,
-                                  _prise.price                       AS price,
-                                  _prise.discount                    AS discount,
-                                  _prise.price_rrp                   AS price_rrp,
-                                  _prise.promo                       AS promo,
-                                  _prise.currency_id                 AS currency_id,
-                                  _prise.currency                    AS currency,
-                                  COALESCE(_store.short_name, '')    AS store,
-                                  COALESCE(_inventories.quantity, 0) AS quantity
-                           FROM _prise
-                                  LEFT JOIN san_site_inventories _inventories ON _prise.id = _inventories.product_id
-                                  LEFT JOIN san_site_store _store ON _inventories.store_id = _store.id
-                           WHERE %s = FALSE OR COALESCE(_inventories.quantity, 0) > 0 
-                         ),
                          result AS (
                            SELECT _prise_store.id                                         AS id,
                                   _prise_store.code                                       AS code,
@@ -368,17 +376,16 @@ class Section(models.Model):
                                   _prise_store.store                                      AS store,
                                   _prise_store.quantity                                   AS quantity
                            FROM _prise_store
-                                  LEFT JOIN san_site_customersprices _prices ON
-                             _prise_store.id = _prices.product_id AND _prices.customer_id = %s
+                                  LEFT JOIN san_site_customersprices _prices 
+                                            ON
+                                                _prices.customer_id = %s AND _prise_store.id = _prices.product_id  
                                   LEFT JOIN san_site_currency currency ON _prices.currency_id = currency.id
                          )
                     SELECT *
                     FROM result
                     ORDER BY result.code, result.store;
-                """,
-                [only_available, only_list_sections, list_sections_id, only_promo, only_search, f'{search}%',
-                 f'%{search}%', only_stock,
-                 current_customer_id, ])
+                """, param
+            )
 
             rows = cursor.fetchall()
             dict_row = {}
@@ -415,7 +422,7 @@ class Section(models.Model):
         return list_res_
 
     def get_goods_list_section(self, **kwargs):
-        kwargs['list_sections'] = self.list_with_children()
+        kwargs['id_section'] = self.id
         return Section.get_goods_list(**kwargs)
 
 
