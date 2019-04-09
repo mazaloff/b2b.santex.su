@@ -300,6 +300,7 @@ class Section(models.Model):
             current_customer_id = current_customer.id
 
         select_request_section = ''
+        join_request_section = ''
         where_request_section = ' TRUE '
         if id_section != 0:
             param.append(id_section)
@@ -314,7 +315,7 @@ class Section(models.Model):
               FROM san_site_section AS section
                      JOIN Bfs ON section.group_id = Bfs.id AND section.is_deleted = FALSE
             ),"""
-
+            join_request_section = 'JOIN Bfs ON _product.section_id = Bfs.id'
             where_request_section = '_product.section_id IN (SELECT Bfs.id FROM Bfs)'
 
         param += [only_available, only_promo, only_stock]
@@ -346,6 +347,7 @@ class Section(models.Model):
                              COALESCE(_store.short_name, '')    AS store,
                              COALESCE(_inventories.quantity, 0) AS quantity
                       FROM san_site_product _product
+                             {join_request_section}
                              LEFT JOIN san_site_prices _prices ON _product.id = _prices.product_id
                              LEFT JOIN san_site_currency _currency ON _prices.currency_id = _currency.id
                              LEFT JOIN san_site_inventories _inventories ON _product.id = _inventories.product_id
