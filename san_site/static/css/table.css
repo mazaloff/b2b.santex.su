@@ -116,7 +116,7 @@
 }
 
 #goods_table th#goods_table_8 div {
-    padding-right: 3px;
+    padding-right: 1px;
     text-align: right;
 }
 
@@ -247,7 +247,7 @@
 }
 
 #goods_cart th#cart_table_7 div {
-    padding-right: 3px;
+    padding-right: 1px;
     text-align: right;
 }
 
@@ -417,7 +417,7 @@
 }
 
 #list_orders th#orders_table_9 div {
-    padding-right: 3px;
+    padding-right: 1px;
     text-align: left;
 }
 
