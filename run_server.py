@@ -1,5 +1,7 @@
 import os
 import time
+from sys import stderr
+
 import psutil
 import subprocess
 
@@ -33,7 +35,17 @@ def run_server(name_server):
     terminate_server(name_server)
     file_pid = os.path.join(path_dir, 'pid', f'server_{name_server}.pid')
     script_file = os.path.join(path_dir, 'Project', f'server_{name_server}.py')
-    process = subprocess.Popen([python_bin, script_file])
+
+    access_file_path = os.path.join(path_dir, 'logs', f'{name_server}_access.log')
+    error_file_path = os.path.join(path_dir, 'logs', f'{name_server}_error.log')
+
+    if not os.path.exists(os.path.join(path_dir, 'logs')):
+        os.mkdir(os.path.join(path_dir, 'logs'))
+
+    access_file = open(access_file_path, mode='a+', encoding='utf-8-sig')
+    error_file = open(error_file_path, mode='a+', encoding='utf-8-sig')
+
+    process = subprocess.Popen([python_bin, script_file], stdout=access_file, stderr=error_file)
     with open(file_pid, 'w') as file:
         file.write(str(process.pid))
     return process
