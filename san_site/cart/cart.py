@@ -21,13 +21,15 @@ class Cart(object):
         product_guid = str(product.guid)
         if product_guid not in self.cart:
             dict_price = product.get_price(self.user)
+            size_cart = len(self.cart)
             self.cart[product_guid] = {
                 'date': datetime.datetime.now().date().isoformat(),
                 'quantity': 0,
                 'price': dict_price['price'],
                 'currency_id': dict_price['currency_id'],
                 'currency_name': dict_price['currency_name'],
-                'price_ruble': dict_price['price_ruble']
+                'price_ruble': dict_price['price_ruble'],
+                'number': size_cart + 1
             }
         if update_quantity:
             self.cart[product_guid]['quantity'] = quantity
@@ -103,6 +105,9 @@ class Cart(object):
         if product_guid not in self.cart:
             return
         item = self.cart[product_guid]
+
+        if 'number' not in item.keys():
+            item['number'] = 1
 
         if 'guid' not in item.keys():
             try:
