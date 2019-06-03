@@ -78,50 +78,81 @@ def api_main(request):
     except UnicodeError:
         add_error(value_response, code='decode.UnicodeError',
                   message='error body decode', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     if json_str is None:
         add_error(value_response, code='json.ValueError',
                   message='json is empty', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     try:
         dict_load = json.loads(json_str)
     except ValueError:
         add_error(value_response, code='json.ValueError',
                   message='error json loads', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     if 'sections' not in dict_load is None:
         add_error(value_response, code='json.ValueError',
                   message='json is not sections', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     if 'products' not in dict_load is None:
         add_error(value_response, code='json.ValueError',
                   message='json is not products', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     if 'stores' not in dict_load is None:
         add_error(value_response, code='json.ValueError',
                   message='json is not stores', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     if 'priceTypes' not in dict_load is None:
         add_error(value_response, code='json.ValueError',
                   message='json is not priceTypes', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     if 'currencys' not in dict_load is None:
         add_error(value_response, code='json.ValueError',
                   message='json is not currencys', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     update_section(dict_load['sections'])
     update_product(dict_load['products'])
     update_store(dict_load['stores'])
     update_price(dict_load['priceTypes'])
     update_currency(dict_load['currencys'])
+
+    value_response['time']['end'] = timezone.now().ctime()
+    return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+
+@csrf_exempt
+def api_photo_of_good(request):
+    value_response = {'success': True, 'date': [], 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
+
+    from django.core.files import File
+
+    key = request.META['HTTP_ID']
+    extension = request.META['HTTP_EXTENSION']
+    try:
+        product_obj = Product.objects.get(guid=key)
+    except Product.DoesNotExist:
+        add_error(value_response, code='Product.DoesNotExist',
+                  message='does not exist', description=key)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
+
+    name_temp = os.path.join(settings.BASE_DIR, 'san_site\\static\\temp.jpg')
+    if not str.endswith(product_obj.image.path, "no-img.png"):
+        if os.path.exists(product_obj.image.path):
+            os.remove(product_obj.image.path)
+
+    body = request.body
+    with open(name_temp, 'wb') as f:
+        f.write(body)
+
+    with open(name_temp, 'rb') as f:
+        product_obj.image.save(key + "." + extension, File(f), save=True)
 
     value_response['time']['end'] = timezone.now().ctime()
     return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
@@ -136,19 +167,19 @@ def api_inventories(request):
     except UnicodeError:
         add_error(value_response, code='decode.UnicodeError',
                   message='error body decode', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     if json_str is None:
         add_error(value_response, code='json.ValueError',
                   message='json is empty', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     try:
         list_load = json.loads(json_str)
     except ValueError:
         add_error(value_response, code='json.ValueError',
                   message='error json loads', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     update_inventories(list_load, value_response)
 
@@ -165,12 +196,12 @@ def api_prices(request):
     except UnicodeError:
         add_error(value_response, code='decode.UnicodeError',
                   message='error body decode', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     if json_str is None:
         add_error(value_response, code='json.ValueError',
                   message='json is empty', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     try:
         list_load = json.loads(json_str)
@@ -195,19 +226,19 @@ def api_users(request):
     except UnicodeError:
         add_error(value_response, code='decode.UnicodeError',
                   message='error body decode', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     if json_str is None:
         add_error(value_response, code='json.ValueError',
                   message='json is empty', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     try:
         list_load = json.loads(json_str)
     except ValueError:
         add_error(value_response, code='json.ValueError',
                   message='error json loads', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     update_users(list_load, value_response)
 
@@ -224,19 +255,19 @@ def api_users_prices(request):
     except UnicodeError:
         add_error(value_response, code='decode.UnicodeError',
                   message='error body decode', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     if json_str is None:
         add_error(value_response, code='json.ValueError',
                   message='json is empty', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     try:
         list_load = json.loads(json_str)
     except ValueError:
         add_error(value_response, code='json.ValueError',
                   message='error json loads', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     update_users_prices(list_load, value_response)
 
@@ -253,19 +284,19 @@ def api_courses(request):
     except UnicodeError:
         add_error(value_response, code='decode.UnicodeError',
                   message='error body decode', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     if json_str is None:
         add_error(value_response, code='json.ValueError',
                   message='json is empty', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     try:
         list_load = json.loads(json_str)
     except ValueError:
         add_error(value_response, code='json.ValueError',
                   message='error json loads', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     update_courses(list_load, value_response)
 
@@ -282,19 +313,19 @@ def api_statuses(request):
     except UnicodeError:
         add_error(value_response, code='decode.UnicodeError',
                   message='error body decode', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     if json_str is None:
         add_error(value_response, code='json.ValueError',
                   message='json is empty', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     try:
         list_load = json.loads(json_str)
     except ValueError:
         add_error(value_response, code='json.ValueError',
                   message='error json loads', description='')
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     update_statuses(list_load, value_response)
 

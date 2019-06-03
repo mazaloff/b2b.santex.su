@@ -28,3 +28,5 @@ celerybeat-schedule.dir
 /pid/server_flower.pid
 /pid/server_worker.pid
 /pid/celerybeat.pid
+/media/*
+/media/None/
