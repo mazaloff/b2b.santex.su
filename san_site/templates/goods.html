@@ -7,6 +7,7 @@
     {% include "goods/goods_table.html" %}
     {% if user.is_authenticated and user.person.allow_order %}
         <div id="form_enter_quantity"></div>
+        <div id="form_images"></div>
         {% include "cart/cart.html" %}
     {% endif %}
 </div>

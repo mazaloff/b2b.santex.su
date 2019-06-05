@@ -1,5 +1,7 @@
 import datetime
 import json
+from typing import Any
+
 import requests
 import pytz
 import uuid
@@ -335,6 +337,9 @@ class Section(models.Model):
                              _product.name                    AS name,
                              _product.guid                    AS guid,
                              _product.matrix                  AS matrix,
+                             CASE WHEN _product.image = '' THEN ''
+                             ELSE 'media/' || _product.image 
+                             END AS image,
                              _product.is_deleted              AS is_deleted,
                              COALESCE(_prices.value, 0)       AS price,
                              COALESCE(_prices.value, 0)       AS discount,
@@ -365,6 +370,7 @@ class Section(models.Model):
                                   _prise_store.name                                       AS name,
                                   _prise_store.guid                                       AS guid,
                                   _prise_store.matrix                                     AS matrix,
+                                  _prise_store.image                                      AS image,
                                   _prise_store.is_deleted                                 AS is_deleted,
                                   _prise_store.price                                      AS price,
                                   COALESCE(_prices.percent, 0)                            AS percent,
@@ -393,13 +399,13 @@ class Section(models.Model):
             for row in rows:
                 if row[0] in dict_row:
                     sel_row = dict_row[row[0]]
-                    sel_row.quantity += row[14]
+                    sel_row.quantity += row[15]
                 else:
                     sel_row = SelectRow(*row)
                     dict_row[row[0]] = sel_row
-                if row[14] > 0:
-                    quantity = '>10' if row[14] > 10 else '' if row[14] == 0 else row[14]
-                    sel_row.inventories.update(dict([(row[13], quantity)]))
+                if row[15] > 0:
+                    quantity = '>10' if row[15] > 10 else '' if row[15] == 0 else row[15]
+                    sel_row.inventories.update(dict([(row[14], quantity)]))
 
             for sel_row in dict_row.values():
                 list_res_.append({
@@ -407,6 +413,8 @@ class Section(models.Model):
                     'guid': sel_row.guid,
                     'code': sel_row.code,
                     'name': sel_row.name,
+                    'image': sel_row.image,
+                    'is_image': (sel_row.image != ""),
                     'relevant': sel_row.matrix in Product.RELEVANT_MATRIX,
                     'quantity': '>10' if sel_row.quantity > 10 else '' if sel_row.quantity == 0 else sel_row.quantity,
                     'inventories': sel_row.inventories,
@@ -437,7 +445,7 @@ class Product(models.Model):
     matrix = models.CharField(max_length=30, default='Основной')
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False, db_index=True)
-    image = models.ImageField(upload_to='photos/%Y/%m/%d', default='photos/None/no-img.jpg', blank=True)
+    image = models.ImageField(upload_to='photos', default='/photos/None/no-img.jpg', blank=True)
 
     def __str__(self):
         return self.name
@@ -858,7 +866,7 @@ def get_person(user):
 
 
 class SelectRow:
-    def __init__(self, id, code, name, guid, matrix, is_deleted, price, percent, discount, price_rrp, promo,
+    def __init__(self, id, code, name, guid, matrix, image, is_deleted, price, percent, discount, price_rrp, promo,
                  currency_id, currency,
                  store, quantity):
         self.id: int = id
@@ -866,6 +874,7 @@ class SelectRow:
         self.name: str = name
         self.guid: str = guid
         self.matrix: str = matrix
+        self.image: str = image
         self.is_deleted: bool = is_deleted
         self.price: float = price
         self.percent: float = percent

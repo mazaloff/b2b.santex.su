@@ -313,6 +313,10 @@ function addCart(guid) {
     Index._showFormForQuantity(guid)
 }
 
+function showImage(guid) {
+   Index._showFormImage(guid)
+}
+
 function addQuantityCart(guid) {
     Index._clickQuantityAddCart(guid)
 }

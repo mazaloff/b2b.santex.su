@@ -104,9 +104,11 @@ class Index {
                         let position = getOffset(document.getElementById('tr_goods' + guid));
                         position.left += $("th#goods_table_1").width();
                         position.left += Math.ceil($("th#goods_table_2").width() / 2);
+
                         let form_enter_wrapper = jQuery(".enter-quantity-wrapper");
                         form_enter_wrapper.css('left', position.left - 80);
                         form_enter_wrapper.css('top', position.top - 0);
+
                         jQuery("#id_quantity").focus();
 
                         jQuery("#tr_goods" + guid).addClass('current-tr');
@@ -118,6 +120,48 @@ class Index {
                                 return false;
                             }
                         );
+                    } else {
+                        console.error('Ошибка получения данных с сервера');
+                    }
+                }
+            });
+        }
+    }
+
+    static _showFormImage(guid) {
+
+        guid = window.getProductGUID(guid);
+
+        if (typeof guid !== undefined) {
+            jQuery.ajax({
+                url: "ajax/goods/get_form_images/",
+                type: 'GET',
+                data: {'guid': guid},
+                dataType: 'json', // забираем номер страницы, которую нужно отобразить
+
+                success: function (json) {
+                    // Если запрос прошёл успешно и сайт вернул результат
+                    if (json.success) {
+
+                        let form_images = jQuery("#form_images");
+
+                        form_images.replaceWith(json.form_images);
+                        form_images.show();
+
+                        let black_overlay = jQuery('.black-overlay');
+                        black_overlay.fadeOut(10);
+                        black_overlay.fadeIn(500);
+
+                        let position = getOffset(document.getElementById('tr_goods' + guid));
+                        position.left += $("th#goods_table_1").width();
+                        position.left += Math.ceil($("th#goods_table_2").width() / 2);
+
+                        let form_enter_wrapper = jQuery(".form-image-wrapper");
+                        form_enter_wrapper.css('left', position.left - 80);
+                        form_enter_wrapper.css('top', position.top - 0);
+
+                        jQuery("#tr_goods" + guid).addClass('current-tr');
+
                     } else {
                         console.error('Ошибка получения данных с сервера');
                     }
@@ -141,6 +185,7 @@ class Index {
     static _closeBlackOverlay(guid) {
         jQuery('#tr_goods' + guid).removeClass('current-tr');
         jQuery('#form_enter_quantity').hide();
+        jQuery('#form_images').hide();
         jQuery('.black-overlay').fadeOut(0);
     }
 

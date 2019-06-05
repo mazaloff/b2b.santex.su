@@ -24,7 +24,7 @@
 }
 
 #goods_table td {
-    padding: 6px 12px 6px 8px;
+    padding: 7px 12px 7px 8px;
 }
 
 #goods_table tr {
@@ -47,12 +47,12 @@
 
 #goods_table th#goods_table_2 {
     min-width: 450px;
-    max-width: 670px;
+    max-width: 650px;
 }
 
 #goods_table td#goods_table_2 {
     min-width: 450px;
-    max-width: 670px;
+    max-width: 650px;
 }
 
 #goods_table th#goods_table_3 {
@@ -68,18 +68,20 @@
 }
 
 #goods_table th#goods_table_6 {
-    width: 20px;
+    width: 25px;
 }
 
 #goods_table th#goods_table_7 {
-    width: 90px;
+    width: 100px;
 }
 
 #goods_table th#goods_table_8 {
-    width: 90px;
+    width: 100px;
 }
 
 #goods_table th#goods_table_1 div {
+    border-bottom-left-radius: 5px;
+    border-top-left-radius: 5px;
     margin-left: -1px;
     padding-right: 3px;
     text-align: left;
@@ -116,6 +118,8 @@
 }
 
 #goods_table th#goods_table_8 div {
+    border-bottom-right-radius: 5px;
+    border-top-right-radius: 5px;
     padding-right: 1px;
     text-align: right;
 }
@@ -144,6 +148,13 @@
     padding-right: 10px;
 }
 
+#goods_table .goods_code.img {
+    background: url("/static/img/image.png") no-repeat 100% 50%;
+    padding-right: 20px;
+    margin-right: -10px;
+    cursor: pointer;
+}
+
 /* goods cart */
 
 #goods_cart {
@@ -166,7 +177,7 @@
 }
 
 #goods_cart td {
-    padding: 6px 12px 6px 8px;
+    padding: 7px 12px 7px 8px;
 }
 
 #goods_cart tr {
@@ -247,11 +258,15 @@
 }
 
 #goods_cart th#cart_table_7 div {
+    border-bottom-right-radius: 6px;
+    border-top-right-radius: 5px;
     padding-right: 1px;
     text-align: right;
 }
 
 #goods_cart th#cart_table_8 div {
+    border-bottom-left-radius: 5px;
+    border-top-left-radius: 5px;
     padding-right: 3px;
     text-align: left;
 }
@@ -328,7 +343,7 @@
 }
 
 #list_orders td {
-    padding: 6px 12px 6px 8px;
+    padding: 7px 12px 7px 8px;
 }
 
 #list_orders tr {
@@ -340,11 +355,11 @@
 }
 
 #list_orders th#orders_table_1 {
-    width: 150px;
+    width: 140px;
 }
 
 #list_orders th#orders_table_2 {
-    width: 60px;
+    width: 80px;
 }
 
 #list_orders th#orders_table_3 {
@@ -356,7 +371,7 @@
 }
 
 #list_orders th#orders_table_5 {
-    width: 55px;
+    width: 60px;
 }
 
 #list_orders th#orders_table_6 {
@@ -368,7 +383,7 @@
 }
 
 #list_orders th#orders_table_8 {
-    width: 100px;
+    width: 110px;
 }
 
 #list_orders th#orders_table_9 {
@@ -376,6 +391,8 @@
 }
 
 #list_orders th#orders_table_1 div {
+    border-bottom-left-radius: 6px;
+    border-top-left-radius: 5px;
     margin-left: -1px;
     padding-right: 3px;
     text-align: left;
@@ -417,6 +434,8 @@
 }
 
 #list_orders th#orders_table_9 div {
+    border-bottom-right-radius: 6px;
+    border-top-right-radius: 5px;
     padding-right: 1px;
     text-align: left;
 }

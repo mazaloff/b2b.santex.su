@@ -6,6 +6,7 @@ urlpatterns = [
     url(r'get_categories$', views.get_categories, name='get_categories'),
     url(r'get_goods/$', views.get_goods, name='get_goods'),
     url(r'selection/$', views.selection, name='selection'),
+    url(r'goods/get_form_images/$', views.get_form_images, name='get_form_images'),
     url(r'cart/add/$', views.cart_add, name='cart_add'),
     url(r'cart/get_form_quantity/$', views.cart_get_form_quantity, name='cart_get_form_quantity'),
     url(r'cart/add_quantity/$', views.cart_add_quantity, name='cart_add_quantity'),

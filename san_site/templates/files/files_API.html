@@ -32,15 +32,13 @@
                 Файлы для скачивания еще не созданы.
             {% endif %}
             <p>
-                <h5>UID - ваш секретный ключ</h5>
+                <h4>UID - ваш секретный ключ</h4>
                 {% if uid != 'xxx' %}
                     {{ uid }} <span class="control_help_text">   - ваш UID, служит для авторизации запросов</span>
                 {% else %}
                     Ваш ключ еще не создан.
                 {% endif %}
-            </p>
-            <p>
-                <h5>TYPE - тип файла с остатками и ценами</h5>
+                <h4>TYPE - тип файла с остатками и ценами</h4>
                 xlsx <span class="control_help_text"> - для полученния файла в формате EXCEL (Microsoft Office Excel)</span><br>
                 csv <span class="control_help_text"> - для полученния файла в формате CSV (значения разделенные точкой с запятой)</span>
             </p>

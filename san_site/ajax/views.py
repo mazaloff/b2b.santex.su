@@ -144,6 +144,28 @@ def cart_add(request):
 
 
 @page_not_access_ajax
+def get_form_images(request):
+    if request.method == 'POST':
+        pass
+    else:
+        try:
+            guid = request.GET.get('guid')
+        except MultiValueDictKeyError:
+            return HttpResponseAjaxError(code=302, message='no request GET guid')
+
+        try:
+            product = Product.objects.get(guid=guid)
+        except Product.DoesNotExist:
+            return HttpResponseAjaxError(code=303, message='does not find product')
+
+        return HttpResponseAjax(
+            guid=guid,
+            form_images=render_to_string('goods/show_images.html',
+                                         {'guid': guid, 'image': ('media/' + str(product.image))})
+        )
+
+
+@page_not_access_ajax
 def cart_get_form_quantity(request):
     if request.method == 'POST':
         pass

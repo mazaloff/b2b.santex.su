@@ -60,15 +60,15 @@ input[type="submit"] {
 
 #header {
     display: flex;
-    height: 45px;
+    height: 40px;
 }
 
 #header #branding {
-    flex: 2 50 25%;
+    flex: 2 50 20%;
 }
 
 #header #header_menu {
-    flex: 4 1 50%;
+    flex: 4 1 40%;
 }
 
 #header #user_tools {
@@ -79,7 +79,7 @@ input[type="submit"] {
     flex: 2 50 200px;
     display: block;
     border: 1px solid #cccccc87;
-    border-radius: 12px;
+    border-radius: 5px;
     padding: 5px 10px 10px 2px;
     height: 100%;
     overflow-x: hidden;
@@ -223,7 +223,18 @@ div#loading_icon span {
     z-index: 1002;
     top: 50%;
     left: 50%;
-    border-radius: 3px;
+    border-radius: 6px;
+}
+
+.form-image-wrapper {
+    border: 1px solid #64aeeb;
+    position: absolute;
+    background: white;
+    padding: 5px 5px 5px 5px;
+    z-index: 1002;
+    top: 50%;
+    left: 50%;
+    border-radius: 6px;
 }
 
 input#btn_enter_quantity_cart {
@@ -265,8 +276,12 @@ a.order-create:hover {
 }
 
 #id_delivery, #id_begin_date, #id_end_date {
-    background: url("/static/img/cal.gif") no-repeat 100% 50%;
+    background: url("../img/cal.gif") no-repeat 100% 50%;
     cursor: pointer;
+}
+
+#search_code {
+    background: url("../img/search_icon.png") no-repeat 100% 50%;
 }
 
 #id_begin_date, #id_end_date {
@@ -286,7 +301,7 @@ a.order-create:hover {
 ::-webkit-scrollbar-thumb {
     -webkit-border-radius: 10px;
     border-radius: 10px;
-    background-color: #cccccc45;
+    /*background-color: #cccccc45;*/
 }
 
 ::-webkit-scrollbar-thumb:hover{
@@ -318,7 +333,7 @@ a.order-create:hover {
 
 #branding a {
     font-family: 'Indie Flower';
-    font-size: 26px;
+    font-size: 25px;
     padding-left: 10px;
 }
 
