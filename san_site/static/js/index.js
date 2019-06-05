@@ -145,6 +145,9 @@ class Index {
 
                         let form_images = jQuery("#form_images");
 
+                        let width = json.width;
+                        let height = json.height;
+
                         form_images.replaceWith(json.form_images);
                         form_images.show();
 
@@ -152,13 +155,13 @@ class Index {
                         black_overlay.fadeOut(10);
                         black_overlay.fadeIn(500);
 
-                        let position = getOffset(document.getElementById('products'));
+                        let position = getOffset(document.getElementById('tr_goods' + guid));
                         position.left += $("th#goods_table_1").width();
                         position.left += Math.ceil($("th#goods_table_2").width() / 2);
 
                         let form_enter_wrapper = jQuery(".form-image-wrapper");
-                        form_enter_wrapper.css('left', position.left - 80);
-                        form_enter_wrapper.css('top', position.top - 0);
+                        form_enter_wrapper.css('left', Math.min((innerWidth-width) / 2,  position.left - 40));
+                        form_enter_wrapper.css('top', Math.min((innerHeight-height) / 2,  40));
 
                         jQuery("#tr_goods" + guid).addClass('current-tr');
 

@@ -160,6 +160,8 @@ def get_form_images(request):
 
         return HttpResponseAjax(
             guid=guid,
+            height=product.image.height,
+            width=product.image.width,
             form_images=render_to_string('goods/show_images.html',
                                          {'guid': guid, 'image': ('media/' + str(product.image))})
         )
