@@ -8,6 +8,12 @@
 
 #goods_table table {
     border-collapse: collapse;
+    border-right: solid;
+    border-right-color: #e8e9eb;
+    border-right-width: 1px;
+    border-left: solid;
+    border-left-color: #e8e9eb;
+    border-left-width: 1px;
 }
 
 #goods_table th div {
@@ -47,12 +53,12 @@
 
 #goods_table th#goods_table_2 {
     min-width: 450px;
-    max-width: 650px;
+    max-width: 550px;
 }
 
 #goods_table td#goods_table_2 {
     min-width: 450px;
-    max-width: 650px;
+    max-width: 550px;
 }
 
 #goods_table th#goods_table_3 {
@@ -149,7 +155,7 @@
 }
 
 #goods_table .goods_code.img {
-    background: url("/static/img/image.png") no-repeat 100% 50%;
+    background: url("../img/image.png") no-repeat 100% 50%;
     padding-right: 20px;
     margin-right: -10px;
     cursor: pointer;
@@ -166,6 +172,12 @@
 
 #goods_cart table {
     border-collapse: collapse;
+    border-right: solid;
+    border-right-color: #e8e9eb;
+    border-right-width: 1px;
+    border-left: solid;
+    border-left-color: #e8e9eb;
+    border-left-width: 1px;
 }
 
 #goods_cart th div {
@@ -195,6 +207,12 @@
 
 #goods_cart th#cart_table_2 {
     min-width: 450px;
+    max-width: 550px;
+}
+
+#goods_cart td.cart_table_2{
+    min-width: 450px;
+    max-width: 550px;
 }
 
 #goods_cart th#cart_table_3 {
@@ -327,6 +345,12 @@
 
 #list_orders table {
     border-collapse: collapse;
+    border-right: solid;
+    border-right-color: #e8e9eb;
+    border-right-width: 1px;
+    border-left: solid;
+    border-left-color: #e8e9eb;
+    border-left-width: 1px;
 }
 
 #list_orders th div {
