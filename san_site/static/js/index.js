@@ -103,7 +103,7 @@ class Index {
 
                         let position = getOffset(document.getElementById('tr_goods' + guid));
                         position.left += $("th#goods_table_1").width();
-                        position.left += Math.ceil($("th#goods_table_2").width() / 2);
+                        position.left += $("th#goods_table_2").width() / 2;
 
                         let form_enter_wrapper = jQuery(".enter-quantity-wrapper");
                         form_enter_wrapper.css('left', position.left - 80);
@@ -136,7 +136,7 @@ class Index {
             jQuery.ajax({
                 url: "ajax/goods/get_form_images/",
                 type: 'GET',
-                data: {'guid': guid},
+                data: {'guid': guid, 'height': innerHeight},
                 dataType: 'json', // забираем номер страницы, которую нужно отобразить
 
                 success: function (json) {
@@ -146,7 +146,6 @@ class Index {
                         let form_images = jQuery("#form_images");
 
                         let width = json.width;
-                        let height = json.height;
 
                         form_images.replaceWith(json.form_images);
                         form_images.show();
@@ -157,11 +156,11 @@ class Index {
 
                         let position = getOffset(document.getElementById('tr_goods' + guid));
                         position.left += $("th#goods_table_1").width();
-                        position.left += Math.ceil($("th#goods_table_2").width() / 2);
+                        position.left += $("th#goods_table_2").width() / 2;
 
                         let form_enter_wrapper = jQuery(".form-image-wrapper");
                         form_enter_wrapper.css('left', Math.min((innerWidth-width) / 2,  position.left - 40));
-                        form_enter_wrapper.css('top', Math.min((innerHeight-height) / 2,  40));
+                        form_enter_wrapper.css('top', 40);
 
                         jQuery("#tr_goods" + guid).addClass('current-tr');
 

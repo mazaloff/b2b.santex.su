@@ -1,6 +1,9 @@
 <div id="form_images">
     <div class="form-image-wrapper">
-        <img alt="Фото товара" src="{{ image }}"/>
+        <div class="show-photo">
+            <a onclick="closeBlackOverlay('{{ guid }}')" href="#" class="show-photo close"></a></div>
+        <div class="name">{{ name }}</div>
+        <img alt="" style="max-width: {{ max_width }}px; max-height: {{ max_height }}px;" src="{{ image }}"/>
     </div>
     <div onclick="closeBlackOverlay('{{ guid }}')" class="black-overlay"></div>
 </div>
