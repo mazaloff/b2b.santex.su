@@ -152,7 +152,7 @@ class Index {
                         black_overlay.fadeOut(10);
                         black_overlay.fadeIn(500);
 
-                        let position = getOffset(document.getElementById('tr_goods' + guid));
+                        let position = getOffset(document.getElementById('products'));
                         position.left += $("th#goods_table_1").width();
                         position.left += Math.ceil($("th#goods_table_2").width() / 2);
 
