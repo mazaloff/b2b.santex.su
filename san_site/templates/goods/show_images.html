@@ -4,6 +4,8 @@
             <a onclick="closeBlackOverlay('{{ guid }}')" href="#" class="show-photo close"></a></div>
         <div class="name">{{ name }}</div>
         <img alt="" style="max-width: {{ max_width }}px; max-height: {{ max_height }}px;" src="{{ image }}"/>
+        <div class="show-photo-close">
+            <a onclick="closeBlackOverlay('{{ guid }}')" href="#">Закрыть</a>
+        </div>
     </div>
-    <div onclick="closeBlackOverlay('{{ guid }}')" class="black-overlay"></div>
 </div>

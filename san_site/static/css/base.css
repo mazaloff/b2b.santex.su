@@ -247,6 +247,11 @@ div#loading_icon span {
     z-index: 10000;
 }
 
+.show-photo-close {
+    text-align: left;
+    padding-left: 5px;
+}
+
 .show-photo.close {
     background: url("../img/x.jpg") no-repeat 100% 50%;
     cursor: pointer;
@@ -257,6 +262,7 @@ div#loading_icon span {
     font-size: 12px;
     font-weight: bold;
     padding: 20px;
+    text-align: left;
     text-transform: uppercase;
 }
 
