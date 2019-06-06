@@ -280,6 +280,11 @@ class Section(models.Model):
         return Section.__get_goods_list_raw(kwargs)
 
     @staticmethod
+    def get_goods_list_with_kwargs(**kwargs):
+        goods_list = Section.__get_goods_list_raw(kwargs)
+        return goods_list, kwargs
+
+    @staticmethod
     def __get_goods_list_raw(kwargs):
 
         user = kwargs.get('user', None)
@@ -289,6 +294,8 @@ class Section(models.Model):
         only_stock = kwargs.get('only_stock', False)
         only_promo = kwargs.get('only_promo', False)
         only_available = kwargs.get('only_available', True)
+
+        is_price_rrp = kwargs.get('is_price_rrp', False)
 
         list_res_ = []
 
@@ -408,6 +415,8 @@ class Section(models.Model):
                     sel_row.inventories.update(dict([(row[14], quantity)]))
 
             for sel_row in dict_row.values():
+                if not is_price_rrp:
+                    is_price_rrp = False if sel_row.price_rrp == 0 or sel_row.price_rrp == 0.01 else True
                 list_res_.append({
                     'product': sel_row,
                     'guid': sel_row.guid,
@@ -427,11 +436,18 @@ class Section(models.Model):
                     'percent': '' if sel_row.percent == 0 else sel_row.percent}
                 )
 
+        if 'is_price_rrp' in kwargs.keys():
+            kwargs['is_price_rrp'] = is_price_rrp
+
         return list_res_
 
     def get_goods_list_section(self, **kwargs):
         kwargs['id_section'] = self.id
         return Section.get_goods_list(**kwargs)
+
+    def get_goods_list_section_with_kwargs(self, **kwargs):
+        kwargs['id_section'] = self.id
+        return Section.get_goods_list_with_kwargs(**kwargs)
 
 
 class Product(models.Model):

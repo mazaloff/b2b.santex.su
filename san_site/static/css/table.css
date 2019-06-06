@@ -6,6 +6,10 @@
     overflow: auto;
 }
 
+.goods_hide {
+    display: none;
+}
+
 #goods_table table {
     border-collapse: collapse;
     border-right: solid;
@@ -65,8 +69,16 @@
     width: 70px;
 }
 
+#goods_table td#goods_table_3 {
+    text-align: right;
+}
+
 #goods_table th#goods_table_4 {
     width: 100px;
+}
+
+#goods_table td#goods_table_4 {
+    text-align: right;
 }
 
 #goods_table th#goods_table_5 {
@@ -77,12 +89,24 @@
     width: 25px;
 }
 
+#goods_table td#goods_table_6 {
+    text-align: center;
+}
+
 #goods_table th#goods_table_7 {
     width: 100px;
 }
 
+#goods_table td#goods_table_7 {
+    text-align: right;
+}
+
 #goods_table th#goods_table_8 {
     width: 100px;
+}
+
+#goods_table td#goods_table_8 {
+    text-align: right;
 }
 
 #goods_table th#goods_table_1 div {
@@ -205,6 +229,11 @@
     max-width: 140px;
 }
 
+#goods_cart td.cart_table_1 {
+    min-width: 100px;
+    max-width: 140px;
+}
+
 #goods_cart th#cart_table_2 {
     min-width: 350px;
     max-width: 550px;
@@ -219,24 +248,47 @@
     width: 85px;
 }
 
+#goods_cart td.cart_table_3 {
+    text-align: right;
+}
+
 #goods_cart th#cart_table_4 {
     width: 100px;
+}
+
+#goods_cart td.cart_table_4 {
+    text-align: right;
 }
 
 #goods_cart th#cart_table_5 {
     width: 100px;
 }
 
+#goods_cart td.cart_table_5 {
+    text-align: right;
+}
+
 #goods_cart th#cart_table_6 {
     width: 30px;
+}
+
+#goods_cart td.cart_table_6 {
 }
 
 #goods_cart th#cart_table_7 {
     width: 100px;
 }
 
+#goods_cart td.cart_table_7 {
+    text-align: right;
+}
+
 #goods_cart th#cart_table_8 {
-    width: 20px;
+    width: 26px;
+}
+
+#goods_cart td.cart_table_8 {
+    width: 26px;
 }
 
 #goods_cart td.cart_table_8 a {
@@ -393,7 +445,12 @@
 }
 
 #list_orders th#orders_table_4 {
-    width: 120px;
+    min-width: 95px;
+    max-width: 120px;
+}
+
+#list_orders td.orders_table_4 {
+    text-align: right;
 }
 
 #list_orders th#orders_table_5 {

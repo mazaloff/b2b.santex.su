@@ -30,7 +30,7 @@
                 <th id="goods_table_7">
                     <div><span>Ваша цена</span></div>
                 </th>
-                <th id="goods_table_8">
+                <th id="goods_table_8" {% if not is_price_rrp %} class="goods_hide"{% endif %}>
                     <div><span>РРЦ руб.</span></div>
                 </th>
             {% endif %}
@@ -41,14 +41,13 @@
                 <tr id="tr_goods{{ goods.guid }}" class="goods_tr
                 {% if not goods.relevant %} not_relevant{% endif %}{% if goods.promo %} promo{% endif %}">
                     <td id="goods_table_1">
-                        <div class="goods_code{% if goods.is_image %} img "onclick="showImage('{{ goods.guid }}');{% endif %}">{{ goods.code }}</div>
+                        <div class="goods_code{% if goods.is_image %} img" onclick="showImage('{{ goods.guid }}');{% endif %}">{{ goods.code }}</div>
                     </td>
                     <td title="Добавить позицию в текущий заказ" onclick="addCart('{{ goods.guid }}')" id="goods_table_2" style="cursor: pointer;">
                         {{ goods.name }}
                     </td>
-                    <td title="Показать остатки по складам"
-                        onclick="helpQuantity('{{ goods.guid }}')"
-                        id="goods_table_3" align=right style="cursor: pointer;">
+                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')"
+                        id="goods_table_3" style="cursor: pointer;">
                         {{ goods.quantity }}
                         <div class="help-tip">
                             {% for key, value in goods.inventories.items %}
@@ -56,11 +55,11 @@
                             {% endfor %}
                         </div>
                     </td>
-                    <td id="goods_table_4" align=right>{{ goods.price|format:"{0:.2f}" }}</td>
+                    <td id="goods_table_4">{{ goods.price|format:"{0:.2f}" }}</td>
                     <td id="goods_table_5">{{ goods.currency }}</td>
-                    <td id="goods_table_6" align=center>{{ goods.percent|format:"{0:.2f}" }}</td>
-                    <td id="goods_table_7" align=right>{{ goods.discount|format:"{0:.2f}" }}</td>
-                    <td id="goods_table_8" align=right>{{ goods.price_rrp|format:"{0:.2f}" }}</td>
+                    <td id="goods_table_6">{{ goods.percent|format:"{0:.2f}" }}</td>
+                    <td id="goods_table_7">{{ goods.discount|format:"{0:.2f}" }}</td>
+                    <td id="goods_table_8" {% if not is_price_rrp %} class="goods_hide"{% endif %}>{{ goods.price_rrp|format:"{0:.2f}" }}</td>
                 </tr>
             {% endfor %}
         {% elif user.is_authenticated %}
@@ -71,20 +70,18 @@
                         <div class="goods_code{% if goods.is_image %} img{% endif %}">{{ goods.code }}</div>
                     </td>
                     <td id="goods_table_2">{{ goods.name }}</td>
-                    <td title="Показать остатки по складам"
-                        onclick="helpQuantity('{{ goods.guid }}')"
-                        id="goods_table_3" align=right>{{ goods.quantity }}
+                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.quantity }}
                         <div class="help-tip">
                             {% for key, value in goods.inventories.items %}
                                 {{ key }}: {{ value|units }} <br>
                             {% endfor %}
                         </div>
                     </td>
-                    <td id="goods_table_4" align=right>{{ goods.price|format:"{0:.2f}" }}</td>
+                    <td id="goods_table_4">{{ goods.price|format:"{0:.2f}" }}</td>
                     <td id="goods_table_5">{{ goods.currency }}</td>
-                    <td id="goods_table_6" align=center>{{ goods.percent|format:"{0:.2f}" }}</td>
-                    <td id="goods_table_7" align=right>{{ goods.discount|format:"{0:.2f}" }}</td>
-                    <td id="goods_table_8" align=right>{{ goods.price_rrp|format:"{0:.2f}" }}</td>
+                    <td id="goods_table_6">{{ goods.percent|format:"{0:.2f}" }}</td>
+                    <td id="goods_table_7">{{ goods.discount|format:"{0:.2f}" }}</td>
+                    <td id="goods_table_8" {% if not is_price_rrp %} class="goods_hide"{% endif %}>{{ goods.price_rrp|format:"{0:.2f}" }}</td>
                 </tr>
             {% endfor %}
         {% else %}
@@ -95,16 +92,14 @@
                         <div class="goods_code{% if goods.is_image %} img{% endif %}">{{ goods.code }}</div>
                     </td>
                     <td id="goods_table_2">{{ goods.name }}</td>
-                    <td title="Показать остатки по складам"
-                        onclick="helpQuantity('{{ goods.guid }}')"
-                        id="goods_table_3" align=right>{{ goods.quantity }}
+                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.quantity }}
                         <div class="help-tip">
                             {% for key, value in goods.inventories.items %}
                                 {{ key }}: {{ value|units }} <br>
                             {% endfor %}
                         </div>
                     </td>
-                    <td id="goods_table_4" align=right>{{ goods.price|format:"{0:.2f}" }}</td>
+                    <td id="goods_table_4">{{ goods.price|format:"{0:.2f}" }}</td>
                     <td id="goods_table_5">{{ goods.currency }}</td>
                 </tr>
             {% endfor %}

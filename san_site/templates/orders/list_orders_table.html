@@ -48,7 +48,7 @@
                 <td class="orders_table_1">{{ order.date|date:'d.m.Y H:i' }}</td>
                 <td class="orders_table_2">{{ order.id }}</td>
                 <td class="orders_table_3">{{ order.customer }}</td>
-                <td class="orders_table_4" align=right> {{ order.get_total_cost|format:"{0:.2f}" }}</td>
+                <td class="orders_table_4"> {{ order.get_total_cost|format:"{0:.2f}" }}</td>
                 <td class="orders_table_5">руб.</td>
                 <td class="orders_table_6">{{ order.shipment }}</td>
                 <td class="orders_table_7">{{ order.delivery|date:'d.m.Y' }}</td>

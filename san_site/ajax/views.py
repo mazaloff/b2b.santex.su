@@ -54,14 +54,19 @@ def get_goods(request):
 
     obj_section.add_current_session(request)
 
+    is_price_rrp = False
+
     cart = Cart(request)
-    goods_list = obj_section.get_goods_list_section(
-        user=request.user, only_stock=only_stock_, only_promo=only_promo_)
+    goods_list, kwargs = obj_section.get_goods_list_section_with_kwargs(
+        user=request.user, only_stock=only_stock_, only_promo=only_promo_, is_price_rrp=is_price_rrp)
+
+    is_price_rrp = kwargs.get('is_price_rrp', True)
 
     return HttpResponseAjax(
         current_section=obj_section.full_name,
         products=render_to_string('goods.html', {
             'cart': cart,
+            'is_price_rrp': is_price_rrp,
             'goods_list': goods_list,
             'user': request.user
         })
