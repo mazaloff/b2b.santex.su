@@ -40,7 +40,11 @@ var main_goods_height = 99999,
 
             }).bind('changed.jstree', function (e, data) {
 
-                guid = data.node.original.href;
+                try {
+                    guid = data.node.original.href;
+                }catch (e) {
+                    return
+                }
 
                 jQuery("#products").replaceWith(main_products);
 
@@ -103,7 +107,7 @@ var main_goods_height = 99999,
                     }
                 });
             });
-            ui.$categories.on('loaded.jstree', function() {
+            ui.$categories.on('loaded.jstree', function () {
                 ui.$categories.jstree(true).deselect_all(true);
                 ui.$categories.jstree('select_node', '' + data.guid_initially, true);
             });
@@ -316,7 +320,7 @@ function addCart(guid) {
 }
 
 function showImage(guid) {
-   Index._showFormImage(guid)
+    Index._showFormImage(guid)
 }
 
 function addQuantityCart(guid) {
@@ -446,10 +450,10 @@ function refreshTree() {
                 };
                 ui.$categories.jstree(true).settings.core.data = json.result;
                 ui.$categories.jstree(true).refresh(false, true);
-                ui.$categories.on("refresh.jstree", function(e) {
+                ui.$categories.on("refresh.jstree", function (e) {
                     ui.$categories.jstree(true).deselect_all(true);
                     ui.$categories.jstree('select_node', '' + json.guid_initially, true);
-                 });
+                });
             } else {
                 console.error('Ошибка получения данных с сервера');
             }
