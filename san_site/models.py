@@ -469,6 +469,10 @@ class Product(models.Model):
     def is_relevant(self):
         return self.matrix in Product.RELEVANT_MATRIX
 
+    @property
+    def is_image(self):
+        return self.image.name != ''
+
     @classmethod
     def change_relevant_products(cls):
 

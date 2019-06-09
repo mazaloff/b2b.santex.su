@@ -22,7 +22,7 @@ def our_api(request):
     customer = get_customer(request.user)
     uid = ''
     if person:
-        if person.uid in ('','xxx'):
+        if person.uid in ('', 'xxx'):
             person.create_uid()
         uid = person.uid
     if not customer:
@@ -144,8 +144,12 @@ def api_photo_of_good(request):
 
     name_temp = os.path.join(settings.BASE_DIR, 'san_site\\static\\temp.jpg')
     if product_obj.image.name != '':
-        if os.path.exists(product_obj.image.path):
-            os.remove(product_obj.image.path)
+        try:
+            if os.path.exists(product_obj.image.path):
+                os.remove(product_obj.image.path)
+        except OSError:
+            add_error(value_response, code='os.OSError',
+                      message='not can remove file', description=f'{product_obj.code} {product_obj.name}')
 
     body = request.body
     with open(name_temp, 'wb') as f:
@@ -398,7 +402,8 @@ def update_product(load_list):
                     and new_object.sort == int(element_list['sort']) \
                     and new_object.matrix == matrix \
                     and new_object.section.guid == element_list['sectionGuid'] \
-                    and new_object.is_deleted == element_list['is_deleted']:
+                    and new_object.is_deleted == element_list['is_deleted'] \
+                    and (not new_object.is_image or (new_object.is_image == element_list['is_image'])):
                 continue
         else:
             try:
@@ -424,6 +429,9 @@ def update_product(load_list):
             except Section.DoesNotExist:
                 continue
             new_object.section = section_obj
+
+        if new_object.is_image and new_object.is_image != element_list['is_image']:
+            new_object.image.delete(False)
 
         new_object.name = element_list['name']
         new_object.code = element_list['code']
