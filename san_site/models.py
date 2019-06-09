@@ -461,7 +461,7 @@ class Product(models.Model):
     matrix = models.CharField(max_length=30, default='Основной')
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False, db_index=True)
-    image = models.ImageField(upload_to='photos', default='/photos/None/no-img.jpg', blank=True)
+    image = models.ImageField(upload_to='photos', default='', blank=True)
 
     def __str__(self):
         return self.name

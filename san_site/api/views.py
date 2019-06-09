@@ -143,7 +143,7 @@ def api_photo_of_good(request):
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     name_temp = os.path.join(settings.BASE_DIR, 'san_site\\static\\temp.jpg')
-    if not str.endswith(product_obj.image.path, "no-img.png"):
+    if product_obj.image.name != '':
         if os.path.exists(product_obj.image.path):
             os.remove(product_obj.image.path)
 

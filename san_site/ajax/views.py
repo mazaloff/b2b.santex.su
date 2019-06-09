@@ -163,13 +163,17 @@ def get_form_images(request):
         except Product.DoesNotExist:
             return HttpResponseAjaxError(code=303, message='does not find product')
 
-        height = int(request.GET.get('height'))
+        try:
+            height = int(request.GET.get('height'))
+        except TypeError:
+            height = 699
 
-        max_width = 531
-        max_height = 521
         if height > 700:
             max_width = 1055
             max_height = 745
+        else:
+            max_width = 531
+            max_height = 521
 
         return HttpResponseAjax(
             guid=guid,
