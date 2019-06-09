@@ -1,6 +1,5 @@
 import datetime
 import json
-from typing import Any
 
 import requests
 import pytz
@@ -698,6 +697,7 @@ class Order(models.Model):
     payment = models.CharField(max_length=50, choices=PAYMENT_FORM, null=True)
     status = models.CharField(max_length=50, choices=STATUS_ORDER, default=STATUS_ORDER[0][1])
     comment = models.TextField(null=True)
+    bill = models.FileField(upload_to='bills', default='', blank=True)
 
     class RequestOrderError(BaseException):
         pass
@@ -710,6 +710,10 @@ class Order(models.Model):
 
     def __str__(self):
         return 'Order {}'.format(self.id)
+
+    @property
+    def is_bill(self):
+        return self.bill.name != ''
 
     def get_total_cost(self):
         return sum(item.get_cost() for item in self.items.all())

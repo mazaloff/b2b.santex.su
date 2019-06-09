@@ -1,6 +1,7 @@
 import os
 import datetime
 import json
+import uuid
 
 from django.shortcuts import render, resolve_url, Http404
 from django.contrib.auth.models import User
@@ -9,6 +10,7 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.datastructures import MultiValueDictKeyError
 from django.conf import settings
+from django.core.files import File
 
 from san_site.decorates.decorate import page_not_access
 from san_site.models import \
@@ -131,8 +133,6 @@ def api_main(request):
 def api_photo_of_good(request):
     value_response = {'success': True, 'date': [], 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
 
-    from django.core.files import File
-
     key = request.META['HTTP_ID']
     extension = request.META['HTTP_EXTENSION']
     try:
@@ -142,7 +142,7 @@ def api_photo_of_good(request):
                   message='does not exist', description=key)
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
-    name_temp = os.path.join(settings.BASE_DIR, 'san_site\\static\\temp.jpg')
+    name_temp = os.path.join(settings.BASE_DIR, 'san_site\\static\\' + str(uuid.uuid4()).replace('-', ''))
     if product_obj.image.name != '':
         try:
             if os.path.exists(product_obj.image.path):
@@ -157,6 +157,49 @@ def api_photo_of_good(request):
 
     with open(name_temp, 'rb') as f:
         product_obj.image.save(key + "." + extension, File(f), save=True)
+
+    try:
+        os.remove(name_temp)
+    except OSError:
+        pass
+    
+    value_response['time']['end'] = timezone.now().ctime()
+    return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+
+
+@csrf_exempt
+def bill_of_order(request):
+    value_response = {'success': True, 'date': [], 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
+
+    key = request.META['HTTP_ID']
+    extension = request.META['HTTP_EXTENSION']
+    try:
+        order_obj = Order.objects.get(guid=key)
+    except Order.DoesNotExist:
+        add_error(value_response, code='Order.DoesNotExist',
+                  message='does not exist', description=key)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
+
+    name_temp = os.path.join(settings.BASE_DIR, 'san_site\\static\\' + str(uuid.uuid4()).replace('-', ''))
+    if order_obj.bill.name != '':
+        try:
+            if os.path.exists(order_obj.bill.path):
+                os.remove(order_obj.bill.path)
+        except OSError:
+            add_error(value_response, code='os.OSError',
+                      message='not can remove file', description=f'{order_obj.id} {order_obj.date}')
+
+    body = request.body
+    with open(name_temp, 'wb') as f:
+        f.write(body)
+
+    with open(name_temp, 'rb') as f:
+        order_obj.bill.save(key + "." + extension, File(f), save=True)
+
+    try:
+        os.remove(name_temp)
+    except OSError:
+        pass
 
     value_response['time']['end'] = timezone.now().ctime()
     return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)

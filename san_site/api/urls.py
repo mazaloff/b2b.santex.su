@@ -5,6 +5,7 @@ from san_site.api import views
 urlpatterns = [
     url(r'v1/main$', views.api_main, name='api_main'),
     url(r'v1/photo_of_good$', views.api_photo_of_good, name='api_photo_of_good'),
+    url(r'v1/bill_of_order', views.bill_of_order, name='bill_of_order'),
     url(r'v1/inventories$', views.api_inventories, name='api_inventories'),
     url(r'v1/prices$', views.api_prices, name='api_prices'),
     url(r'v1/users$', views.api_users, name='api_users'),
