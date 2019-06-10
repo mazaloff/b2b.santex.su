@@ -46,12 +46,12 @@
 }
 
 #goods_table th#goods_table_1 {
-    min-width: 100px;
+    min-width: 70px;
     max-width: 130px;
 }
 
 #goods_table td#goods_table_1 {
-    min-width: 100px;
+    min-width: 70px;
     max-width: 130px;
 }
 
@@ -225,12 +225,12 @@
 }
 
 #goods_cart th#cart_table_1 {
-    min-width: 100px;
+    min-width: 70px;
     max-width: 140px;
 }
 
 #goods_cart td.cart_table_1 {
-    min-width: 100px;
+    min-width: 70px;
     max-width: 140px;
 }
 

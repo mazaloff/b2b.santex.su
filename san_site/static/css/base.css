@@ -272,21 +272,13 @@ input#btn_enter_quantity_cart {
 }
 
 a.order-create {
-    background-color: #d7e7fb70;
-    padding: 2px 2px 2px 0;
+    background: #d7e7fb70 url("../img/new_order.png") no-repeat 3px 3px;
+    padding: 2px 2px 1px 16px;
     text-decoration: none;
 }
 
 a.order-create:hover {
     text-decoration: underline;
-}
-
-.jstree-default .jstree-hovered {
-    background-color: #fcffd1 !important;
-}
-
-.jstree-default .jstree-clicked {
-    background-color: #fbe55e !important;
 }
 
 .current-tr {
@@ -366,10 +358,6 @@ a.order-create:hover {
     padding-left: 10px;
 }
 
-#account_login {
-    padding-left: 3px;
-}
-
 div.inf_created, .order_field {
     padding-top: 3px;
     padding-bottom: 3px;
@@ -387,4 +375,27 @@ div.inf_created {
 span.inf_created {
     font-weight: bolder;
     color: #207bbd;
+}
+
+/* tree */
+
+.jstree-default .jstree-hovered {
+    background-color: #d7e7fb70 !important;
+}
+
+.jstree-default .jstree-clicked {
+    background-color: #d7e7fb !important;
+}
+
+/* replace folder icons with another image, remove leaf image */
+li.jstree-open > a .jstree-icon {background:url("../img/folder.png") 2px 3px no-repeat !important;}
+li.jstree-closed > a .jstree-icon {background:url("../img/folder.png") 2px 3px no-repeat !important}
+li.jstree-leaf > a .jstree-icon { background:url("../img/folder.png") 2px 3px no-repeat !important }
+
+.jstree-default .jstree-clicked {
+    border-radius: 6px !important;
+}
+
+.jstree-anchor>.jstree-themeicon {
+    margin-right: 0 !important;
 }
