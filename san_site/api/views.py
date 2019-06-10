@@ -2,6 +2,7 @@ import os
 import datetime
 import json
 import uuid
+import base64
 import dateutil.parser
 
 from django.utils.timezone import make_aware
@@ -173,8 +174,6 @@ def api_photo_of_good(request):
 def bill_of_order(request):
     value_response = {'success': True, 'date': [], 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
 
-    import base64
-
     body = request.body
     json_str = body[body.find(b'$%$%$') + 5:len(body)].decode('utf-8')
     body = base64.b64decode(body[0: body.find(b'$%$%$')])
@@ -233,7 +232,7 @@ def bill_of_order(request):
     bill_obj.save()
 
     with open(name_temp, 'rb') as f:
-        bill_obj.file.save(str(uuid.uuid4()).replace('-', '') + "." + extension, File(f), save=True)
+        bill_obj.file.save(guid + "." + extension, File(f), save=True)
 
     try:
         os.remove(name_temp)
