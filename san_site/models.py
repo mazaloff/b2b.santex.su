@@ -697,7 +697,6 @@ class Order(models.Model):
     payment = models.CharField(max_length=50, choices=PAYMENT_FORM, null=True)
     status = models.CharField(max_length=50, choices=STATUS_ORDER, default=STATUS_ORDER[0][1])
     comment = models.TextField(null=True)
-    bill = models.FileField(upload_to='bills', default='', blank=True)
 
     class RequestOrderError(BaseException):
         pass
@@ -710,10 +709,6 @@ class Order(models.Model):
 
     def __str__(self):
         return 'Order {}'.format(self.id)
-
-    @property
-    def is_bill(self):
-        return self.bill.name != ''
 
     def get_total_cost(self):
         return sum(item.get_cost() for item in self.items.all())
@@ -862,6 +857,24 @@ class OrderItem(models.Model):
 
     def get_cost(self):
         return round(self.price_ruble * self.quantity, 2)
+
+
+class Bill(models.Model):
+    date = models.DateTimeField(db_index=True)
+    number = models.CharField(max_length=15, default='')
+    order = models.ForeignKey(Order, on_delete=models.PROTECT)
+    person = models.ForeignKey(Person, db_index=True, on_delete=models.PROTECT)
+    customer = models.ForeignKey(Customer, db_index=True, on_delete=models.PROTECT, null=True)
+    guid = models.CharField(max_length=50, db_index=True, default='')
+    updated = models.DateTimeField(auto_now=True)
+    comment = models.TextField(null=True)
+    file = models.FileField(upload_to='bills', default='', blank=True)
+
+    class Meta:
+        ordering = ('-date',)
+
+    def __str__(self):
+        return 'Order {}'.format(self.id)
 
 
 def get_customer(user):

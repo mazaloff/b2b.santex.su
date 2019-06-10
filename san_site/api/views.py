@@ -2,7 +2,9 @@ import os
 import datetime
 import json
 import uuid
+import dateutil.parser
 
+from django.utils.timezone import make_aware
 from django.shortcuts import render, resolve_url, Http404
 from django.contrib.auth.models import User
 from django.http import HttpResponse
@@ -15,7 +17,7 @@ from django.core.files import File
 from san_site.decorates.decorate import page_not_access
 from san_site.models import \
     Order, Customer, Person, Section, Product, Store, Price, Currency, Inventories, Prices, CustomersPrices, Courses, \
-    CustomersFiles, PricesSale, get_person, get_customer
+    CustomersFiles, PricesSale, Bill, get_person, get_customer
 
 
 @page_not_access
@@ -171,30 +173,67 @@ def api_photo_of_good(request):
 def bill_of_order(request):
     value_response = {'success': True, 'date': [], 'time': {'begin': timezone.now().ctime(), 'end': None}, 'errors': []}
 
-    key = request.META['HTTP_ID']
-    extension = request.META['HTTP_EXTENSION']
-    try:
-        order_obj = Order.objects.get(guid=key)
-    except Order.DoesNotExist:
-        add_error(value_response, code='Order.DoesNotExist',
-                  message='does not exist', description=key)
-        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
-
-    name_temp = os.path.join(settings.BASE_DIR, 'san_site\\static\\' + str(uuid.uuid4()).replace('-', ''))
-    if order_obj.bill.name != '':
-        try:
-            if os.path.exists(order_obj.bill.path):
-                os.remove(order_obj.bill.path)
-        except OSError:
-            add_error(value_response, code='os.OSError',
-                      message='not can remove file', description=f'{order_obj.id} {order_obj.date}')
+    import base64
 
     body = request.body
+    json_str = body[body.find(b'$%$%$') + 5:len(body)].decode('utf-8')
+    body = base64.b64decode(body[0: body.find(b'$%$%$')])
+
+    try:
+        data_load = json.loads(json_str)
+    except ValueError:
+        add_error(value_response, code='json.ValueError',
+                  message='error json loads', description='')
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
+
+    guid = data_load['guid']
+    guid_order = data_load['guid_order']
+    extension = data_load['extension']
+    date = data_load['date']
+    number = data_load['number']
+    comment = data_load['comment']
+
+    try:
+        order_obj = Order.objects.get(guid=guid_order)
+    except Order.DoesNotExist:
+        add_error(value_response, code='Order.DoesNotExist',
+                  message='does not exist', description=guid_order)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
+
+    try:
+        bill_obj = Bill.objects.get(guid=guid)
+    except Bill.DoesNotExist:
+        bill_obj = None
+
+    name_temp = os.path.join(settings.BASE_DIR, 'san_site\\static\\' + str(uuid.uuid4()).replace('-', ''))
+    if bill_obj and bill_obj.file.name != '':
+        try:
+            if os.path.exists(bill_obj.file.path):
+                os.remove(bill_obj.file.path)
+        except OSError:
+            add_error(value_response, code='os.OSError',
+                      message='not can remove file', description=f'{bill_obj.number} {bill_obj.date}')
+
     with open(name_temp, 'wb') as f:
         f.write(body)
 
+    date = dateutil.parser.parse(date)
+
+    if not bill_obj:
+        bill_obj = Bill.objects.create(guid=guid,
+                                       order=order_obj,
+                                       date=make_aware(date),
+                                       number=number,
+                                       person=order_obj.person,
+                                       customer=order_obj.customer,
+                                       comment=comment)
+    bill_obj.date = make_aware(date)
+    bill_obj.number = number
+    bill_obj.comment = comment
+    bill_obj.save()
+
     with open(name_temp, 'rb') as f:
-        order_obj.bill.save(key + "." + extension, File(f), save=True)
+        bill_obj.file.save(str(uuid.uuid4()).replace('-', '') + "." + extension, File(f), save=True)
 
     try:
         os.remove(name_temp)
