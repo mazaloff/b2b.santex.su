@@ -180,7 +180,7 @@
 
 #goods_table .goods_code.img {
     background: url("../img/image.png") no-repeat 100% 50%;
-    padding-right: 20px;
+    padding-right: 25px;
     margin-right: -10px;
     cursor: pointer;
 }
