@@ -76,7 +76,7 @@ input[type="submit"] {
 }
 
 .categories {
-    flex: 2 50 200px;
+    flex: 1 50 200px;
     display: block;
     border: 1px solid #cccccc87;
     border-radius: 5px;
