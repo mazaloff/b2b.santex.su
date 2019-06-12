@@ -36,7 +36,7 @@ def our_api(request):
         files = customer.get_files()
         for file in files:
             type_file = file['type']
-            file['url'] = f'http://b2b.santex.su/api/v1/outside/?uid={uid}&type={type_file}'
+            file['url'] = f'/api/v1/outside/?uid={uid}&type={type_file}'
     return render(request, 'files/files_API.html', {'uid': uid, 'files': files})
 
 
@@ -191,12 +191,21 @@ def bill_of_order(request):
     date = data_load['date']
     number = data_load['number']
     comment = data_load['comment']
+    total = data_load['total']
+    currency = data_load['currency']
 
     try:
         order_obj = Order.objects.get(guid=guid_order)
     except Order.DoesNotExist:
         add_error(value_response, code='Order.DoesNotExist',
-                  message='does not exist', description=guid_order)
+                  message='does not exist Order', description=guid_order)
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
+
+    try:
+        currency_obj = Currency.objects.get(guid=currency)
+    except Currency.DoesNotExist:
+        add_error(value_response, code='Currency.DoesNotExist',
+                  message='does not exist Currency', description=currency)
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     try:
@@ -225,9 +234,13 @@ def bill_of_order(request):
                                        number=number,
                                        person=order_obj.person,
                                        customer=order_obj.customer,
+                                       total=total,
+                                       currency=currency_obj,
                                        comment=comment)
     bill_obj.date = make_aware(date)
     bill_obj.number = number
+    bill_obj.total = total
+    bill_obj.currency = currency_obj
     bill_obj.comment = comment
     bill_obj.save()
 

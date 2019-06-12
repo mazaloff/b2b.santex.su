@@ -226,12 +226,12 @@
 
 #goods_cart th#cart_table_1 {
     min-width: 70px;
-    max-width: 140px;
+    max-width: 130px;
 }
 
 #goods_cart td.cart_table_1 {
     min-width: 70px;
-    max-width: 140px;
+    max-width: 130px;
 }
 
 #goods_cart th#cart_table_2 {
@@ -437,6 +437,11 @@
 
 #list_orders th#orders_table_2 {
     width: 80px;
+}
+
+#list_orders td.orders_table_2.img_pdf {
+    background: url("../img/pdf.png") no-repeat 88% 50%;
+    padding-right: 24px;
 }
 
 #list_orders th#orders_table_3 {

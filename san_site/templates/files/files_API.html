@@ -24,7 +24,7 @@
             <h3>Прямые ссылки на файлы с вашим UID ключом</h3>
             {% if files|length > 0 %}
                 {% for file in files %}
-                    <div class="file_for_loading">
+                    <div class="file_for_loading_{{ file.type }}">
                         <a class="loading" href="{{ file.url }}"> {{ file.url }} </a>
                     </div>
                 {% endfor %}

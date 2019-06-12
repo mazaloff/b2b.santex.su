@@ -3,6 +3,7 @@ import datetime
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.utils.datastructures import MultiValueDictKeyError
+from django.utils.log import log_response
 
 from san_site.cart.cart import Cart
 from san_site.models import Section, Product, Order
@@ -35,7 +36,13 @@ def get_goods(request):
     try:
         guid = request.GET.get('guid')
     except MultiValueDictKeyError:
-        return HttpResponseAjaxError(code=302, message='no request GET guid')
+        response = HttpResponseAjaxError(code=302, message='no request GET guid')
+        log_response(
+            '%s : no request GET guid', request.path,
+            response=response,
+            request=request,
+        )
+        return response
 
     try:
         only_stock_ = str2bool(request.GET.get('only_stock'))
@@ -50,7 +57,13 @@ def get_goods(request):
     try:
         obj_section = Section.objects.get(id=guid)
     except Section.DoesNotExist:
-        return HttpResponseAjaxError(code=303, message='does not find section')
+        response = HttpResponseAjaxError(code=302, message='did not find section')
+        log_response(
+            '%s : did not find section : %s', request.path, str(guid),
+            response=response,
+            request=request,
+        )
+        return response
 
     obj_section.add_current_session(request)
 
@@ -120,17 +133,35 @@ def cart_add(request):
     try:
         guid = request.GET.get('guid')
     except MultiValueDictKeyError:
-        return HttpResponseAjaxError(code=302, message='no request GET guid')
+        response = HttpResponseAjaxError(code=302, message='no request GET guid')
+        log_response(
+            '%s : no request GET guid', request.path,
+            response=response,
+            request=request,
+        )
+        return response
 
     try:
         quantity = request.GET.get('quantity')
     except MultiValueDictKeyError:
-        return HttpResponseAjaxError(code=302, message='no request GET quantity')
+        response = HttpResponseAjaxError(code=302, message='no request GET quantity')
+        log_response(
+            '%s : no request GET quantity', request.path,
+            response=response,
+            request=request,
+        )
+        return response
 
     try:
         quantity = int(quantity)
     except TypeError:
-        return HttpResponseAjaxError(code=302, message='no quantity int')
+        response = HttpResponseAjaxError(code=302, message='no quantity int')
+        log_response(
+            '%s : no quantity int : %s', request.path, str(quantity),
+            response=response,
+            request=request,
+        )
+        return response
 
     cart = Cart(request)
     product = get_object_or_404(Product, guid=guid)
@@ -156,12 +187,24 @@ def get_form_images(request):
         try:
             guid = request.GET.get('guid')
         except MultiValueDictKeyError:
-            return HttpResponseAjaxError(code=302, message='no request GET guid')
+            response = HttpResponseAjaxError(code=302, message='no request GET guid')
+            log_response(
+                '%s : no request GET guid', request.path,
+                response=response,
+                request=request,
+            )
+            return response
 
         try:
             product = Product.objects.get(guid=guid)
         except Product.DoesNotExist:
-            return HttpResponseAjaxError(code=303, message='does not find product')
+            response = HttpResponseAjaxError(code=303, message='did not find product')
+            log_response(
+                '%s : did not find product : %s', request.path, str(guid),
+                response=response,
+                request=request,
+            )
+            return response
 
         try:
             height = int(request.GET.get('height'))
@@ -193,12 +236,24 @@ def cart_get_form_quantity(request):
         try:
             guid = request.GET.get('guid')
         except MultiValueDictKeyError:
-            return HttpResponseAjaxError(code=302, message='no request GET guid')
+            response = HttpResponseAjaxError(code=302, message='no request GET guid')
+            log_response(
+                '%s : no request GET guid', request.path,
+                response=response,
+                request=request,
+            )
+            return response
 
         try:
             product = Product.objects.get(guid=guid)
         except Product.DoesNotExist:
-            return HttpResponseAjaxError(code=303, message='does not find product')
+            response = HttpResponseAjaxError(code=302, message='did not find product')
+            log_response(
+                '%s : did not find product : %s', request.path, str(guid),
+                response=response,
+                request=request,
+            )
+            return response
 
         cart = Cart(request)
         is_cart = (cart.get_quantity_product(product.guid) > 0)
@@ -224,7 +279,13 @@ def cart_add_quantity(request):
     try:
         guid = request.GET.get('guid')
     except MultiValueDictKeyError:
-        return HttpResponseAjaxError(code=302, message='no request GET guid')
+        response = HttpResponseAjaxError(code=302, message='no request GET guid')
+        log_response(
+            '%s : no request GET guid', request.path,
+            response=response,
+            request=request,
+        )
+        return response
 
     cart = Cart(request)
     product = get_object_or_404(Product, guid=guid)
@@ -252,7 +313,13 @@ def cart_reduce_quantity(request):
     try:
         guid = request.GET.get('guid')
     except MultiValueDictKeyError:
-        return HttpResponseAjaxError(code=302, message='no request GET guid')
+        response = HttpResponseAjaxError(code=302, message='no request GET guid')
+        log_response(
+            '%s : no request GET guid', request.path,
+            response=response,
+            request=request,
+        )
+        return response
 
     cart = Cart(request)
     product = get_object_or_404(Product, guid=guid)
@@ -279,7 +346,13 @@ def cart_delete_row(request):
     try:
         guid = request.GET.get('guid')
     except MultiValueDictKeyError:
-        return HttpResponseAjaxError(code=302, message='no request GET guid')
+        response = HttpResponseAjaxError(code=302, message='no request GET guid')
+        log_response(
+            '%s : no request GET guid', request.path,
+            response=response,
+            request=request,
+        )
+        return response
 
     cart = Cart(request)
     product = get_object_or_404(Product, guid=guid)
@@ -296,11 +369,23 @@ def get_orders_list(request):
     try:
         begin_date = request.GET.get('begin_date')
     except MultiValueDictKeyError:
-        return HttpResponseAjaxError(code=302, message='no request GET begin_date')
+        response = HttpResponseAjaxError(code=302, message='no request GET begin_date')
+        log_response(
+            '%s : no request GET begin_date', request.path,
+            response=response,
+            request=request,
+        )
+        return response
     try:
         end_date = request.GET.get('end_date')
     except MultiValueDictKeyError:
-        return HttpResponseAjaxError(code=302, message='no request GET end_date')
+        response = HttpResponseAjaxError(code=302, message='no request GET end_date')
+        log_response(
+            '%s : no request GET end_date', request.path,
+            response=response,
+            request=request,
+        )
+        return response
 
     begin_date = datetime.date(int(begin_date.split('.')[2]),
                                int(begin_date.split('.')[1]),

@@ -11,7 +11,7 @@ a {
 
 a.loading {
     background: transparent;
-    color: #008ac4;
+    color: #006792;
     text-decoration: none;
 }
 
@@ -365,6 +365,8 @@ div.inf_created, .order_field {
 
 span.inf_created, .order_field.status {
     background-color: #fcffd1;
+    padding-right: 3px;
+    padding-left: 3px;
 }
 
 div.inf_created {
@@ -374,7 +376,32 @@ div.inf_created {
 
 span.inf_created {
     font-weight: bolder;
-    color: #207bbd;
+}
+
+#links_bills_order {
+    padding-bottom: 5px;
+    margin-left: 10px;
+}
+
+.bill_for_loading {
+    padding-bottom: 3px;
+    padding-top: 2px;
+    padding-left: 24px;
+    background: url("../img/pdf.png") no-repeat 2px 4px;
+}
+
+.file_for_loading_csv {
+    padding-bottom: 3px;
+    padding-top: 2px;
+    padding-left: 24px;
+    background: url("../img/txt.png") no-repeat 2px 4px;
+}
+
+.file_for_loading_xlsx {
+    padding-bottom: 3px;
+    padding-top: 2px;
+    padding-left: 24px;
+    background: url("../img/xlsx.png") no-repeat 2px 4px;
 }
 
 /* tree */

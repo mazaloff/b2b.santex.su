@@ -15,7 +15,7 @@
             <h3 class="top_h">Материалы для скачивания и загрузки в Ваши учетные системы</h3>
             {% if files|length > 0 %}
                 {% for file in files %}
-                    <div class="file_for_loading">
+                    <div class="file_for_loading_{{ file.type }}">
                         <a class="loading" href="{{ file.url }}"> {{ file.view }} </a>
                         <span class="control_help_text"> - создан {{ file.change_date }}</span>
                     </div>
@@ -23,7 +23,7 @@
             {% else %}
                 Файлы для скачивания еще не созданы.
             {% endif %}
-            <p><a href="{% url 'files_create' %}">Сгенерировать файлы</a>
+            <p><a href="{% url 'files_create' %}">Обновить файлы</a>
                 <span class="control_help_text"> - если нужны свежие данные (занимает около минуты)</span>
             </p>
             <h3>Воспользуйтесь ссылкой для загрузки Акций и Каталогов:</h3>

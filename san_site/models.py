@@ -13,6 +13,7 @@ from django.shortcuts import loader
 from django.contrib.auth.models import User
 from django.core.mail import EmailMultiAlternatives
 from django.core.cache import cache
+from django.db.models.query import Prefetch
 
 # connection.queries
 
@@ -630,15 +631,13 @@ class Currency(models.Model):
 
 
 class Inventories(models.Model):
-    product = models.ForeignKey(Product, related_name='product_inventories',
-                                db_index=True, on_delete=models.PROTECT)
+    product = models.ForeignKey(Product, db_index=True, on_delete=models.PROTECT)
     store = models.ForeignKey(Store, on_delete=models.PROTECT)
     quantity = models.IntegerField(default=0)
 
 
 class Prices(models.Model):
-    product = models.ForeignKey(Product, related_name='product_prices',
-                                db_index=True, on_delete=models.PROTECT)
+    product = models.ForeignKey(Product, db_index=True, on_delete=models.PROTECT)
     promo = models.BooleanField(default=False)
     price = models.ForeignKey(Price, on_delete=models.PROTECT)
     currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
@@ -654,11 +653,9 @@ class PricesSale(models.Model):
 
 
 class CustomersPrices(models.Model):
-    product = models.ForeignKey(Product, related_name='product_customers_prices',
-                                db_index=False, on_delete=models.PROTECT)
+    product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
     customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
-    currency = models.ForeignKey(Currency, on_delete=models.PROTECT,
-                                 db_index=False)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
     discount = models.FloatField(default=0)
     percent = models.FloatField(default=0)
 
@@ -742,6 +739,20 @@ class Order(models.Model):
             list_res_.append(element)
         return list_res_
 
+    @property
+    def bills(self):
+        list_bills = []
+        query_set = Bill.objects.filter(order=self)
+        query_set.select_related('currency')
+        for el in query_set:
+            url = f'\\files\\static\\bills\\{el.guid}'
+            list_bills.append(dict(number=el.number,
+                                   date=el.date,
+                                   total=el.total,
+                                   currency=el.currency.name,
+                                   url=url))
+        return list_bills
+
     @staticmethod
     def get_current_filters(request):
         json_str = request.session.get('get_current_filters')
@@ -771,10 +782,30 @@ class Order(models.Model):
                     .astimezone(tz=pytz.timezone(settings.TIME_ZONE))
                 end_datetime = datetime.datetime(end_date.year, end_date.month, end_date.day, 23, 59, 59) \
                     .astimezone(tz=pytz.timezone(settings.TIME_ZONE))
-                orders = orders.filter(date__range=(begin_datetime, end_datetime)).order_by('-date')
+                orders = orders.filter(date__range=(begin_datetime, end_datetime))
             except AttributeError:
                 pass
-        return orders
+        orders = orders.select_related('customer').prefetch_related(
+            Prefetch("order_bills", Bill.objects.filter(person=set_person[0]))
+        ).order_by('-date')
+        result_list = []
+        for elem in orders:
+            is_bill = False
+            for _ in elem.order_bills.all():
+                is_bill = True
+                break
+
+            result_list.append(dict(guid=elem.guid,
+                                    id=elem.id,
+                                    date=elem.date,
+                                    customer=elem.customer,
+                                    get_total_cost=elem.get_total_cost,
+                                    shipment=elem.shipment,
+                                    delivery=elem.delivery,
+                                    status=elem.status,
+                                    comment=elem.comment,
+                                    is_bill=is_bill))
+        return result_list
 
     def get_json_for_request(self):
         if self.customer:
@@ -846,7 +877,7 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.PROTECT)
-    product = models.ForeignKey(Product, related_name='order_items', on_delete=models.PROTECT)
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.ForeignKey(Currency, on_delete=models.PROTECT, default=Currency.get_ruble)
     price_ruble = models.DecimalField(max_digits=10, decimal_places=2)
@@ -862,11 +893,13 @@ class OrderItem(models.Model):
 class Bill(models.Model):
     date = models.DateTimeField(db_index=True)
     number = models.CharField(max_length=15, default='')
-    order = models.ForeignKey(Order, on_delete=models.PROTECT)
+    order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name='order_bills')
     person = models.ForeignKey(Person, db_index=True, on_delete=models.PROTECT)
     customer = models.ForeignKey(Customer, db_index=True, on_delete=models.PROTECT, null=True)
     guid = models.CharField(max_length=50, db_index=True, default='')
     updated = models.DateTimeField(auto_now=True)
+    total = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
     comment = models.TextField(null=True)
     file = models.FileField(upload_to='bills', default='', blank=True)
 

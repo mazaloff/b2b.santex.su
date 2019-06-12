@@ -46,7 +46,7 @@
         {% for order in orders_list %}
             <tr style="cursor: pointer;" onclick="doNav('{{ order.id }}')">
                 <td class="orders_table_1">{{ order.date|date:'d.m.Y H:i' }}</td>
-                <td class="orders_table_2">{{ order.id }}</td>
+                <td class="orders_table_2{% if order.is_bill %} img_pdf{% endif %}">{{ order.id }}</td>
                 <td class="orders_table_3">{{ order.customer }}</td>
                 <td class="orders_table_4"> {{ order.get_total_cost|format:"{0:.2f}" }}</td>
                 <td class="orders_table_5">руб.</td>

@@ -1,0 +1,12 @@
+{% load format %}
+
+<div id="links_bills_order">
+{% for bill in order.bills %}
+    <div class="bill_for_loading">
+        <a class="loading" target="_blank" href="{{ bill.url }}">
+            Счет покупателю {{ bill.number }} от {{ bill.date|date:"j E Y H:i" }}
+        </a>
+        <span class="control_help_text"> - на сумму {{ bill.total|format:"{0:.2f}" }} {{ bill.currency }}</span>
+    </div>
+{% endfor %}
+</div>

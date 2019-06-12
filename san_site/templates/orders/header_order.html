@@ -4,25 +4,21 @@
     <h3 class="top_h" style="margin-bottom: 10px;">Заказ N {{ order.id }} от {{ order.date }}</h3>
     <table>
         <tr>
-            <td valign="top">
+            <td style="vertical-align: top">
                 <div id="order_fields">
                     <div class="order_field">Покупатель: <strong>{{ order.customer }}</strong></div>
                     <div class="order_field">Срок поставки: <strong>{{ order.delivery|date:"j E Y" }}</strong></div>
                     <div class="order_field">Форма оплаты: <strong>{{ order.payment }}</strong></div>
                     <div class="order_field">Тип доставки: <strong>{{ order.shipment }}</strong></div>
                     <div class="order_field">Комментарий: <strong>{{ order.comment }}</strong></div>
-                    {% if 1 == 2 %}
-                        <div class="order_field">Guid 1c: <strong>{{ order.guid }}</strong></div>
-                    {% endif %}
                 </div>
             </td>
-            <td valign="top">
+            <td style="vertical-align: top">
                 <div class="order_field status">Статус: <strong>{{ order.status }}</strong></div>
-                {% if 1 == 2 %}
+                {% if order.guid == '' and user.is_superuser %}
                     <div class="order_field"><a href="{% url 'order_request' order.id %}">Выгрузить в 1с</a></div>
                 {% endif %}
             </td>
         </tr>
     </table>
 </div>
-<br>

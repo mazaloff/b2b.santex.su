@@ -3,7 +3,7 @@ import os
 from django.shortcuts import render, Http404, HttpResponse
 from san_site.decorates.decorate import page_not_access
 from san_site.backend.create_files import create_files
-from san_site.models import get_customer, Customer, CustomersFiles
+from san_site.models import get_customer, Customer, CustomersFiles, Bill
 from django.shortcuts import resolve_url
 from django.conf import settings
 
@@ -64,3 +64,24 @@ def static(request, **kwargs):
         return response
     else:
         raise Http404()
+
+
+@page_not_access
+def bill(request, **kwargs):
+    guid = kwargs.get('guid', 0)
+    try:
+        obj_bill = Bill.objects.get(guid=guid)
+    except Bill.DoesNotExist:
+        raise Http404()
+    if obj_bill.customer.guid not in [el[0] for el in Customer.get_customers_all_user(request.user)]:
+        raise Http404()
+    file_path = obj_bill.file.path
+    if not os.path.exists(file_path):
+        raise Http404()
+    content_type = 'application/pdf'
+    response = HttpResponse(open(file_path, mode='rb'), content_type=content_type)
+    date = obj_bill.date.date().isoformat().replace('-', '.')
+    name_file = f'Счет покупателю {obj_bill.number} от {date}'
+    response['Content-Disposition'] = f'attachment; filename={name_file}'
+    response['Content-Length'] = os.path.getsize(file_path)
+    return response

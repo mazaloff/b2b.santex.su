@@ -10,14 +10,15 @@
 
 {% block content %}
 
-    <div id="products" class="column products" xmlns="http://www.w3.org/1999/html">
+    <div id="products" class="column products">
         {% if created %}
             <div class="inf_created">
-                <span class="inf_created">Спасибо, Ваш заказ успешно сформирован. Ожидайте, Мы с Вас свяжемся.</span>
+                <span class="inf_created">Спасибо, Ваш заказ успешно сформирован. Счета на оплату появятся на этой странице.</span>
                 <br>
             </div>
         {% endif %}
         {% include "orders/header_order.html" %}
+        {% include "orders/links_bills_order.html" %}
         {% include "orders/goods_order.html" %}
     </div>
 
