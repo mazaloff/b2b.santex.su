@@ -173,15 +173,36 @@ class Index {
     }
 
     static _helpQuantity(guid) {
-        let help_tip = jQuery('#tr_goods' + guid + ' .help-tip');
-        help_tip.show();
 
-        let black_overlay = jQuery('.black-overlay');
-        black_overlay.fadeOut(10);
-        black_overlay.fadeIn(500);
+        if (typeof guid !== undefined) {
+            jQuery.ajax({
+                url: "ajax/goods/get_help_tip/",
+                type: 'GET',
+                data: {'guid': guid},
+                dataType: 'json', // забираем номер страницы, которую нужно отобразить
 
-        let position = getOffset(document.getElementById('tr_goods' + guid));
-        help_tip.css('top', position.top);
+                success: function (json) {
+                    // Если запрос прошёл успешно и сайт вернул результат
+                    if (json.success) {
+                    
+                        jQuery('#help-tip' + guid).replaceWith(json.help_tip);
+
+                        let help_tip = jQuery('#tr_goods' + guid + ' .help-tip');
+                        help_tip.show();
+
+                        let black_overlay = jQuery('.black-overlay');
+                        black_overlay.fadeOut(10);
+                        black_overlay.fadeIn(500);
+
+                        let position = getOffset(document.getElementById('tr_goods' + guid));
+                        help_tip.css('top', position.top);
+
+                    } else {
+                        console.error('Ошибка получения данных с сервера');
+                    }
+                }
+            });
+        }
     }
 
     static _closeBlackOverlay(guid) {

@@ -346,7 +346,7 @@ class Section(models.Model):
                              _product.matrix                  AS matrix,
                              CASE WHEN _product.image = '' THEN ''
                              ELSE 'media/' || _product.image 
-                             END AS image,
+                             END                              AS image,
                              _product.is_deleted              AS is_deleted,
                              COALESCE(_prices.value, 0)       AS price,
                              COALESCE(_prices.value, 0)       AS discount,
@@ -354,14 +354,12 @@ class Section(models.Model):
                              COALESCE(_prices.promo, FALSE)   AS promo,
                              COALESCE(_prices.currency_id, 0) AS currency_id,
                              COALESCE(_currency.name, '')     AS currency,
-                             COALESCE(_store.short_name, '')    AS store,
-                             COALESCE(_inventories.quantity, 0) AS quantity
+                             SUM(COALESCE(_inventories.quantity, 0)) AS quantity
                       FROM san_site_product _product
                              {join_request_section}
                              LEFT JOIN san_site_prices _prices ON _product.id = _prices.product_id
                              LEFT JOIN san_site_currency _currency ON _prices.currency_id = _currency.id
                              LEFT JOIN san_site_inventories _inventories ON _product.id = _inventories.product_id
-                             LEFT JOIN san_site_store _store ON _inventories.store_id = _store.id
                       WHERE (%s = FALSE 
                                 OR _product.is_deleted = FALSE)
                         AND {where_request_section}
@@ -369,7 +367,19 @@ class Section(models.Model):
                                 OR COALESCE (_prices.promo, FALSE) = TRUE)
                         AND (%s = FALSE 
                                 OR COALESCE(_inventories.quantity, 0) > 0)        
-                        AND {where_request_search}
+                        AND {where_request_search} 
+                      GROUP BY _product.id,
+                            _product.code,
+                            _product.name,
+                            _product.guid,
+                            _product.matrix,
+                            _product.is_deleted,
+                            COALESCE(_prices.value, 0),
+                            COALESCE(_prices.value, 0),
+                            COALESCE(_prices.rrp, 0),
+                            COALESCE(_prices.promo, FALSE),
+                            COALESCE(_prices.currency_id, 0),
+                            COALESCE(_currency.name, '')
                     ),
                          result AS (
                            SELECT _prise_store.id                                         AS id,
@@ -386,7 +396,6 @@ class Section(models.Model):
                                   _prise_store.promo                                      AS promo,
                                   COALESCE(_prices.currency_id, _prise_store.currency_id) AS currency_id,
                                   COALESCE(currency.name, _prise_store.currency)          AS currency,
-                                  _prise_store.store                                      AS store,
                                   _prise_store.quantity                                   AS quantity
                            FROM _prise_store
                                   LEFT JOIN san_site_customersprices _prices 
@@ -396,25 +405,17 @@ class Section(models.Model):
                          )
                     SELECT *
                     FROM result
-                    ORDER BY result.code, result.store;
+                    ORDER BY result.code;
                 """, param
             )
 
             rows = cursor.fetchall()
-            dict_row = {}
 
             for row in rows:
-                if row[0] in dict_row:
-                    sel_row = dict_row[row[0]]
-                    sel_row.quantity += row[15]
-                else:
-                    sel_row = SelectRow(*row)
-                    dict_row[row[0]] = sel_row
-                if row[15] > 0:
-                    quantity = '>10' if row[15] > 10 else '' if row[15] == 0 else row[15]
-                    sel_row.inventories.update(dict([(row[14], quantity)]))
 
-            for sel_row in dict_row.values():
+                sel_row = SelectRow(*row)
+                quantity = '>10' if row[14] > 10 else '' if row[14] == 0 else row[14]
+
                 if not is_price_rrp:
                     is_price_rrp = False if sel_row.price_rrp == 0 or sel_row.price_rrp == 0.01 else True
                 list_res_.append({
@@ -425,8 +426,7 @@ class Section(models.Model):
                     'image': sel_row.image,
                     'is_image': (sel_row.image != ""),
                     'relevant': sel_row.matrix in Product.RELEVANT_MATRIX,
-                    'quantity': '>10' if sel_row.quantity > 10 else '' if sel_row.quantity == 0 else sel_row.quantity,
-                    'inventories': sel_row.inventories,
+                    'quantity': quantity,
                     'price': '' if sel_row.price == 0 or sel_row.price == 0.01 else sel_row.price,
                     'price_rrp': '' if sel_row.price_rrp == 0 or sel_row.price_rrp == 0.01 else sel_row.price_rrp,
                     'promo': sel_row.promo,
@@ -472,6 +472,15 @@ class Product(models.Model):
     @property
     def is_image(self):
         return self.image.name != ''
+
+    @property
+    def inventories(self):
+        result = {}
+        query_set_inventory = Inventories.objects.filter(product=self).select_related('store')
+        for element in query_set_inventory:
+            quantity = '>10' if element.quantity > 10 else element.quantity
+            result.update(dict([(element.store.short_name, quantity)]))
+        return result
 
     @classmethod
     def change_relevant_products(cls):
@@ -694,6 +703,7 @@ class Order(models.Model):
     payment = models.CharField(max_length=50, choices=PAYMENT_FORM, null=True)
     status = models.CharField(max_length=50, choices=STATUS_ORDER, default=STATUS_ORDER[0][1])
     comment = models.TextField(null=True)
+    receiver_bills = models.CharField(max_length=50, default='')
 
     class RequestOrderError(BaseException):
         pass
@@ -820,6 +830,7 @@ class Order(models.Model):
                     delivery=self.delivery,
                     shipment=self.shipment,
                     payment=self.payment,
+                    receiver_bills=self.receiver_bills,
                     comment=self.comment
                     )
         rest_items = []
@@ -937,8 +948,7 @@ def get_person(user):
 
 class SelectRow:
     def __init__(self, id, code, name, guid, matrix, image, is_deleted, price, percent, discount, price_rrp, promo,
-                 currency_id, currency,
-                 store, quantity):
+                 currency_id, currency, quantity):
         self.id: int = id
         self.code: str = code
         self.name: str = name
@@ -953,6 +963,4 @@ class SelectRow:
         self.promo: bool = promo
         self.currency_id: int = currency_id
         self.currency: str = currency
-        self.store: str = store
         self.quantity: int = quantity
-        self.inventories = {}

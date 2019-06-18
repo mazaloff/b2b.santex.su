@@ -3,6 +3,7 @@ import datetime
 from django import forms
 from django.conf import settings
 from django.db import transaction, IntegrityError
+from django.core.validators import validate_email, ValidationError
 
 from .cart.cart import Cart, Currency
 from .models import Order, OrderItem, Person, Customer, get_person
@@ -53,18 +54,20 @@ class OrderCreateForm(forms.ModelForm):
     customer = forms.ChoiceField(choices=[], required=True, label='Покупатель',
                                  widget=forms.Select(attrs={'style': 'width: 300px;'}))
     delivery = forms.DateField(
-        help_text=' если заказ до 15.00 - поставка на следующий день, иначе через день',
+        help_text=' до 15.00 - поставка на следующий день, иначе через день',
         widget=forms.DateInput,
         label='Срок поставки')
     shipment = forms.ChoiceField(choices=Order.SHIPMENT_TYPE, required=True,
                                  initial=Order.SHIPMENT_TYPE[0], label='Способ доставки')
     payment = forms.ChoiceField(choices=Order.PAYMENT_FORM, required=True,
                                 initial=Order.PAYMENT_FORM[1], label='Форма оплаты')
+    receiver_bills = forms.EmailField(widget=forms.EmailInput, label='Отправить счет e-mail', required=False,
+                                      help_text=' очистите поле, если счет не нужен')
     comment = forms.CharField(widget=forms.Textarea, label='Комментарий к заказу', required=False)
 
     class Meta:
         model = Order
-        fields = ['customer', 'delivery', 'shipment', 'payment', 'comment']
+        fields = ['customer', 'shipment', 'delivery', 'payment', 'receiver_bills', 'comment']
 
     def clean_customer(self):
         guid = self.cleaned_data['customer']
@@ -84,6 +87,11 @@ class OrderCreateForm(forms.ModelForm):
         delivery = self.cleaned_data['delivery']
         return datetime.datetime(delivery.year, delivery.month, delivery.day, 12, 0, 0) \
             .astimezone(tz=pytz.timezone(settings.TIME_ZONE))
+
+    def clean_receiver_bills(self):
+        if not self['payment'].data == 'Безналичные':
+            return ''
+        return self['receiver_bills'].data
 
     def clean(self):
         pass
@@ -115,6 +123,7 @@ class OrderCreateForm(forms.ModelForm):
                     delivery=self.cleaned_data['delivery'],
                     shipment=self.cleaned_data['shipment'],
                     payment=self.cleaned_data['payment'],
+                    receiver_bills=self.cleaned_data['receiver_bills'],
                     comment=self.cleaned_data['comment']
                 )
                 order.save()
@@ -123,7 +132,7 @@ class OrderCreateForm(forms.ModelForm):
                     try:
                         currency = Currency.objects.get(id=item['currency_id'])
                     except Currency.DoesNotExist:
-                        raise IntegrityError("do not fount to get the currency_id")
+                        currency = Currency.objects.get(code='643')
                     item = OrderItem.objects.create(
                         order=order,
                         product=item['product'],

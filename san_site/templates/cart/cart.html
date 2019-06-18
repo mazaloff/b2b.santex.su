@@ -1,4 +1,8 @@
 <div id="cart">
-    {% include "cart/header_cart.html" %}
-    {% include "cart/goods_cart_user.html" %}
+    {% with total_items=cart|length %}
+        {% if cart|length > 0 %}
+            {% include "cart/header_cart.html" %}
+            {% include "cart/goods_cart_user.html" %}
+        {% endif %}
+    {% endwith %}
 </div>

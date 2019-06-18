@@ -4,9 +4,8 @@
         {% if not user.person.allow_order %}
             Нет прав делать заказы.
         {% elif cart|length > 0 %}
-            <a class="order-create button" href="{% url 'order_create' %}">&nbsp;Разместить заказ:
-                <strong>{{ cart.get_total_quantity|units }}</strong>, на сумму
-                <strong>{{ cart.get_total_cost|format:"{0:.2f}" }} руб.</strong>&nbsp;</a>
+            <a class="order-create header" href="{% url 'order_create' %}">&nbsp;
+                Разместить заказ на сумму <strong>{{ cart.get_total_cost|format:"{0:.2f}" }} руб.</strong>&nbsp;</a>
         {% else %}
             Текущий заказ пустой.
         {% endif %}

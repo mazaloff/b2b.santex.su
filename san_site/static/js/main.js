@@ -12,15 +12,40 @@ var main_goods_height = 99999,
 
         // Инициализируем нужные переменные
         let ui = {
+            categories_resizable: $('#categories_resizable'),
             $categories: $('#categories'),
+            goods_table: $('#goods_table'),
             $goods: $('#goods')
         };
+
+        try {
+            ui.categories_resizable.css("width", parseFloat(getCookie('categories_width')));
+        }catch (e) {}
+
+        countHeightListOrders();
+
+        updateTables();
+
+        widthHeadGoods();
+        widthHeadCart();
+        widthHeadOrders();
+
+        recoverOnlyStock();
+        recoverOnlyPromo();
 
         $(window).resize(function () {
             updateTables();
             widthHeadGoods();
             widthHeadCart();
             widthHeadOrders();
+        });
+
+        $('select[name="payment"]').change( function() {
+            if (this.options.selectedIndex+1 === 1) {
+                $('.control-group.receiver_bills').css('visibility', 'hidden')
+            }else {
+                $('.control-group.receiver_bills').css('visibility', 'visible')
+            }
         });
 
         // Инициализация дерева категорий с помощью jstree
@@ -37,7 +62,6 @@ var main_goods_height = 99999,
                         valid_children: ["default", "file"]
                     },
                 }
-
             }).bind('changed.jstree', function (e, data) {
 
                 try {
@@ -83,8 +107,6 @@ var main_goods_height = 99999,
                             jQuery("#goods").html('Товары из категории <strong>' + json.current_section
                                 .link('?sections=' + guid) + '</strong>');
 
-                            // console.log('changed node: ', data);
-
                             jQuery(window).scrollTop(0);
 
                             countHeightTableGoods();
@@ -100,10 +122,13 @@ var main_goods_height = 99999,
                         }
                         jQuery("#categories ul li a").removeClass('disabled');
                         jQuery("#loading_icon").addClass('disabled');
+
                         document.body.querySelectorAll('#goods')
                             .forEach(link => link.addEventListener('click', Index._clickHandlerGoods));
+
                         onlyStock();
                         onlyPromo();
+
                     }
                 });
             });
@@ -113,16 +138,8 @@ var main_goods_height = 99999,
             });
         }
 
-        // Загрузка категорий с сервера
-        function _loadData() {
-
-            widthHeadGoods();
-            widthHeadCart();
-            widthHeadOrders();
-            recoverOnlyStock();
-            recoverOnlyPromo();
-            countHeightListOrders();
-
+        // Инициализация приложения
+        function init() {
             $.ajax({
                 url: 'ajax/get_categories',
                 method: 'GET',
@@ -146,15 +163,18 @@ var main_goods_height = 99999,
             });
         }
 
-        // Инициализация приложения
-        function init() {
-            _loadData();
-        }
-
         onlyStock();
         onlyPromo();
 
         $("html,body").css("overflow", "hidden");
+        ui.categories_resizable.resizable({
+            stop: function( event, ui ) {
+                createCookie('categories_width', ui.size.width, 30);
+                updateTables();
+                widthHeadGoods();
+                widthHeadCart();
+            }
+        });
 
         // Экспортируем наружу
         return {
@@ -167,11 +187,24 @@ function updateTables() {
 
     // language=JQuery-CSS
     let window_height = $(window).height(),
+        window_width = $(window).width(),
         header_height = $('#header').height(),
         goods_table_height = 0;
 
-    let categories_height = window_height - header_height - 28;
-    let list_orders_table_height = window_height - header_height - $('#list_filter').height() - 34;
+    let available_width = window_width - $('#categories_resizable').width() - 30;
+
+    if (document.getElementById("categories")) {
+        $('#categories').stop().animate({height: window_height - header_height - 28});
+    }
+
+    if (document.getElementById("list_orders")) {
+        let list_orders = $('#list_orders');
+        list_orders.stop().animate({
+            height: window_height - header_height - $('#list_filter').height() - 34,
+            width: available_width
+        });
+        list_orders.css("width",available_width);
+    }
 
     let cart_table_height = main_cart_height;
 
@@ -201,60 +234,67 @@ function updateTables() {
 
     goods_table_height = Math.min(goods_table_height, main_goods_height);
 
-    let table_width = $('#goods_table table').width();
     if (document.getElementById("goods_cart")) {
-        table_width = Math.max($('#goods_cart table').width(), table_width);
-        $('#goods_cart').stop().animate({height: cart_table_height, width: table_width + 6});
-    }
-
-    if (document.getElementById("list_orders")) {
-        $('#list_orders').stop().animate({
-            height: list_orders_table_height,
-            width: $('#list_orders table').width() + 6
+        let ui_goods_cart = $('#goods_cart');
+        ui_goods_cart.stop().animate({
+            height: cart_table_height,
+            width: available_width
         });
+        ui_goods_cart.css("width",available_width);
     }
 
     if (document.getElementById("goods_table")) {
-        $('#goods_table').stop().animate({height: goods_table_height, width: table_width + 6});
+        let ui_goods_table = $('#goods_table');
+        ui_goods_table.stop().animate({
+            height: goods_table_height,
+            width: available_width
+        });
+        ui_goods_table.css("width",available_width);
     }
 
-    if (document.getElementById("categories")) {
-        $('#categories').stop().animate({height: categories_height});
-    }
 }
 
 function widthHeadCart() {
-    $('th#cart_table_1 div').stop().animate({width: $('th#cart_table_1').width()});
-    $('th#cart_table_2 div').stop().animate({width: $('th#cart_table_2').width() + 20});
-    $('th#cart_table_3 div').stop().animate({width: $('th#cart_table_3').width()});
-    $('th#cart_table_4 div').stop().animate({width: $('th#cart_table_4').width()});
-    $('th#cart_table_5 div').stop().animate({width: $('th#cart_table_5').width()});
-    $('th#cart_table_6 div').stop().animate({width: $('th#cart_table_6').width()});
-    $('th#cart_table_7 div').stop().animate({width: $('th#cart_table_7').width()});
-    $('th#cart_table_8 div').stop().animate({width: $('th#cart_table_8').width()});
+    let ui_goods_cart = $('#goods_cart');
+    ui_goods_cart.css("visibility", "hidden");
+    $('th#cart_table_1 div').css("width", $('th#cart_table_1').width());
+    $('th#cart_table_2 div').css("width", $('th#cart_table_2').width() + 20);
+    $('th#cart_table_3 div').css("width", $('th#cart_table_3').width());
+    $('th#cart_table_4 div').css("width", $('th#cart_table_4').width());
+    $('th#cart_table_5 div').css("width", $('th#cart_table_5').width());
+    $('th#cart_table_6 div').css("width", $('th#cart_table_6').width());
+    $('th#cart_table_7 div').css("width", $('th#cart_table_7').width());
+    $('th#cart_table_8 div').css("width", $('th#cart_table_8').width());
+    ui_goods_cart.css("visibility", "visible");
 }
 
 function widthHeadGoods() {
-    $('th#goods_table_1 div').stop().animate({width: $('th#goods_table_1').width()});
-    $('th#goods_table_2 div').stop().animate({width: $('th#goods_table_2').width() + 20});
-    $('th#goods_table_3 div').stop().animate({width: $('th#goods_table_3').width()});
-    $('th#goods_table_4 div').stop().animate({width: $('th#goods_table_4').width()});
-    $('th#goods_table_5 div').stop().animate({width: $('th#goods_table_5').width()});
-    $('th#goods_table_6 div').stop().animate({width: $('th#goods_table_6').width()});
-    $('th#goods_table_7 div').stop().animate({width: $('th#goods_table_7').width()});
-    $('th#goods_table_8 div').stop().animate({width: $('th#goods_table_8').width()});
+    let ui_goods_cart = $('#goods_cart');
+    ui_goods_cart.css("visibility", "hidden");
+    $('th#goods_table_1 div').css("width", $('th#goods_table_1').width());
+    $('th#goods_table_2 div').css("width", $('th#goods_table_2').width() + 20);
+    $('th#goods_table_3 div').css("width", $('th#goods_table_3').width());
+    $('th#goods_table_4 div').css("width", $('th#goods_table_4').width());
+    $('th#goods_table_5 div').css("width", $('th#goods_table_5').width());
+    $('th#goods_table_6 div').css("width", $('th#goods_table_6').width());
+    $('th#goods_table_7 div').css("width", $('th#goods_table_7').width());
+    $('th#goods_table_8 div').css("width", $('th#goods_table_8').width());
+    ui_goods_cart.css("visibility", "visible");
 }
 
 function widthHeadOrders() {
-    $('th#orders_table_1 div').stop().animate({width: $('th#orders_table_1').width()});
-    $('th#orders_table_2 div').stop().animate({width: $('th#orders_table_2').width()});
-    $('th#orders_table_3 div').stop().animate({width: $('th#orders_table_3').width()});
-    $('th#orders_table_4 div').stop().animate({width: $('th#orders_table_4').width()});
-    $('th#orders_table_5 div').stop().animate({width: $('th#orders_table_5').width()});
-    $('th#orders_table_6 div').stop().animate({width: $('th#orders_table_6').width()});
-    $('th#orders_table_7 div').stop().animate({width: $('th#orders_table_7').width()});
-    $('th#orders_table_8 div').stop().animate({width: $('th#orders_table_8').width()});
-    $('th#orders_table_9 div').stop().animate({width: $('th#orders_table_9').width()});
+    let list_orders = $('#list_orders');
+    list_orders.css("visibility", "hidden");
+    $('th#orders_table_1 div').css("width", $('th#orders_table_1').width());
+    $('th#orders_table_2 div').css("width", $('th#orders_table_2').width());
+    $('th#orders_table_3 div').css("width", $('th#orders_table_3').width() + 20);
+    $('th#orders_table_4 div').css("width", $('th#orders_table_4').width());
+    $('th#orders_table_5 div').css("width", $('th#orders_table_5').width());
+    $('th#orders_table_6 div').css("width", $('th#orders_table_6').width());
+    $('th#orders_table_7 div').css("width", $('th#orders_table_7').width());
+    $('th#orders_table_8 div').css("width", $('th#orders_table_8').width());
+    $('th#orders_table_9 div').css("width", $('th#orders_table_9').width());
+    list_orders.css("visibility", "visible");
 }
 
 function countHeightTableGoods() {

@@ -5,6 +5,7 @@ from san_site.ajax import views
 urlpatterns = [
     url(r'get_categories$', views.get_categories, name='get_categories'),
     url(r'get_goods/$', views.get_goods, name='get_goods'),
+    url(r'get_help_tip/$', views.get_help_tip, name='get_help_tip'),
     url(r'selection/$', views.selection, name='selection'),
     url(r'goods/get_form_images/$', views.get_form_images, name='get_form_images'),
     url(r'cart/add/$', views.cart_add, name='cart_add'),

@@ -13,7 +13,12 @@
     <div id="products" class="column products">
         {% if created %}
             <div class="inf_created">
-                <span class="inf_created">Спасибо, Ваш заказ успешно сформирован. Счета на оплату появятся на этой странице.</span>
+                <span class="inf_created">Спасибо, Ваш заказ успешно сформирован.</span>
+                {% if order.payment == 'Безналичные' and not order.receiver_bills == '' %}
+                    <span class="inf_created">
+                        Счета на оплату появятся на этой странице.
+                    </span>
+                {% endif %}
                 <br>
             </div>
         {% endif %}

@@ -2,10 +2,11 @@
 <div id="header_cart">
     {% with total_items=cart|length %}
         {% if cart|length > 0 %}
+            <a class="order-create" href="{% url 'order_create' %}">
             Ваш текущий заказ:
             <strong>{{ cart.get_total_quantity|units }}</strong>, на сумму
             <strong>{{ cart.get_total_cost|format:"{0:.2f}" }} руб.</strong>
-            &nbsp;{{ cart.view_courses }}&nbsp;&nbsp;
+            &nbsp;{{ cart.view_courses }}&nbsp;&nbsp</a>
         {% else %}
             Текущий заказ пустой.
         {% endif %}

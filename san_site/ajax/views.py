@@ -365,6 +365,26 @@ def cart_delete_row(request):
 
 
 @page_not_access_ajax
+def get_help_tip(request):
+    try:
+        guid = request.GET.get('guid')
+    except MultiValueDictKeyError:
+        response = HttpResponseAjaxError(code=302, message='no request GET guid')
+        log_response(
+            '%s : no request GET guid', request.path,
+            response=response,
+            request=request,
+        )
+        return response
+
+    product = get_object_or_404(Product, guid=guid)
+
+    return HttpResponseAjax(
+        help_tip=render_to_string('goods/help_tip.html', {'ob_goods': product})
+    )
+
+
+@page_not_access_ajax
 def get_orders_list(request):
     try:
         begin_date = request.GET.get('begin_date')

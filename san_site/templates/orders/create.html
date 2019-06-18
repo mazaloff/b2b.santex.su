@@ -20,18 +20,20 @@
             {% csrf_token %}
             <fieldset style="border: none;">
                 {% for field in form %}
-                    <div class="control-group{% if field.errors %} has-errors{% endif %}">
-                        <label class="control-label">{{ field.label }}</label>
+                    {% if field.name == 'payment' or field.name == 'shipment' %}
+                        <div class="control_wrapper"> {% endif %}
+                    <div class="control-group {{field.name}}{% if field.errors %} has-errors{% endif %}">
+                        <label class="control-label {{field.name}}">{{ field.label }}</label>
                         <div class="control">
                             {{ field }} <span class="control_help_text">{{ field.help_text }}</span>
                         </div>
                         {{ field.errors }}
                     </div>
+                    {% if field.name == 'receiver_bills' or field.name == 'delivery' %} </div> {% endif %}
                 {% endfor %}
                 <p><input id="btn_create_order" type="submit" value="Разместить заказ"></p>
             </fieldset>
         </form>
     </div>
 </div>
-
 {% endblock %}

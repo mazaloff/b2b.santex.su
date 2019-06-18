@@ -40,7 +40,8 @@ def order_create(request):
     else:
         form = OrderCreateForm(initial={'delivery':
                                         datetime.datetime.now().astimezone(tz=pytz.timezone(settings.TIME_ZONE)) +
-                                        datetime.timedelta(days=1)
+                                        datetime.timedelta(days=1),
+                                        'receiver_bills': str(request.user.email)
                                         }
                                )
     customers_choices = Customer.get_customers_all_user(request.user)
