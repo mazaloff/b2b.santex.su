@@ -3,10 +3,9 @@ import datetime
 from django import forms
 from django.conf import settings
 from django.db import transaction, IntegrityError
-from django.core.validators import validate_email, ValidationError
 
 from .cart.cart import Cart, Currency
-from .models import Order, OrderItem, Person, Customer, get_person
+from .models import Order, OrderItem, Customer, get_person
 from .tasks import order_request as task_order_request
 
 import pytz
