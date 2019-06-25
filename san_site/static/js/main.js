@@ -380,11 +380,7 @@ function getOnlyStock() {
 }
 
 function getOnlyStockFromCookie() {
-    if (getCookie('is_only_stock') === 'true') {
-        return true;
-    } else {
-        return false;
-    }
+    return getCookie('is_only_stock') === 'true';
 }
 
 function getOnlyPromo() {

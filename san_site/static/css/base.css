@@ -31,21 +31,9 @@ strong {
     color: #5a3939;
 }
 
-input[type="number"], input[type="text"], input[type="password"] {
+input, select  {
     font-family: "Lucida Sans Unicode";
-    color: #24292e;
-    height: 17px;
-}
-
-select {
-    font-family: "Lucida Sans Unicode";
-    height: 23px;
-}
-
-input[type="submit"] {
-    font-family: "Lucida Sans Unicode";
-    color: #24292e;
-    height: 27px;
+    color: #5a3939;
 }
 
 .main {
@@ -135,14 +123,27 @@ div.disabled {
     padding-bottom: 7px
 }
 
-#form_create_order .control input {
-    width: 111px;
+.control input,
+.control select,
+.control textarea  {
+    border-width: 1px;
+    padding-left: 3px;
+    border-color: #cccccc87;
 }
 
-#form_create_order .control select {
+.control input[name="delivery"]{
+    width: 105px;
+}
+.control select[name="payment"],
+.control select[name="shipment"] {
     width: 115px;
 }
-
+.control input[name="receiver_bills"]{
+    width: 174px;
+}
+.control select[name="customer"]{
+    width: 303px;
+}
 div.control-group.has-errors label {
     color: orangered
 }
@@ -161,10 +162,8 @@ div#header_order td {
 }
 
 input.form-control {
-    height: 17px;
+    height: 20px;
     width: 200px;
-    border-width: 1px;
-    padding-left: 5px;
 }
 
 .control_wrapper {
@@ -175,13 +174,8 @@ input.form-control {
     padding-right: 10px;
 }
 
-.control-group.receiver_bills input {
-    height: 17px;
-    width: 145px!important;
-}
-
 div#goods_search {
-    height: 25px;
+    height: 27px;
 }
 
 #id_quantity {

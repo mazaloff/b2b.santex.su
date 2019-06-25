@@ -51,7 +51,7 @@ class OrdersFilterList(forms.Form):
 
 class OrderCreateForm(forms.ModelForm):
     customer = forms.ChoiceField(choices=[], required=True, label='Покупатель',
-                                 widget=forms.Select(attrs={'style': 'width: 300px;'}))
+                                 widget=forms.Select())
     delivery = forms.DateField(
         help_text=' до 15.00 - поставка на следующий день, иначе через день',
         widget=forms.DateInput,
