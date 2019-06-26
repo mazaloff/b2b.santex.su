@@ -767,7 +767,10 @@ class Order(models.Model):
     def get_current_filters(request):
         json_str = request.session.get('get_current_filters')
         try:
-            return json.loads(json_str, object_hook=date_hook)
+            load_dict = json.loads(json_str, object_hook=date_hook)
+            # End date of the period is always today
+            load_dict['end_date'] = datetime.date.today()
+            return load_dict
         except TypeError:
             end_date = datetime.date.today()
             begin_date = end_date - datetime.timedelta(days=60)

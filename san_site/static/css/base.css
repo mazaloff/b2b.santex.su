@@ -438,6 +438,6 @@ li.jstree-leaf > a .jstree-icon { background:url("../img/folder.png") 2px 3px no
     margin-right: 0 !important;
 }
 
-.ui-icon, .ui-widget-content .ui-icon {
+.ui-icon-gripsmall-diagonal-se {
     background-image: none!important;
 }
