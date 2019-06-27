@@ -166,7 +166,8 @@ var main_goods_height = 99999,
         onlyStock();
         onlyPromo();
 
-        // $("html,body").css("overflow", "hidden");
+        hiddenOverflow();
+
         ui.categories_resizable.resizable({
             stop: function( event, ui ) {
                 createCookie('categories_width', ui.size.width, 30);
@@ -349,6 +350,13 @@ function countHeightListOrders() {
     height = Math.min(height, Math.ceil($(window).height() / limit));
 
     main_list_orders_height = height
+}
+
+function hiddenOverflow() {
+  if (document.getElementById("goods_table")
+      || document.getElementById("list_orders")) {
+          $("html,body").css("overflow", "hidden");
+        }
 }
 
 function doNav(theUrl) {

@@ -159,7 +159,7 @@ class Index {
                         position.left += $("th#goods_table_2").width() / 2;
 
                         let form_enter_wrapper = jQuery(".form-image-wrapper");
-                        form_enter_wrapper.css('left', Math.min((innerWidth-width) / 2,  position.left - 40));
+                        form_enter_wrapper.css('left', Math.min((innerWidth - width) / 2, position.left - 40));
                         form_enter_wrapper.css('top', 40);
 
                         jQuery("#tr_goods" + guid).addClass('current-tr');
@@ -184,7 +184,7 @@ class Index {
                 success: function (json) {
                     // Если запрос прошёл успешно и сайт вернул результат
                     if (json.success) {
-                    
+
                         jQuery('#help-tip' + guid).replaceWith(json.help_tip);
 
                         let help_tip = jQuery('#tr_goods' + guid + ' .help-tip');

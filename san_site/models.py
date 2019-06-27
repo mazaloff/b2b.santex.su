@@ -44,7 +44,6 @@ class Customer(models.Model):
     guid_owner = models.CharField(max_length=50, db_index=True, default='---')
     name = models.CharField(max_length=200)
     code = models.CharField(max_length=20)
-    sort = models.IntegerField(default=500)
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)
 
@@ -80,7 +79,6 @@ class Person(models.Model):
     guid = models.CharField(max_length=50, db_index=True)
     name = models.CharField(max_length=200)
     code = models.CharField(max_length=20)
-    sort = models.IntegerField(default=500)
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)
     allow_order = models.BooleanField(default=False)
@@ -149,11 +147,21 @@ class Person(models.Model):
         self.save()
 
 
+class Brand(models.Model):
+    guid = models.CharField(max_length=50, db_index=True)
+    name = models.CharField(max_length=200)
+    code = models.CharField(max_length=20)
+    created_date = models.DateTimeField(default=timezone.now)
+    is_deleted = models.BooleanField(default=False, db_index=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Section(models.Model):
     guid = models.CharField(max_length=50, db_index=True)
     name = models.CharField(max_length=200)
     code = models.CharField(max_length=20)
-    sort = models.IntegerField(default=500)
     group = models.ForeignKey('self', db_index=True, null=True, on_delete=models.SET_NULL)
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False, db_index=True)
@@ -456,9 +464,11 @@ class Product(models.Model):
     guid = models.CharField(max_length=50, db_index=True)
     name = models.CharField(max_length=200, db_index=True)
     code = models.CharField(max_length=30, db_index=True)
-    sort = models.IntegerField(default=500)
+    code_brand = models.CharField(max_length=50, default='')
     section = models.ForeignKey(Section, db_index=True, on_delete=models.PROTECT)
+    brand = models.ForeignKey(Brand, null=True, on_delete=models.PROTECT)
     matrix = models.CharField(max_length=30, default='Основной')
+    barcode = models.CharField(max_length=30, default='')
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False, db_index=True)
     image = models.ImageField(upload_to='photos', default='', blank=True)
@@ -562,7 +572,6 @@ class Store(models.Model):
     name = models.CharField(max_length=100)
     short_name = models.CharField(max_length=50)
     code = models.CharField(max_length=20)
-    sort = models.IntegerField(default=500)
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)
 
@@ -574,7 +583,6 @@ class Price(models.Model):
     guid = models.CharField(max_length=50, db_index=True)
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=20)
-    sort = models.IntegerField(default=500)
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)
 
@@ -586,7 +594,6 @@ class Currency(models.Model):
     guid = models.CharField(max_length=50, db_index=True)
     name = models.CharField(max_length=50)
     code = models.CharField(max_length=20)
-    sort = models.IntegerField(default=500)
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)
 

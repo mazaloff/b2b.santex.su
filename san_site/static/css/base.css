@@ -79,7 +79,7 @@ input, select  {
 .products {
     flex: 10 1 800px;
     display: block;
-    padding: 0 8px 8px 10px;
+    padding: 0 0 0 10px;
 }
 
 a.disabled {
@@ -333,10 +333,10 @@ a.order-create:hover {
 ::-webkit-scrollbar-thumb {
     -webkit-border-radius: 10px;
     border-radius: 10px;
-    /*background-color: #cccccc45;*/
 }
 
 ::-webkit-scrollbar-thumb:hover{
+    background-color: #cccccc45;
 }
 
 ::-webkit-resizer{

@@ -3,6 +3,7 @@ import datetime
 import json
 import uuid
 import base64
+import tempfile
 import dateutil.parser
 
 from django.utils.timezone import make_aware
@@ -17,7 +18,7 @@ from django.core.files import File
 
 from san_site.decorates.decorate import page_not_access
 from san_site.models import \
-    Order, Customer, Person, Section, Product, Store, Price, Currency, Inventories, Prices, CustomersPrices, Courses, \
+    Order, Customer, Person, Section, Brand, Product, Store, Price, Currency, Inventories, Prices, CustomersPrices, Courses, \
     CustomersFiles, PricesSale, Bill, get_person, get_customer
 
 
@@ -102,6 +103,11 @@ def api_main(request):
                   message='json is not sections', description='')
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
+    if 'brands' not in dict_load is None:
+        add_error(value_response, code='json.ValueError',
+                  message='json is not brands', description='')
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
+
     if 'products' not in dict_load is None:
         add_error(value_response, code='json.ValueError',
                   message='json is not products', description='')
@@ -123,6 +129,7 @@ def api_main(request):
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
     update_section(dict_load['sections'])
+    update_brand(dict_load['brands'])
     update_product(dict_load['products'])
     update_store(dict_load['stores'])
     update_price(dict_load['priceTypes'])
@@ -145,7 +152,6 @@ def api_photo_of_good(request):
                   message='does not exist', description=key)
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
-    name_temp = os.path.join(settings.BASE_DIR, 'san_site\\static\\' + str(uuid.uuid4()).replace('-', ''))
     if product_obj.image.name != '':
         try:
             if os.path.exists(product_obj.image.path):
@@ -155,17 +161,10 @@ def api_photo_of_good(request):
                       message='not can remove file', description=f'{product_obj.code} {product_obj.name}')
 
     body = request.body
-    with open(name_temp, 'wb') as f:
-        f.write(body)
+    with tempfile.TemporaryFile() as fp:
+        fp.write(body)
+        product_obj.image.save(key + "." + extension, File(fp), save=True)
 
-    with open(name_temp, 'rb') as f:
-        product_obj.image.save(key + "." + extension, File(f), save=True)
-
-    try:
-        os.remove(name_temp)
-    except OSError:
-        pass
-    
     value_response['time']['end'] = timezone.now().ctime()
     return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
@@ -213,7 +212,6 @@ def bill_of_order(request):
     except Bill.DoesNotExist:
         bill_obj = None
 
-    name_temp = os.path.join(settings.BASE_DIR, 'san_site\\static\\' + str(uuid.uuid4()).replace('-', ''))
     if bill_obj and bill_obj.file.name != '':
         try:
             if os.path.exists(bill_obj.file.path):
@@ -221,9 +219,6 @@ def bill_of_order(request):
         except OSError:
             add_error(value_response, code='os.OSError',
                       message='not can remove file', description=f'{bill_obj.number} {bill_obj.date}')
-
-    with open(name_temp, 'wb') as f:
-        f.write(body)
 
     date = dateutil.parser.parse(date)
 
@@ -244,13 +239,9 @@ def bill_of_order(request):
     bill_obj.comment = comment
     bill_obj.save()
 
-    with open(name_temp, 'rb') as f:
-        bill_obj.file.save(guid + "." + extension, File(f), save=True)
-
-    try:
-        os.remove(name_temp)
-    except OSError:
-        pass
+    with tempfile.TemporaryFile() as fp:
+        fp.write(body)
+        bill_obj.file.save(guid + "." + extension, File(fp), save=True)
 
     value_response['time']['end'] = timezone.now().ctime()
     return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
@@ -431,6 +422,35 @@ def api_statuses(request):
     return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
 
 
+def update_brand(load_list):
+    filter_guid = [element_list['guid'] for element_list in load_list]
+    filter_object = {t.guid: t for t in Brand.objects.filter(guid__in=filter_guid)}
+
+    for element_list in load_list:
+
+        new_object = filter_object.get(element_list['guid'], None)
+        if new_object:
+            if new_object.name == element_list['name'] \
+                    and new_object.code == element_list['code'] \
+                    and new_object.is_deleted == element_list['is_deleted']:
+                pass
+            else:
+                new_object.name = element_list['name']
+                new_object.code = element_list['code']
+                new_object.is_deleted = element_list['is_deleted']
+                new_object.save()
+            filter_object[element_list['guid']] = new_object
+        else:
+            new_object = Brand.objects.create(guid=element_list['guid'],
+                                              name=element_list['name'],
+                                              code=element_list['code'],
+                                              is_deleted=element_list['is_deleted'],
+                                              )
+            new_object.created_date = timezone.now()
+            new_object.save()
+            filter_object[element_list['guid']] = new_object
+
+
 def update_section(load_list):
     filter_guid = [element_list['guid'] for element_list in load_list]
     filter_object = {t.guid: t for t in Section.objects.filter(guid__in=filter_guid)}
@@ -444,14 +464,12 @@ def update_section(load_list):
         if new_object:
             if new_object.name == element_list['name'] \
                     and new_object.code == element_list['code'] \
-                    and new_object.sort == int(element_list['sort']) \
                     and new_object.is_deleted == element_list['is_deleted']:
                 continue
         else:
             new_object = Section.objects.create(guid=element_list['guid'],
                                                 name=element_list['name'],
                                                 code=element_list['code'],
-                                                sort=int(element_list['sort']),
                                                 is_deleted=element_list['is_deleted'],
                                                 )
             new_object.created_date = timezone.now()
@@ -461,7 +479,6 @@ def update_section(load_list):
 
         new_object.name = element_list['name']
         new_object.code = element_list['code']
-        new_object.sort = int(element_list['sort'])
         new_object.is_deleted = element_list['is_deleted']
         new_object.save()
 
@@ -482,7 +499,8 @@ def update_section(load_list):
 
 def update_product(load_list):
     filter_guid = [element_list['guid'] for element_list in load_list]
-    filter_object = {t.guid: t for t in Product.objects.filter(guid__in=filter_guid).select_related('section')}
+    filter_object = {t.guid: t for t in Product.objects.filter(
+        guid__in=filter_guid).select_related('section').select_related('brand')}
 
     i = 0
     for element_list in load_list:
@@ -490,12 +508,18 @@ def update_product(load_list):
 
         matrix = 'Основной' if element_list['matrix'] == '' else element_list['matrix']
         new_object = filter_object.get(element_list['guid'], None)
+
+        guid_section = '' if new_object is None or new_object.section is None else new_object.section.guid
+        guid_brand = '' if new_object is None or new_object.brand is None else new_object.brand.guid
+
         if new_object:
             if new_object.name == element_list['name'] \
                     and new_object.code == element_list['code'] \
-                    and new_object.sort == int(element_list['sort']) \
+                    and new_object.code_brand == element_list['code_brand'] \
                     and new_object.matrix == matrix \
-                    and new_object.section.guid == element_list['sectionGuid'] \
+                    and new_object.barcode == element_list['barcode'] \
+                    and guid_section == element_list['sectionGuid'] \
+                    and guid_brand == element_list['brandGuid'] \
                     and new_object.is_deleted == element_list['is_deleted'] \
                     and (not new_object.is_image or (new_object.is_image == element_list['is_image'])):
                 continue
@@ -504,12 +528,18 @@ def update_product(load_list):
                 section_obj = Section.objects.get(guid=element_list['sectionGuid'])
             except Section.DoesNotExist:
                 continue
+            try:
+                brand_obj = Brand.objects.get(guid=element_list['brandGuid'])
+            except Brand.DoesNotExist:
+                continue
             new_object = Product.objects.create(guid=element_list['guid'],
                                                 name=element_list['name'],
                                                 code=element_list['code'],
-                                                sort=int(element_list['sort']),
+                                                code_brand=element_list['code_brand'],
                                                 matrix=matrix,
+                                                barcode=element_list['barcode'],
                                                 section=section_obj,
+                                                brand=brand_obj,
                                                 is_deleted=element_list['is_deleted'],
                                                 )
             new_object.created_date = timezone.now()
@@ -517,19 +547,27 @@ def update_product(load_list):
             filter_object[element_list['guid']] = new_object
             continue
 
-        if new_object.section.guid != element_list['sectionGuid']:
+        if guid_section != element_list['sectionGuid']:
             try:
                 section_obj = Section.objects.get(guid=element_list['sectionGuid'])
             except Section.DoesNotExist:
                 continue
             new_object.section = section_obj
 
+        if guid_brand != element_list['brandGuid']:
+            try:
+                brand_obj = Brand.objects.get(guid=element_list['brandGuid'])
+            except Brand.DoesNotExist:
+                continue
+            new_object.brand = brand_obj
+
         if new_object.is_image and new_object.is_image != element_list['is_image']:
             new_object.image.delete(False)
 
         new_object.name = element_list['name']
         new_object.code = element_list['code']
-        new_object.sort = int(element_list['sort'])
+        new_object.code_brand = element_list['code_brand']
+        new_object.barcode = element_list['barcode']
         new_object.matrix = matrix
         new_object.is_deleted = element_list['is_deleted']
         new_object.save()
@@ -546,14 +584,12 @@ def update_store(load_list):
             if new_object.name == element_list['name'] \
                     and new_object.short_name == element_list['short_name'] \
                     and new_object.code == element_list['code'] \
-                    and new_object.sort == int(element_list['sort']) \
                     and new_object.is_deleted == element_list['is_deleted']:
                 pass
             else:
                 new_object.name = element_list['name']
                 new_object.short_name = element_list['short_name']
                 new_object.code = element_list['code']
-                new_object.sort = int(element_list['sort'])
                 new_object.is_deleted = element_list['is_deleted']
                 new_object.save()
             filter_object[element_list['guid']] = new_object
@@ -562,7 +598,6 @@ def update_store(load_list):
                                               name=element_list['name'],
                                               short_name=element_list['short_name'],
                                               code=element_list['code'],
-                                              sort=int(element_list['sort']),
                                               is_deleted=element_list['is_deleted'],
                                               )
             new_object.created_date = timezone.now()
@@ -580,13 +615,11 @@ def update_price(load_list):
         if new_object:
             if new_object.name == element_list['name'] \
                     and new_object.code == element_list['code'] \
-                    and new_object.sort == int(element_list['sort']) \
                     and new_object.is_deleted == element_list['is_deleted']:
                 pass
             else:
                 new_object.name = element_list['name']
                 new_object.code = element_list['code']
-                new_object.sort = int(element_list['sort'])
                 new_object.is_deleted = element_list['is_deleted']
                 new_object.save()
             filter_object[element_list['guid']] = new_object
@@ -594,7 +627,6 @@ def update_price(load_list):
             new_object = Price.objects.create(guid=element_list['guid'],
                                               name=element_list['name'],
                                               code=element_list['code'],
-                                              sort=int(element_list['sort']),
                                               is_deleted=element_list['is_deleted'],
                                               )
             new_object.created_date = timezone.now()
@@ -612,20 +644,17 @@ def update_currency(load_list):
         if new_object:
             if new_object.name == element_list['name'] \
                     and new_object.code == element_list['code'] \
-                    and new_object.sort == int(element_list['sort']) \
                     and new_object.is_deleted == element_list['is_deleted']:
                 pass
             else:
                 new_object.name = element_list['name']
                 new_object.code = element_list['code']
-                new_object.sort = int(element_list['sort'])
                 new_object.is_deleted = element_list['is_deleted']
                 new_object.save()
         else:
             new_object = Currency.objects.create(guid=element_list['guid'],
                                                  name=element_list['name'],
                                                  code=element_list['code'],
-                                                 sort=int(element_list['sort']),
                                                  is_deleted=element_list['is_deleted'],
                                                  )
             new_object.created_date = timezone.now()
@@ -687,14 +716,12 @@ def update_users(load_list, value_response):
                 if new_object_customer.name == element_list_customer['name'] \
                         and new_object_customer.guid_owner == element_list_customer['guidOwner'] \
                         and new_object_customer.code == element_list_customer['code'] \
-                        and new_object_customer.sort == int(element_list_customer['sort']) \
                         and new_object_customer.is_deleted == element_list_customer['is_deleted']:
                     pass
                 else:
                     new_object_customer.name = element_list_customer['name']
                     new_object_customer.guid_owner = element_list_customer['guidOwner']
                     new_object_customer.code = element_list_customer['code']
-                    new_object_customer.sort = int(element_list_customer['sort'])
                     new_object_customer.is_deleted = element_list_customer['is_deleted']
                     new_object_customer.save()
             else:
@@ -702,7 +729,6 @@ def update_users(load_list, value_response):
                                                               guid_owner=element_list_customer['guidOwner'],
                                                               name=element_list_customer['name'],
                                                               code=element_list_customer['code'],
-                                                              sort=int(element_list_customer['sort']),
                                                               is_deleted=element_list_customer['is_deleted'],
                                                               )
                 new_object_customer.created_date = timezone.now()
@@ -743,14 +769,12 @@ def update_users(load_list, value_response):
         if new_object_person:
             if new_object_person.name == element_list['name'] \
                     and new_object_person.code == element_list['code'] \
-                    and new_object_person.sort == int(element_list['sort']) \
                     and new_object_person.is_deleted == element_list['is_deleted'] \
                     and new_object_person.allow_order == element_list['allow_order']:
                 pass
             else:
                 new_object_person.name = element_list['name']
                 new_object_person.code = element_list['code']
-                new_object_person.sort = int(element_list['sort'])
                 new_object_person.allow_order = element_list['allow_order']
                 new_object_person.is_deleted = element_list['is_deleted']
                 new_object_person.save()
@@ -760,7 +784,6 @@ def update_users(load_list, value_response):
                                                       user=new_object,
                                                       customer=filter_object_customer[element_list['guidOwner']],
                                                       code=element_list['code'],
-                                                      sort=int(element_list['sort']),
                                                       allow_order=element_list['allow_order'],
                                                       is_deleted=element_list['is_deleted']
                                                       )
