@@ -59,7 +59,7 @@ def exec_server():
     if process:
         list_server.append(process)
 
-    process = run_server('exchange')
+    process = run_server('api')
     if process:
         list_server.append(process)
 
