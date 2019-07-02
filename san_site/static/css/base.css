@@ -47,7 +47,6 @@ input, select  {
 }
 
 #header {
-    display: flex;
     height: 47px;
     border-bottom: 1px;
     border-bottom-color: #cccccc87;
@@ -58,8 +57,7 @@ input, select  {
     padding-left: 15px;
 }
 
-#header #user_tools {
-    flex: 2 1 40%;
+#header #user_cart {
     padding-left: 15px;
 }
 
@@ -284,7 +282,7 @@ a.order-create {
 
 a.order-create.header {
     background: #fcffd1 url("../img/new_order.png") no-repeat 3px 3px;
-    padding: 2px 2px 1px 16px;
+    padding: 2px 2px 1px 14px;
 }
 
 a.order-create:hover {
