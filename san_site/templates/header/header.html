@@ -1,12 +1,14 @@
 <div id="header">
-    <div id="branding">
-        <b><a style="text-decoration: none" href="/">Santex.b2b-commerce</a></b>
-    </div>
     <div id="header_menu">
-        {% if user.is_authenticated %}
-            {% if user.person.allow_order %}
-                <a href="{% url 'index' %}">Каталог</a> |
+        {% if not user.is_authenticated %}
+            <a id="user-tools-accounts-login" href="{% url 'account_login' %}">
+                Войти, чтобы видеть ваши цены и делать заказы
+            </a>
+        {% else %}
+            {% if not user.is_authenticated %}{% else %}
+                {% include "header/user_tools_cart.html" %}
             {% endif %}
+            <a href="{% url 'index' %}">Каталог</a> |
             {% if user.person.allow_order %}
                 <a href="{% url 'order_list' %}">Документы</a> |
             {% endif %}
@@ -14,20 +16,6 @@
             <a href="{% url 'our_api' %}">API</a> |
             <a href="{% url 'account_password_change' %}">Поменять пароль</a> |
             <a href="{% url 'account_logout' %}">Выйти</a>
-        {% endif %}
-    </div>
-    <div id="user_tools">
-        <div id="account_login">
-            {% if not user.is_authenticated %}
-                <a id="user-tools-accounts-login" href="{% url 'account_login' %}">
-                    Войти, чтобы видеть ваши цены и делать заказы
-                </a>
-            {% else %}
-                Добро пожаловать, <strong>{{ user.get_full_name }}</strong>
-            {% endif %}
-        </div>
-        {% if not user.is_authenticated %}{% else %}
-            {% include "header/user_tools_cart.html" %}
         {% endif %}
     </div>
 </div>

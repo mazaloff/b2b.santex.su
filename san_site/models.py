@@ -83,7 +83,6 @@ class Person(models.Model):
     is_deleted = models.BooleanField(default=False)
     allow_order = models.BooleanField(default=False)
     key = models.CharField(max_length=20, default='xxx')
-    uid = models.CharField(max_length=50, default='xxx')
     change_password = models.BooleanField(default=True)
     lock_order = models.BooleanField(default=False)
 
@@ -142,10 +141,6 @@ class Person(models.Model):
         self.lock_order = value
         self.save()
 
-    def create_uid(self):
-        self.uid = str(uuid.uuid4()).replace('-', '')
-        self.save()
-
 
 class Brand(models.Model):
     guid = models.CharField(max_length=50, db_index=True)
@@ -172,8 +167,8 @@ class Section(models.Model):
     def __str__(self):
         return self.name
 
-    @classmethod
-    def change_is_inventories(cls):
+    @staticmethod
+    def change_is_inventories():
         sections = Section.objects.all()
         for obj_section in sections:
             is_active = len(obj_section.get_goods_list_section(only_stock=True)) > 0
@@ -184,8 +179,8 @@ class Section(models.Model):
                 obj_section.is_inventories = False
                 obj_section.save()
 
-    @classmethod
-    def change_is_deleted(cls):
+    @staticmethod
+    def change_is_deleted():
         sections = Section.objects.all()
         for obj_section in sections:
             is_active = len(obj_section.get_goods_list_section(only_available=True)) > 0
@@ -333,87 +328,78 @@ class Section(models.Model):
             join_request_section = 'JOIN Bfs ON _product.section_id = Bfs.id'
             where_request_section = '_product.section_id IN (SELECT Bfs.id FROM Bfs)'
 
-        param += [only_available, only_promo, only_stock]
-
         where_request_search = 'TRUE'
+        field_sort_search = "0"
         if search != '':
+            field_sort_search = '''MIN(CASE 
+                                        WHEN UPPER(_product.code::text) LIKE UPPER(%s) THEN 1
+                                        WHEN UPPER(_product.name::text) LIKE UPPER(%s) THEN 2
+                                        ELSE 0 
+                                    END)
+                                    '''
             where_request_search = """(UPPER(_product.code::text) LIKE UPPER(%s)
-                                        OR UPPER(_product.name::text) LIKE UPPER(%s))
-            """
+                                        OR UPPER(_product.name::text) LIKE UPPER(%s))"""
             param += [f'{search}%', f'%{search}%']
 
-        param.append(current_customer_id)
+        param += [current_customer_id, only_available]
+
+        if search != '':
+            param += [f'{search}%', f'%{search}%']
+
+        param += [only_promo, only_stock]
 
         with connection.cursor() as cursor:
             cursor.execute(
-                f""" WITH {select_request_section} _prise_store AS (
-                      SELECT _product.id                      AS id,
-                             _product.code                    AS code,
-                             _product.name                    AS name,
-                             _product.guid                    AS guid,
-                             _product.matrix                  AS matrix,
-                             CASE WHEN _product.image = '' THEN ''
-                             ELSE 'media/' || _product.image 
-                             END                              AS image,
-                             _product.is_deleted              AS is_deleted,
-                             COALESCE(_prices.value, 0)       AS price,
-                             COALESCE(_prices.value, 0)       AS discount,
-                             COALESCE(_prices.rrp, 0)         AS price_rrp,
-                             COALESCE(_prices.promo, FALSE)   AS promo,
-                             COALESCE(_prices.currency_id, 0) AS currency_id,
-                             COALESCE(_currency.name, '')     AS currency,
-                             SUM(COALESCE(_inventories.quantity, 0)) AS quantity
-                      FROM san_site_product _product
-                             {join_request_section}
-                             LEFT JOIN san_site_prices _prices ON _product.id = _prices.product_id
-                             LEFT JOIN san_site_currency _currency ON _prices.currency_id = _currency.id
-                             LEFT JOIN san_site_inventories _inventories ON _product.id = _inventories.product_id
-                      WHERE (%s = FALSE 
-                                OR _product.is_deleted = FALSE)
+                f""" WITH {select_request_section} result AS (
+                    SELECT _product.id AS id,
+                        _product.code AS code,
+                        _product.name AS name,
+                        _product.guid AS guid,
+                        _product.matrix AS matrix,
+                        CASE WHEN _product.image = '' THEN ''
+                            ELSE 'media/' || _product.image 
+                            END AS image,
+                        _product.is_deleted AS is_deleted,
+                        COALESCE(_prices.value, 0) AS price,
+                        COALESCE(_customersprices.percent, 0) AS percent,
+                        COALESCE(_customersprices.discount, COALESCE(_prices.value, 0)) AS discount,
+                        COALESCE(_prices.rrp, 0) AS price_rrp,
+                        COALESCE(_prices.promo, FALSE) AS promo,
+                        COALESCE(_customersprices_cur.id, COALESCE(_prices_cur.id, 0)) AS currency_id,
+                        COALESCE(_customersprices_cur.name, COALESCE(_prices_cur.name, '')) AS currency,
+                        SUM(COALESCE(_inventories.quantity, 0)) AS quantity,
+                        {field_sort_search} AS sort_search
+                    FROM san_site_product _product
+                         {join_request_section}
+                         LEFT JOIN san_site_prices _prices ON _product.id = _prices.product_id
+                            LEFT JOIN san_site_currency _prices_cur ON _prices.currency_id = _prices_cur.id
+                         LEFT JOIN san_site_customersprices _customersprices 
+                            ON _customersprices.customer_id = %s AND _product.id = _customersprices.product_id  
+                                LEFT JOIN san_site_currency _customersprices_cur 
+                                    ON _customersprices.currency_id = _customersprices_cur.id   
+                         LEFT JOIN san_site_inventories _inventories ON _product.id = _inventories.product_id
+                    WHERE (%s = FALSE OR _product.is_deleted = FALSE)
                         AND {where_request_section}
-                        AND (%s = FALSE
-                                OR COALESCE (_prices.promo, FALSE) = TRUE)
-                        AND (%s = FALSE 
-                                OR COALESCE(_inventories.quantity, 0) > 0)        
-                        AND {where_request_search} 
-                      GROUP BY _product.id,
-                            _product.code,
-                            _product.name,
-                            _product.guid,
-                            _product.matrix,
-                            _product.is_deleted,
-                            COALESCE(_prices.value, 0),
-                            COALESCE(_prices.value, 0),
-                            COALESCE(_prices.rrp, 0),
-                            COALESCE(_prices.promo, FALSE),
-                            COALESCE(_prices.currency_id, 0),
-                            COALESCE(_currency.name, '')
-                    ),
-                         result AS (
-                           SELECT _prise_store.id                                         AS id,
-                                  _prise_store.code                                       AS code,
-                                  _prise_store.name                                       AS name,
-                                  _prise_store.guid                                       AS guid,
-                                  _prise_store.matrix                                     AS matrix,
-                                  _prise_store.image                                      AS image,
-                                  _prise_store.is_deleted                                 AS is_deleted,
-                                  _prise_store.price                                      AS price,
-                                  COALESCE(_prices.percent, 0)                            AS percent,
-                                  COALESCE(_prices.discount, _prise_store.discount)       AS discount,
-                                  _prise_store.price_rrp                                  AS price_rrp,
-                                  _prise_store.promo                                      AS promo,
-                                  COALESCE(_prices.currency_id, _prise_store.currency_id) AS currency_id,
-                                  COALESCE(currency.name, _prise_store.currency)          AS currency,
-                                  _prise_store.quantity                                   AS quantity
-                           FROM _prise_store
-                                  LEFT JOIN san_site_customersprices _prices 
-                                            ON
-                                                _prices.customer_id = %s AND _prise_store.id = _prices.product_id  
-                                  LEFT JOIN san_site_currency currency ON _prices.currency_id = currency.id
-                         )
+                        AND {where_request_search}
+                        AND (%s = FALSE OR COALESCE (_prices.promo, FALSE) = TRUE)
+                        AND (%s = FALSE OR COALESCE(_inventories.quantity, 0) > 0)        
+                    GROUP BY _product.id,
+                        _product.code,
+                        _product.name,
+                        _product.guid,
+                        _product.matrix,
+                        _product.is_deleted,
+                        COALESCE(_prices.value, 0),
+                        COALESCE(_customersprices.percent, 0),
+                        COALESCE(_customersprices.discount, COALESCE(_prices.value, 0)),
+                        COALESCE(_prices.rrp, 0),
+                        COALESCE(_prices.promo, FALSE),
+                        COALESCE(_customersprices_cur.id, COALESCE(_prices_cur.id, 0)),
+                        COALESCE(_customersprices_cur.name, COALESCE(_prices_cur.name, ''))
+                    )
                     SELECT *
                     FROM result
-                    ORDER BY result.code;
+                    ORDER BY sort_search, result.code;
                 """, param
             )
 
@@ -958,7 +944,7 @@ def get_person(user):
 
 class SelectRow:
     def __init__(self, id, code, name, guid, matrix, image, is_deleted, price, percent, discount, price_rrp, promo,
-                 currency_id, currency, quantity):
+                 currency_id, currency, quantity, sort_search):
         self.id: int = id
         self.code: str = code
         self.name: str = name

@@ -1,11 +1,11 @@
 import os
-import time
 import subprocess
+import time
+
 import psutil
 
-
 python_bin = ''
-path_dir = ''
+path_dir_pid = ''
 
 
 def get_pid(name_file):
@@ -47,7 +47,7 @@ def terminate_server_pid(pid, sleep_after=5):
 
 def terminate_server():
 
-    pid_file = os.path.join(path_dir, 'celerybeat.pid')
+    pid_file = os.path.join(path_dir_pid, 'celerybeat.pid')
     if os.path.exists(pid_file):
         pid = get_pid(pid_file)
         if pid:
@@ -60,7 +60,7 @@ def terminate_server():
     list_servers = ('worker', 'beat', 'flower')
 
     for name_server in list_servers:
-        pid_file = os.path.join(path_dir, f'server_{name_server}.pid')
+        pid_file = os.path.join(path_dir_pid, f'server_{name_server}.pid')
         if os.path.exists(pid_file):
             pid = get_pid(pid_file)
             if pid:
@@ -70,8 +70,20 @@ def terminate_server():
 
 def run_worker():
     name_server = 'worker'
-    file_pid = os.path.join(path_dir, f'server_{name_server}.pid')
-    process = subprocess.Popen('celery.exe -A san_site worker -l info -P eventlet', shell=True)
+    file_pid = os.path.join(path_dir_pid, f'server_{name_server}.pid')
+
+    access_file_path = os.path.join(path_dir, 'logs', f'celery_{name_server}.log')
+    error_file_path = os.path.join(path_dir, 'logs', f'celery_{name_server}.log')
+
+    if not os.path.exists(os.path.join(path_dir, 'logs')):
+        os.mkdir(os.path.join(path_dir, 'logs'))
+
+    access_file = open(access_file_path, mode='a+', encoding='utf-8-sig')
+    error_file = open(error_file_path, mode='a+', encoding='utf-8-sig')
+
+    str_task = r'celery.exe -A san_site worker -l info -P eventlet'
+    process = subprocess.Popen(str_task, shell=True, stdout=access_file,
+                               stderr=error_file)
     with open(file_pid, 'w') as file:
         file.write(str(process.pid))
     return process
@@ -79,8 +91,20 @@ def run_worker():
 
 def run_beat():
     name_server = 'beat'
-    file_pid = os.path.join(path_dir, f'server_{name_server}.pid')
-    process = subprocess.Popen('celery.exe -A san_site beat -l info --pidfile=".\pid\celerybeat.pid"', shell=True)
+    file_pid = os.path.join(path_dir_pid, f'server_{name_server}.pid')
+
+    access_file_path = os.path.join(path_dir, 'logs', f'celery_{name_server}.log')
+    error_file_path = os.path.join(path_dir, 'logs', f'celery_{name_server}.log')
+
+    if not os.path.exists(os.path.join(path_dir, 'logs')):
+        os.mkdir(os.path.join(path_dir, 'logs'))
+
+    access_file = open(access_file_path, mode='a+', encoding='utf-8-sig')
+    error_file = open(error_file_path, mode='a+', encoding='utf-8-sig')
+
+    str_task = r'celery.exe -A san_site beat -l info --pidfile=".\pid\celerybeat.pid"'
+    process = subprocess.Popen(str_task, shell=True,
+                               stdout=access_file, stderr=error_file)
     with open(file_pid, 'w') as file:
         file.write(str(process.pid))
     return process
@@ -88,8 +112,19 @@ def run_beat():
 
 def run_flower():
     name_server = 'flower'
-    file_pid = os.path.join(path_dir, f'server_{name_server}.pid')
-    process = subprocess.Popen('flower.exe --port=5555"', shell=True)
+    file_pid = os.path.join(path_dir_pid, f'server_{name_server}.pid')
+
+    access_file_path = os.path.join(path_dir, 'logs', f'{name_server}.log')
+    error_file_path = os.path.join(path_dir, 'logs', f'{name_server}.log')
+
+    if not os.path.exists(os.path.join(path_dir, 'logs')):
+        os.mkdir(os.path.join(path_dir, 'logs'))
+
+    access_file = open(access_file_path, mode='a+', encoding='utf-8-sig')
+    error_file = open(error_file_path, mode='a+', encoding='utf-8-sig')
+
+    str_task = 'flower.exe --port=5555"'
+    process = subprocess.Popen(str_task, shell=True, stdout=access_file, stderr=error_file)
     with open(file_pid, 'w') as file:
         file.write(str(process.pid))
     return process
@@ -128,6 +163,7 @@ if __name__ == '__main__':
     import Project.settings_local as settings
 
     python_bin = os.path.join(settings.PYTHON_BIN, 'python.exe')
-    path_dir = os.path.join(settings.BASE_DIR, 'pid')
+    path_dir_pid = os.path.join(settings.BASE_DIR, 'pid')
+    path_dir = settings.BASE_DIR
 
     exec_server()

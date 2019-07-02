@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ block.super }}
+{% endblock %}
+
+{% block header %}
+    {% include "header/header.html" %}
+{% endblock %}
+
+{% block content %}
+
+    <div id="products" class="column products">
+        <div id="header_files_for_loading" style="max-width: 1000px;">
+            <h3 class="top_h">Ваш API ключ, авторизационный Token</h3>
+            {{ uid }}
+            <h3>Ссылки на файлы</h3>
+            Авторизация по API ключу, передается в параметрах запроса
+            <code class="hljs">
+                ?uid={{ uid }}
+            </code>
+            {% if files|length > 0 %}
+                {% for file in files %}
+                    <div class="file_for_loading_{{ file.type }}">
+                        <a class="loading" href="{{ file.url }}"> http://b2b.santex.su{{ file.url }} </a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                Файлы для скачивания еще не созданы.
+            {% endif %}
+            <h3>Данные о товарах, остатках и ценах</h3>
+            Авторизация по Token, передается в загаловках запроса
+            <code class="hljs">
+                Authorization: Token {{ uid }}
+            </code>
+            GET запросы, заголовки:
+            <ul>
+                <li><b>Content-type:</b> application/json, application</li>
+                <li><b>Authorization:</b> Token {{ uid }}</li>
+            </ul>
+            Получаемые данные в формате JSON:
+            <ul>
+                <li><b>article</b> - Строка, артикул товара (отличается для GROHE)</li>
+                <li><b>name</b> - Строка, наименование товара</li>
+                <li><b>brand</b> - Строка, название Бренда<br>({{ brands }})</li>
+                <li><b>article_brand</b> - Строка, артикул производителя</li>
+                <li><b>barcode</b> - Строка, штрихкод товара</li>
+                <li><b>matrix</b> - Строка, матрица товара (Акция, Вывод, Заказной, Не производится, Основной, Прочее)</li>
+                <li><b>image</b> - Строка (Null), ссылка на изображение товара</li>
+                <li><b>quantity</b> - Число, количество на наших складах</li>
+                <li><b>price</b> - Число, цена со скидками</li>
+                <li><b>currency</b> - Строка, название валюты товара ({{ currencies }})</li>
+                <li><b>rrp</b> - Число, рекомендованная розничная цена (рубли)</li>
+            </ul>
+            Допустимые параметры запросов:
+            <ul>
+                <li><b>filter_article</b> - фильтр по артикулам</li>
+                <li><b>filter_barcode</b> - фильтр по штрихкодам</li>
+                <li><b>filter_brand</b> - фильтр по Брендам<br>({{ brands }})</li>
+                <li><b>filter_quantity</b> - фильтр по остаткам (допустимое значение: YES)</li>
+            </ul>
+            Примеры запросов:
+            <code class="hljs">
+                GET http://b2b.santex.su/api/v1/products?filter_brand=AQWELLA&filter_quantity=YES<br>
+                Content-Type: application/json<br>
+                Authorization: Token {{ uid }}<br>
+            </code>
+            <code class="hljs">
+                GET http://b2b.santex.su/api/v1/products?filter_article=23161000Gr,23336000Gr<br>
+                Content-Type: application/json<br>
+                Authorization: Token {{ uid }}<br>
+            </code>
+            Пример ответа:
+            <pre class="hljs">
+HTTP/1.1 200 OK
+[
+  {
+    "article": "23161000Gr",
+    "name": "Grohe 23 161 000 BauClassic Смеситель для раковины 64 мм, со сливным гарнитуром",
+    "brand": "GROHE",
+    "article_brand": "23161000",
+    "barcode": "4005176902536",
+    "matrix": "Основной",
+    "image": "http://b2b.santex.su/media/photos/9af8877d-cdd2-11e6-88f3-20474775d651.png",
+    "quantity": 6,
+    "price": 53.08,
+    "currency": "eur",
+    "rrp": 0.0
+  },
+   ...
+]
+            </pre>
+        </div>
+    </div>
+
+{% endblock %}

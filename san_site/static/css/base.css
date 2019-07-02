@@ -48,15 +48,13 @@ input, select  {
 
 #header {
     display: flex;
-    height: 43px;
-}
-
-#header #branding {
-    flex: 1 1 300px;
+    height: 47px;
+    border-bottom: 1px;
+    border-bottom-color: #cccccc87;
+    border-bottom-style: solid;
 }
 
 #header #header_menu {
-    flex: 1 1 40%;
     padding-left: 15px;
 }
 
@@ -69,6 +67,7 @@ input, select  {
     flex: 1 50 200px;
     display: block;
     border: 1px solid #cccccc87;
+    border-top-width: 0 !important;
     padding: 5px 6px 6px 2px;
     height: 100%;
     overflow-x: hidden;
@@ -79,7 +78,7 @@ input, select  {
 .products {
     flex: 10 1 800px;
     display: block;
-    padding: 0 0 0 10px;
+    padding: 5px 0 0 10px;
 }
 
 a.disabled {
@@ -363,12 +362,6 @@ a.order-create:hover {
     border-radius: 3px;
 }
 
-#branding a {
-    font-family: 'Indie Flower';
-    font-size: 25px;
-    padding-left: 10px;
-}
-
 div.inf_created, .order_field {
     padding-top: 3px;
     padding-bottom: 3px;
@@ -440,4 +433,14 @@ li.jstree-leaf > a .jstree-icon { background:url("../img/folder.png") 2px 3px no
 
 .ui-icon-gripsmall-diagonal-se {
     background-image: none!important;
+}
+
+/*API*/
+
+.hljs {
+    display: block;
+    overflow-x: auto;
+    background: #F0F0F0;
+    padding: 1em;
+    margin: 1em;
 }

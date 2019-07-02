@@ -6685,7 +6685,7 @@
 		 */
 		large_drag_target : false,
 		/**
-		 * controls whether use HTML5 dnd api instead of classical. That will allow better integration of dnd events with other HTML5 controls.
+		 * controls whether use HTML5 dnd exchange instead of classical. That will allow better integration of dnd events with other HTML5 controls.
 		 * @reference http://caniuse.com/#feat=dragndrop
 		 * @name $.jstree.defaults.dnd.use_html5
 		 * @plugin dnd

@@ -1,5 +1,6 @@
 {% load format %}
-<div id="user_cart">
+<div id="user_cart" style="height: 22px;">
+    Добро пожаловать, <strong>{{ user.get_full_name }}</strong>.
     {% with total_items=cart|length %}
         {% if not user.person.allow_order %}
             Нет прав делать заказы.

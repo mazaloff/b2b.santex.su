@@ -195,7 +195,7 @@ function updateTables() {
     let available_width = window_width - $('#categories_resizable').width() - 30;
 
     if (document.getElementById("categories")) {
-        $('#categories').stop().animate({height: window_height - header_height - 28});
+        $('#categories').stop().animate({height: window_height - header_height - 26});
     }
 
     if (document.getElementById("list_orders")) {
@@ -214,7 +214,7 @@ function updateTables() {
             - (document.getElementById("header_cart") ? $('#header_cart').height() : 0)
             - (document.getElementById("goods_search") ? $('#goods_search').height() : 0)
             - (document.getElementById("goods_cart") ? (main_cart_height + (main_cart_max ? 0 : 10)) : -5)
-            - header_height) - 60;
+            - header_height) - 65;
         if (document.getElementById("goods_cart")) {
             cart_table_height -= main_cart_max ? 20 : 0;
             cart_table_height += Math.max(goods_table_height - main_goods_height, 0);

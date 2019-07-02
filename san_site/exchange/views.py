@@ -1,78 +1,21 @@
 import os
 import datetime
 import json
-import uuid
 import base64
 import tempfile
 import dateutil.parser
 
 from django.utils.timezone import make_aware
-from django.shortcuts import render, resolve_url, Http404
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from django.utils.datastructures import MultiValueDictKeyError
-from django.conf import settings
 from django.core.files import File
 
-from san_site.decorates.decorate import page_not_access
+
 from san_site.models import \
-    Order, Customer, Person, Section, Brand, Product, Store, Price, Currency, Inventories, Prices, CustomersPrices, Courses, \
-    CustomersFiles, PricesSale, Bill, get_person, get_customer
-
-
-@page_not_access
-def our_api(request):
-    person = get_person(request.user)
-    customer = get_customer(request.user)
-    uid = ''
-    if person:
-        if person.uid in ('', 'xxx'):
-            person.create_uid()
-        uid = person.uid
-    if not customer:
-        files = []
-    else:
-        files = customer.get_files()
-        for file in files:
-            type_file = file['type']
-            file['url'] = f'/api/v1/outside/?uid={uid}&type={type_file}'
-    return render(request, 'files/files_API.html', {'uid': uid, 'files': files})
-
-
-def outside(request):
-    try:
-        uid = request.GET.get('uid')
-    except MultiValueDictKeyError:
-        raise Http404()
-    try:
-        type_file = request.GET.get('type')
-    except MultiValueDictKeyError:
-        raise Http404()
-    if uid is None or type_file is None:
-        raise Http404()
-    customer = None
-    query_set = Person.objects.filter(uid=uid, is_deleted=False)
-    if len(query_set) > 0:
-        customer = query_set[0].customer
-    if customer is None:
-        raise Http404()
-
-    name_file = f'goods_b2b_santex.{type_file}'
-    files = CustomersFiles.objects.filter(customer=customer, type_file=type_file)
-    if len(files) > 0:
-        url = resolve_url(f'san_site\\static\\files_for_loading\\{customer.id}\\{name_file}')
-        file_path = os.path.join(settings.BASE_DIR, url)
-        if not os.path.exists(file_path):
-            raise Http404()
-        content_type = 'application/vnd.ms-excel'
-        response = HttpResponse(open(file_path, mode='rb'), content_type=content_type)
-        response['Content-Disposition'] = f'attachment; filename={name_file}'
-        response['Content-Length'] = os.path.getsize(file_path)
-        return response
-    else:
-        raise Http404()
+    Order, Customer, Person, Section, Brand, Product, Store, Price, Currency, Inventories, Prices, CustomersPrices, \
+    Courses, PricesSale, Bill
 
 
 @csrf_exempt
@@ -1007,22 +950,3 @@ def add_error(value_response, **kwargs):
     value_response['success'] = False
     value_response['errors'].append(kwargs)
     value_response['time']['end'] = timezone.now().ctime()
-
-
-def portion_for_save(list_obj, number=100):
-    i = 0
-    list_create = []
-    for elem in list_obj:
-        list_create.append(elem)
-        i += 1
-        if i == number:
-            yield list_create
-            list_create.clear()
-            i = 0
-    if len(list_create) > 0:
-        yield list_create
-
-
-def handle_save(model, list_obj):
-    for _ in portion_for_save(list_obj):
-        pass

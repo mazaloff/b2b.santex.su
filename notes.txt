@@ -27,6 +27,12 @@ python manage.py compilemessages
 # очистка сеансов
 clearsessions
 
+# построение дерева зависимостей
+pipdeptree
+
+# выгрузка списка текущих пакетов
+pip freeze -> reg.txt
+
 C:\Users\mazal\Python\Project\Virtualenv\Scripts\activate.bat
 
 celery -A san_site beat -l info

@@ -1,5 +1,6 @@
 .gitignore
 /san_site/migrations/
+/san_rest_api/migrations/
 /Project/settings_local.py
 
 # Byte-compiled / optimized / DLL files
@@ -16,6 +17,7 @@ __pycache__/
 /celery/celerybeat-schedule.bak
 /celery/celerybeat-schedule.dat
 /celery/celerybeat-schedule.dir
+
 celerybeat-schedule.bak
 celerybeat-schedule.dat
 celerybeat-schedule.dir
