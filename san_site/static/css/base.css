@@ -289,6 +289,10 @@ a.order-create:hover {
     text-decoration: underline;
 }
 
+span.search {
+   border: 1px dashed#ad3;
+}
+
 .current-tr {
     background-color: #fbe55e;
 }

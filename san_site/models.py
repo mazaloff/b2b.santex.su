@@ -1,17 +1,19 @@
 import datetime
 import json
-import requests
-import pytz
+import re
 
-from django.db import connection
+import pytz
+import requests
 from django.conf import settings
-from django.db import models
-from django.utils import timezone
-from django.shortcuts import loader
 from django.contrib.auth.models import User
-from django.core.mail import EmailMultiAlternatives
 from django.core.cache import cache
+from django.core.mail import EmailMultiAlternatives
+from django.db import connection
+from django.db import models
 from django.db.models.query import Prefetch
+from django.shortcuts import loader
+from django.utils import timezone
+from django.utils.safestring import mark_safe
 
 # connection.queries
 
@@ -413,8 +415,12 @@ class Section(models.Model):
                 list_res_.append({
                     'product': sel_row,
                     'guid': sel_row.guid,
-                    'code': sel_row.code,
-                    'name': sel_row.name,
+                    'code': sel_row.code if search == '' else mark_safe(re.sub(search,
+                                                                               f'<span class="search">{search}</span>',
+                                                                               sel_row.code)),
+                    'name': sel_row.name if search == '' else mark_safe(re.sub(search,
+                                                                               f'<span class="search">{search}</span>',
+                                                                               sel_row.name)),
                     'image': sel_row.image,
                     'is_image': (sel_row.image != ""),
                     'relevant': sel_row.matrix in Product.RELEVANT_MATRIX,
