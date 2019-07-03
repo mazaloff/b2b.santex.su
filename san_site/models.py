@@ -1,9 +1,7 @@
 import datetime
 import json
-
 import requests
 import pytz
-import uuid
 
 from django.db import connection
 from django.conf import settings

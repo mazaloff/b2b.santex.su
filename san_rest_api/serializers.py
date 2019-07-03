@@ -1,3 +1,6 @@
+from django.shortcuts import resolve_url
+from django.conf import settings
+
 from rest_framework import serializers
 
 from san_site.models import Product
@@ -7,6 +10,7 @@ class ProductSerializer(serializers.ModelSerializer):
     article = serializers.SerializerMethodField(method_name='calculate_article')
     article_brand = serializers.SerializerMethodField(method_name='calculate_article_brand')
     quantity = serializers.SerializerMethodField(method_name='calculate_quantity')
+    photo = serializers.SerializerMethodField(method_name='calculate_photo')
     brand = serializers.SerializerMethodField(method_name='calculate_brand')
     price = serializers.SerializerMethodField(method_name='calculate_price')
     currency = serializers.SerializerMethodField(method_name='calculate_currency')
@@ -15,7 +19,7 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = (
-            'article', 'name', 'brand', 'article_brand', 'barcode', 'matrix', 'image', 'quantity', 'price',
+            'article', 'name', 'brand', 'article_brand', 'barcode', 'matrix', 'photo', 'quantity', 'price',
             'currency', 'rrp')
 
     @staticmethod
@@ -32,7 +36,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def calculate_quantity(instance):
-        return '>10' if instance.quantity > 10 else instance.quantity
+        return 10 if instance.quantity > 10 else instance.quantity
 
     @staticmethod
     def calculate_price(instance):
@@ -45,3 +49,7 @@ class ProductSerializer(serializers.ModelSerializer):
     @staticmethod
     def calculate_rrp(instance):
         return instance.price_rrp
+
+    @staticmethod
+    def calculate_photo(instance):
+        return '' if instance.image.name == '' else settings.URL + resolve_url(instance.image.url)

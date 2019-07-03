@@ -165,6 +165,7 @@ EMAIL_HOST_PASSWORD = ''
 DEFAULT_FROM_EMAIL = 'mazaloff@bk.ru'
 DEFAULT_TO_EMAIL = 'mazaloff@bk.ru'
 
+URL = 'http://b2b.santex.su'
 API_URL = 'http://185.46.154.84:8080/UprTest/hs/'
 
 # Celery Data Format
