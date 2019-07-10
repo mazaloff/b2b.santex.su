@@ -9,6 +9,9 @@ from san_site.models import Product
 class ProductSerializer(serializers.ModelSerializer):
     article = serializers.SerializerMethodField(method_name='calculate_article')
     article_brand = serializers.SerializerMethodField(method_name='calculate_article_brand')
+    barcode = serializers.SerializerMethodField(method_name='calculate_barcode')
+    name = serializers.SerializerMethodField(method_name='calculate_name')
+    matrix = serializers.SerializerMethodField(method_name='calculate_matrix')
     quantity = serializers.SerializerMethodField(method_name='calculate_quantity')
     photo = serializers.SerializerMethodField(method_name='calculate_photo')
     brand = serializers.SerializerMethodField(method_name='calculate_brand')
@@ -23,16 +26,28 @@ class ProductSerializer(serializers.ModelSerializer):
             'currency', 'rrp')
 
     @staticmethod
+    def calculate_name(instance):
+        return instance.name_
+
+    @staticmethod
     def calculate_article(instance):
-        return instance.code
+        return instance.code_
+
+    @staticmethod
+    def calculate_barcode(instance):
+        return instance.barcode_
+
+    @staticmethod
+    def calculate_matrix(instance):
+        return instance.matrix_
 
     @staticmethod
     def calculate_article_brand(instance):
-        return instance.code_brand
+        return instance.code_brand_
 
     @staticmethod
     def calculate_brand(instance):
-        return instance.brand_name
+        return instance.brand_name_
 
     @staticmethod
     def calculate_quantity(instance):

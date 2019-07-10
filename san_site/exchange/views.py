@@ -426,10 +426,13 @@ def update_section(load_list):
         new_object.save()
 
     for element_list in load_list:
-        if element_list['parentGuid'] == '':
-            continue
         new_object = filter_object.get(element_list['guid'], None)
         if new_object is None:
+            continue
+        if element_list['parentGuid'] == '':
+            if new_object.group is not None:
+                new_object.group = None
+                new_object.save()
             continue
         parent_object = filter_group_object.get(element_list['parentGuid'], None)
         if parent_object is None:

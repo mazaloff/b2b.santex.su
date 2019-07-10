@@ -70,11 +70,13 @@ class ProductListView(APIView):
         queryset = Product.objects.raw(
             f"""WITH result AS (
                 SELECT _product.id AS id,
-                        _product.code AS code,
-                        _product.name AS name,
-                        _product.matrix AS matrix,
+                        _product.code AS code_,
+                        _product.code_brand AS code_brand_,
+                        _product.barcode AS barcode_,
+                        _product.name AS name_,
+                        _product.matrix AS matrix_,
                         _product.image AS image,
-                        COALESCE(_brand.name, '') AS brand_name,
+                        COALESCE(_brand.name, '') AS brand_name_,
                         COALESCE(_customersprices.discount, COALESCE(_prices.value, 0)) AS price,
                         COALESCE(_customersprices_cur.name, COALESCE(_prices_cur.name, '')) AS currency,
                         COALESCE(_prices.rrp, 0) AS price_rrp,
@@ -95,6 +97,8 @@ class ProductListView(APIView):
                         AND {str_filter_quantity}
                     GROUP BY _product.id,
                         _product.code,
+                        _product.code_brand,
+                        _product.barcode,
                         _product.name,
                         _product.matrix,
                         _product.image,
@@ -106,7 +110,7 @@ class ProductListView(APIView):
                     )
                 SELECT *
                 FROM result
-                ORDER BY result.code;""", param)
+                ORDER BY result.code_;""", param)
         serializer = ProductSerializer(queryset, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 

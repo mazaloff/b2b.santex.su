@@ -60,8 +60,7 @@ class OrderCreateForm(forms.ModelForm):
                                  initial=Order.SHIPMENT_TYPE[0], label='Способ доставки')
     payment = forms.ChoiceField(choices=Order.PAYMENT_FORM, required=True,
                                 initial=Order.PAYMENT_FORM[1], label='Форма оплаты')
-    receiver_bills = forms.EmailField(widget=forms.EmailInput, label='Отправить счет e-mail', required=False,
-                                      help_text=' очистите поле, если счет не нужен')
+    receiver_bills = forms.EmailField(widget=forms.EmailInput, label='Отправить счет e-mail', required=False)
     comment = forms.CharField(widget=forms.Textarea, label='Комментарий к заказу', required=False)
 
     class Meta:

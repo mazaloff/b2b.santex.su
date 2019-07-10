@@ -17,13 +17,13 @@
             <th id="goods_table_3">
                 <div><span>Остаток</span></div>
             </th>
-            <th id="goods_table_4">
-                <div><span>Цена</span></div>
-            </th>
-            <th id="goods_table_5">
-                <div><span>Вал.</span></div>
-            </th>
-            {% if user.is_authenticated %}
+            {% if user.is_authenticated and user.person.allow_order %}
+                <th id="goods_table_4">
+                    <div><span>Цена</span></div>
+                </th>
+                <th id="goods_table_5">
+                    <div><span>Вал.</span></div>
+                </th>
                 <th id="goods_table_6">
                     <div><span>%</span></div>
                 </th>
@@ -69,11 +69,6 @@
                     <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.quantity }}
                         <div id="help-tip{{ goods.guid }}" class="help-tip"></div>
                     </td>
-                    <td id="goods_table_4">{{ goods.price|format:"{0:.2f}" }}</td>
-                    <td id="goods_table_5">{{ goods.currency }}</td>
-                    <td id="goods_table_6">{{ goods.percent|format:"{0:.2f}" }}</td>
-                    <td id="goods_table_7">{{ goods.discount|format:"{0:.2f}" }}</td>
-                    <td id="goods_table_8" {% if not is_price_rrp %} class="goods_hide"{% endif %}>{{ goods.price_rrp|format:"{0:.2f}" }}</td>
                 </tr>
             {% endfor %}
         {% else %}
