@@ -1,7 +1,7 @@
 {% load format %}
 
 <tr id="tr_cart{{ goods.guid }}">
-    <td class="cart_table_8">{{ goods.number }}&nbsp;
+    <td class="cart_table_8">{{ goods.number }}
         <a title="Удалить строку" href="javascript:void(0)" onclick="deleteRowCart('{{ goods.guid }}')">x</a></td>
     <td class="cart_table_1">{{ goods.code }}</td>
     <td class="cart_table_2">{{ goods.name }}</td>

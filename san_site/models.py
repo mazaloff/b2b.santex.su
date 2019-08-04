@@ -97,7 +97,7 @@ class Person(models.Model):
         html_content = loader.render_to_string(
             'account/letter_change_password.html', {
                 'person': self,
-                'url': url + new_key + '/'
+                'url': url + '/' + new_key + '/'
             }
         )
         text_content = 'This is an important message.'

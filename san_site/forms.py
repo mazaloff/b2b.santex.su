@@ -1,5 +1,6 @@
 import datetime
 
+import pytz
 from django import forms
 from django.conf import settings
 from django.db import transaction, IntegrityError
@@ -7,8 +8,6 @@ from django.db import transaction, IntegrityError
 from .cart.cart import Cart, Currency
 from .models import Order, OrderItem, Customer, get_person
 from .tasks import order_request as task_order_request
-
-import pytz
 
 
 class LoginForm(forms.Form):
@@ -61,7 +60,7 @@ class OrderCreateForm(forms.ModelForm):
     payment = forms.ChoiceField(choices=Order.PAYMENT_FORM, required=True,
                                 initial=Order.PAYMENT_FORM[1], label='Форма оплаты')
     receiver_bills = forms.EmailField(widget=forms.EmailInput, label='Отправить счет e-mail', required=False)
-    comment = forms.CharField(widget=forms.Textarea, label='Комментарий к заказу', required=False)
+    comment = forms.CharField(widget=forms.Textarea(attrs={'rows': 5}), label='Комментарий к заказу', required=False)
 
     class Meta:
         model = Order

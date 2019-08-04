@@ -1,14 +1,5 @@
 {% extends "base.html" %}
 
-{% block title %}
-    {{ block.super }}
-{% endblock %}
-
-{% block header %}
-    {% include "header/header.html" %}
-{% endblock %}
-
-{% block content %}
-{% include "account/login_div.html" %}
-{% endblock %}
-
+{% block title %}{{ block.super }}{% endblock %}
+{% block header %}{% include "header/header.html" %}{% endblock %}
+{% block content %}{% include "account/login_div.html" %}{% endblock %}

@@ -2,14 +2,6 @@
 
 {% load format %}
 
-{% block title %}
-    {{ block.super }}
-{% endblock %}
-
-{% block header %}
-    {% include "header/header.html" %}
-{% endblock %}
-
-{% block content %}
-{% include "goods.html" %}
-{% endblock %}
+{% block title %}{{ block.super }}{% endblock %}
+{% block header %}{% include "header/header.html" %}{% endblock %}
+{% block content %}{% include "goods.html" %}{% endblock %}
