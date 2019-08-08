@@ -293,6 +293,7 @@ class Section(models.Model):
         user = kwargs.get('user', None)
         id_section = kwargs.get('id_section', 0)
         search = kwargs.get('search', '')
+        search = search.replace('\\', '')
 
         only_stock = kwargs.get('only_stock', False)
         only_promo = kwargs.get('only_promo', False)
@@ -404,23 +405,33 @@ class Section(models.Model):
             )
 
             rows = cursor.fetchall()
+            flag = (0 if search.isdigit() else re.IGNORECASE)
 
             for row in rows:
 
                 sel_row = SelectRow(*row)
                 quantity = '>10' if row[14] > 10 else '' if row[14] == 0 else row[14]
 
+                if search != '':
+                    match = re.search(search, sel_row.code, flags=flag)
+                    sel_row_code = sel_row.code if match is None else mark_safe(sel_row.code.replace(
+                        match[0], f'<span class="search">{match[0]}</span>'
+                    ))
+                    match = re.search(search, sel_row.name, flags=flag)
+                    sel_row_name = sel_row.name if match is None else mark_safe(sel_row.name.replace(
+                        match[0], f'<span class="search">{match[0]}</span>'
+                    ))
+                else:
+                    sel_row_code = sel_row.code
+                    sel_row_name = sel_row.name
+
                 if not is_price_rrp:
                     is_price_rrp = False if sel_row.price_rrp == 0 or sel_row.price_rrp == 0.01 else True
                 list_res_.append({
                     'product': sel_row,
                     'guid': sel_row.guid,
-                    'code': sel_row.code if search == '' else mark_safe(re.sub(search,
-                                                                               f'<span class="search">{search}</span>',
-                                                                               sel_row.code)),
-                    'name': sel_row.name if search == '' else mark_safe(re.sub(search,
-                                                                               f'<span class="search">{search}</span>',
-                                                                               sel_row.name)),
+                    'code': sel_row_code,
+                    'name': sel_row_name,
                     'image': sel_row.image,
                     'is_image': (sel_row.image != ""),
                     'relevant': sel_row.matrix in Product.RELEVANT_MATRIX,
