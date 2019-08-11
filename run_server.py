@@ -1,9 +1,12 @@
 import os
-import time
 import sys
+from time import sleep
 
 import psutil
 import subprocess
+import requests
+
+import Project.settings_local as settings
 
 python_bin = sys.executable
 path_dir = ''
@@ -25,7 +28,8 @@ def terminate_server(name_server):
                     if p.name() == 'python.exe' and pid == str(p.pid):
                         try:
                             p.terminate()
-                            time.sleep(5)
+                            print('Terminate server', name_server)
+                            sleep(5)
                         except psutil.AccessDenied:
                             pass
         os.remove(os.path.abspath(pid_file))
@@ -48,23 +52,45 @@ def run_server(name_server):
     process = subprocess.Popen([python_bin, script_file], stdout=access_file, stderr=error_file)
     with open(file_pid, 'w') as file:
         file.write(str(process.pid))
+    print('Start server', name_server)
     return process
+
+
+def server_alive(name_server: str, point: tuple):
+    try:
+        answer = requests.get(f'http://{point[0]}:{point[1]}')
+    except requests.exceptions.ConnectionError:
+        print('Server died', name_server)
+        return False
+
+    if answer.status_code != 200:
+        print('Server died', name_server)
+        return False
+
+    print('Server alive', name_server)
+    return True
+
+
+def check_servers():
+    servers = {'nginx': settings.SERVER_NGINX, 'api': settings.SERVER_ARI}
+
+    while True:
+        for name, point in servers.items():
+            if server_alive(name, point):
+                sleep(60)
+            else:
+                run_server(name)
+                sleep(5)
 
 
 def exec_server():
 
-    list_server = []
+    run_server('nginx')
+    run_server('api')
 
-    process = run_server('nginx')
-    if process:
-        list_server.append(process)
+    sleep(10)
 
-    process = run_server('api')
-    if process:
-        list_server.append(process)
-
-    for s in list_server:
-        s.wait()
+    check_servers()
 
 
 if __name__ == '__main__':
@@ -74,7 +100,6 @@ if __name__ == '__main__':
     if dir_base not in sys.path:
         sys.path.append(dir_base)
 
-    import Project.settings_local as settings
     path_dir = settings.BASE_DIR
 
     exec_server()
