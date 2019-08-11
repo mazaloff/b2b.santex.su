@@ -1,10 +1,11 @@
 import os
+import sys
 import subprocess
 import time
 
 import psutil
 
-python_bin = ''
+python_bin = sys.executable
 path_dir_pid = ''
 
 
@@ -154,7 +155,6 @@ def exec_server():
 
 if __name__ == '__main__':
 
-    import sys
     dir_base = os.path.dirname(os.path.abspath(__file__))
     os.chdir(dir_base)
     if dir_base not in sys.path:
@@ -162,7 +162,6 @@ if __name__ == '__main__':
 
     import Project.settings_local as settings
 
-    python_bin = os.path.join(settings.PYTHON_BIN, 'python.exe')
     path_dir_pid = os.path.join(settings.BASE_DIR, 'pid')
     path_dir = settings.BASE_DIR
 

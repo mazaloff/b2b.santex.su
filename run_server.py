@@ -1,11 +1,11 @@
 import os
 import time
-from sys import stderr
+import sys
 
 import psutil
 import subprocess
 
-python_bin = ''
+python_bin = sys.executable
 path_dir = ''
 
 
@@ -69,16 +69,12 @@ def exec_server():
 
 if __name__ == '__main__':
 
-    import sys
-
     dir_base = os.path.dirname(os.path.abspath(__file__))
     os.chdir(dir_base)
     if dir_base not in sys.path:
         sys.path.append(dir_base)
 
     import Project.settings_local as settings
-
-    python_bin = os.path.join(settings.PYTHON_BIN, 'python.exe')
     path_dir = settings.BASE_DIR
 
     exec_server()
