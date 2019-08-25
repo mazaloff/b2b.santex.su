@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "97293e191b33dc56e4a5bd4f327203b6471116250d27ee4c290ba47520c03b12"
+            "sha256": "e6df433886beda7ef9282b163d0036a02816b16ac4ec0d1519e3b24a7e5cf293"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -73,11 +73,11 @@
         },
         "cheroot": {
             "hashes": [
-                "sha256:1593fa2a42b18744ac485aadf5fec4a29ebfee00ba3937a2269b8ffc94447879",
-                "sha256:f6a85e005adb5bc5f3a92b998ff0e48795d4d98a0fbb7edde47a7513d4100601"
+                "sha256:5f1692d8444a988b76c54f795f96689ade3ae8294681f8aa222360326f2c7928",
+                "sha256:b824f9961eb447809badeb051820a05770354e2f9ae5c355eecc21f22633c217"
             ],
             "index": "pypi",
-            "version": "==6.5.5"
+            "version": "==6.5.6"
         },
         "cherrypy": {
             "hashes": [
@@ -113,11 +113,11 @@
         },
         "eventlet": {
             "hashes": [
-                "sha256:62b9d7581229c5195c3411dd30d15dea351daa5ee37e45a1329ee56fac0e4ef4",
-                "sha256:f0610bd0d3bb3d51d69f74caa4ad04fc7bce424cdb72e54d08ccda90d8c69800"
+                "sha256:658b1cd80937adc1a4860de2841e0528f64e2ca672885c4e00fc0e2217bde6b1",
+                "sha256:6c9c625af48424c4680d89314dbe45a76cc990cf002489f9469ff214b044ffc1"
             ],
             "index": "pypi",
-            "version": "==0.25.0"
+            "version": "==0.25.1"
         },
         "flower": {
             "hashes": [
@@ -365,11 +365,11 @@
         },
         "xlsxwriter": {
             "hashes": [
-                "sha256:5ec6aa71f6ae4b6298376d8b6a56ca9cdcb8b80323a444212226447aed4fa10f",
-                "sha256:ec51d99c0cc5d95ec8d8e9c8de7c8fbbf461988bec01a8c86b5155a6716b0a5a"
+                "sha256:1a49d3b0bd70eff9641aed131f39de65cc7cb626af11d2c30200a86fb33dd109",
+                "sha256:37026a50342b248e38606f52a7cd213d4cbc7adc008d5667c93d53262bde6506"
             ],
             "index": "pypi",
-            "version": "==1.1.8"
+            "version": "==1.1.9"
         },
         "zc.lockfile": {
             "hashes": [

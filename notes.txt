@@ -29,14 +29,17 @@ clearsessions
 
 # построение дерева зависимостей
 pipdeptree
+pipenv graph
+pipenv check
+pipenv lock
 
 # выгрузка списка текущих пакетов
 pip freeze -> reg.txt
-
-C:\Users\mazal\Python\Project\Virtualenv\Scripts\activate.bat
 
 celery -A san_site beat -l info
 celery -A san_site worker -l info -P eventlet
 
 flower --port=5555
 http://localhost:5555/tasks
+
+pipenv - https://github.com/pypa/pipenv
