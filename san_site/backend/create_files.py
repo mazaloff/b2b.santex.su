@@ -1,8 +1,11 @@
 from san_site.models import get_customer, Section, Currency, CustomersFiles
 from django.contrib.auth.models import User
 from django.conf import settings
-import xlsxwriter
 import os
+
+from openpyxl import Workbook
+from openpyxl.styles import Font, Color, Alignment, Border, Side, colors
+from openpyxl.styles import NamedStyle
 
 
 def create_directory(path):
@@ -24,7 +27,7 @@ def write_files(path_files_customer, user=None):
 
     path_file_csv = os.path.join(path_files_customer, 'goods_b2b_santex.csv')
     path_file_xls = os.path.join(path_files_customer, 'goods_b2b_santex.xlsx')
-    sections = Section.objects.filter(group__isnull=True)
+    sections = Section.objects.filter(group__isnull=True).order_by('name')
 
     if os.path.exists(path_file_xls):
         os.remove(path_file_xls)
@@ -34,31 +37,46 @@ def write_files(path_files_customer, user=None):
     else:
         list_str = ['Артикул;Название;Остаток' + '\n']
 
-    workbook = xlsxwriter.Workbook(path_file_xls, {'constant_memory': True})
-    worksheet = workbook.add_worksheet()
+    workbook = Workbook()
+    sheet = workbook.active
 
-    worksheet.set_column('A:A', 15)
-    worksheet.set_column('B:B', 60)
-    worksheet.set_column('C:C', 10)
+    header_style = NamedStyle(name="header")
+    header_style.font = Font(bold=True, color=colors.RED, size=12)
+
+    section_style = NamedStyle(name="section")
+    section_style.font = Font(bold=True, color=colors.BLUE, size=12)
+
+    sheet.column_dimensions[str(chr(64 + 1))].width = 15
+    sheet.column_dimensions[str(chr(64 + 2))].width = 65
+    sheet.column_dimensions[str(chr(64 + 3))].width = 10
+    sheet.column_dimensions[str(chr(64 + 4))].width = 13
+    sheet.column_dimensions[str(chr(64 + 5))].width = 7
+    sheet.column_dimensions[str(chr(64 + 6))].width = 13
+    sheet.column_dimensions[str(chr(64 + 7))].width = 13
+
+    sheet['A1'] = 'Артикул'
+    sheet['B1'] = 'Название'
+    sheet['C1'] = 'Остаток'
     if user:
-        worksheet.set_column('D:D', 13)
-        worksheet.set_column('E:E', 10)
-        worksheet.set_column('F:F', 13)
-        worksheet.set_column('G:G', 13)
+        sheet['D1'] = 'База цена'
+        sheet['E1'] = 'Вал.'
+        sheet['F1'] = 'Цена руб.'
+        sheet['G1'] = 'РРЦ руб.'
 
-    cell_format = workbook.add_format({'bold': True, 'font_color': 'red'})
-    worksheet.write(0, 0, 'Артикул', cell_format)
-    worksheet.write(0, 1, 'Название', cell_format)
-    worksheet.write(0, 2, 'Остаток', cell_format)
-    if user:
-        worksheet.write(0, 3, 'Базовая цена', cell_format)
-        worksheet.write(0, 4, 'Валюта', cell_format)
-        worksheet.write(0, 5, 'Цена руб. ЦБ', cell_format)
-        worksheet.write(0, 6, 'РРЦ руб.', cell_format)
+    header_row = sheet[1]
+    for cell in header_row:
+        cell.style = header_style
 
-    row = 1
+    row = 2
     for obj_section in sections:
+
         goods_list = obj_section.get_goods_list_section(user=user, only_stock=True)
+
+        if len(goods_list) > 0:
+            sheet[f'A{row}'] = obj_section.name
+            sheet[f'A{row}'].style = section_style
+            row += 1
+
         for elem in goods_list:
             code = elem['code'].replace(';', '').replace('"', '')
             name = elem['name'].replace(';', '').replace('"', '')
@@ -77,17 +95,23 @@ def write_files(path_files_customer, user=None):
                 list_str.append(f'{code};{name};{quantity}' + '\n')
 
             # for excel
-            worksheet.write(row, 0, code)
-            worksheet.write(row, 1, name)
-            worksheet.write(row, 2, int(quantity))
+            sheet[f'A{row}'] = code
+            sheet[f'B{row}'] = name
+            sheet[f'C{row}'] = int(quantity)
             if user:
-                worksheet.write(row, 3, price)
-                worksheet.write(row, 4, currency)
-                worksheet.write(row, 5, price_rub)
-                worksheet.write(row, 6, price_rrp)
+                sheet[f'D{row}'] = price
+                sheet[f'E{row}'] = currency
+                sheet[f'F{row}'] = price_rub
+                sheet[f'G{row}'] = price_rrp
             row += 1
 
-    workbook.close()
+    sheet.title = 'stocks'
+    sheet.freeze_panes = 'A2'
+
+    sheet.auto_filter.ref = sheet.dimensions
+
+    # workbook.close()
+    workbook.save(filename=path_file_xls)
 
     with open(path_file_csv, mode='w', encoding='utf-8-sig') as file:
         file.writelines(list_str)
