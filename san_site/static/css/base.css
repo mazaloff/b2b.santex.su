@@ -54,11 +54,11 @@ input, select  {
 }
 
 #header #header_menu {
-    padding-left: 15px;
+    padding-left: 53px;
 }
 
 #header #user_cart {
-    padding-left: 15px;
+    padding-left: 53px;
 }
 
 .categories {
@@ -192,8 +192,12 @@ input#only_stock, input#only_promo {
     color: #c52626;
 }
 
+#header {
+    background: url("../img/santex.png") no-repeat ;
+}
+
 div#loading_icon {
-    background: url("../vendor/jstree/throbber.gif") left center no-repeat;
+    background: url("../vendor/jstree/throbber.gif") no-repeat 3px 0px;
     width: 70px;
     height: 24px;
 }
