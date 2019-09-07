@@ -54,11 +54,11 @@ input, select  {
 }
 
 #header #header_menu {
-    padding-left: 53px;
+    padding-left: 12px;
 }
 
 #header #user_cart {
-    padding-left: 53px;
+    padding-left: 12px;
 }
 
 .categories {
@@ -190,10 +190,6 @@ input#only_stock, input#only_promo {
 
 #goods_table tr.goods_tr.promo {
     color: #c52626;
-}
-
-#header {
-    background: url("../img/santex.png") no-repeat ;
 }
 
 div#loading_icon {
