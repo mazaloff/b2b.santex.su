@@ -785,7 +785,6 @@ def update_inventories(load_list, value_response):
 
 def update_prices(load_list, value_response):
     Prices.objects.all().delete()
-    PricesSale.objects.all().delete()
 
     filter_guid = [element_list['productGuid'] for element_list in load_list]
 
@@ -794,7 +793,6 @@ def update_prices(load_list, value_response):
     filter_object_currency = {t.guid: t for t in Currency.objects.all()}
 
     list_obj_prices = []
-    list_obj_prices_sale = []
 
     for element_list in load_list:
 
@@ -831,35 +829,10 @@ def update_prices(load_list, value_response):
                                 price=obj_price,
                                 currency=obj_currency,
                                 value=value_price,
-                                rrp=value_rrp,
-                                promo=element_list_price['promo'])
+                                rrp=value_rrp)
             list_obj_prices.append(new_object)
 
-        load_list_sale = element_list['sale']
-        for element_list_sale in load_list_sale:
-
-            if 'currencyGuid' not in element_list_sale.keys():
-                continue
-
-            obj_currency = filter_object_currency.get(element_list_sale['currencyGuid'], None)
-            if not obj_currency:
-                continue
-
-            try:
-                value_price = float(element_list_sale['value'])
-            except ValueError:
-                value_price = 0
-
-            if value_price == 0:
-                continue
-
-            new_object = PricesSale(product=obj_product,
-                                    currency=obj_currency,
-                                    value=value_price)
-            list_obj_prices_sale.append(new_object)
-
     Prices.objects.bulk_create(list_obj_prices, batch_size=10000)
-    PricesSale.objects.bulk_create(list_obj_prices_sale, batch_size=10000)
 
 
 def update_users_prices(load_list, value_response):
@@ -925,7 +898,8 @@ def update_users_prices(load_list, value_response):
                                          product=obj_product,
                                          currency=obj_currency,
                                          discount=value_discount,
-                                         percent=value_percent)
+                                         percent=value_percent,
+                                         promo=element_list_price['promo'])
             list_obj_prices.append(new_object)
 
     CustomersPrices.objects.bulk_create(list_obj_prices, batch_size=10000)

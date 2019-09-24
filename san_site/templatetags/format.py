@@ -24,3 +24,8 @@ def units(value):
         return str(value) + " штуки"
     else:
         return str(value) + " штук"
+
+
+@register.filter(name='currency')
+def currency(value, currency):
+    return str(value) + " " + str(currency)

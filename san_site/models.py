@@ -362,10 +362,11 @@ class Section(models.Model):
                             END AS image,
                         _product.is_deleted AS is_deleted,
                         COALESCE(_prices.value, 0) AS price,
+                        COALESCE(_prices_cur.name, '') AS price_currency,
                         COALESCE(_customersprices.percent, 0) AS percent,
                         COALESCE(_customersprices.discount, COALESCE(_prices.value, 0)) AS discount,
                         COALESCE(_prices.rrp, 0) AS price_rrp,
-                        COALESCE(_prices.promo, FALSE) AS promo,
+                        COALESCE(_customersprices.promo, FALSE) AS promo,
                         COALESCE(_customersprices_cur.id, COALESCE(_prices_cur.id, 0)) AS currency_id,
                         COALESCE(_customersprices_cur.name, COALESCE(_prices_cur.name, '')) AS currency,
                         SUM(COALESCE(_inventories.quantity, 0)) AS quantity,
@@ -382,7 +383,7 @@ class Section(models.Model):
                     WHERE (%s = FALSE OR _product.is_deleted = FALSE)
                         AND {where_request_section}
                         AND {where_request_search}
-                        AND (%s = FALSE OR COALESCE (_prices.promo, FALSE) = TRUE)
+                        AND (%s = FALSE OR COALESCE (_customersprices.promo, FALSE) = TRUE)
                         AND (%s = FALSE OR COALESCE(_inventories.quantity, 0) > 0)        
                     GROUP BY _product.id,
                         _product.code,
@@ -391,10 +392,11 @@ class Section(models.Model):
                         _product.matrix,
                         _product.is_deleted,
                         COALESCE(_prices.value, 0),
+                        COALESCE(_prices_cur.name, ''),
                         COALESCE(_customersprices.percent, 0),
                         COALESCE(_customersprices.discount, COALESCE(_prices.value, 0)),
                         COALESCE(_prices.rrp, 0),
-                        COALESCE(_prices.promo, FALSE),
+                        COALESCE(_customersprices.promo, FALSE),
                         COALESCE(_customersprices_cur.id, COALESCE(_prices_cur.id, 0)),
                         COALESCE(_customersprices_cur.name, COALESCE(_prices_cur.name, ''))
                     )
@@ -410,7 +412,7 @@ class Section(models.Model):
             for row in rows:
 
                 sel_row = SelectRow(*row)
-                quantity = '>10' if row[14] > 10 else '' if row[14] == 0 else row[14]
+                quantity = '>10' if row[15] > 10 else '' if row[15] == 0 else row[15]
 
                 if search != '':
                     match = re.search(search, sel_row.code, flags=flag)
@@ -437,6 +439,7 @@ class Section(models.Model):
                     'relevant': sel_row.matrix in Product.RELEVANT_MATRIX,
                     'quantity': quantity,
                     'price': '' if sel_row.price == 0 or sel_row.price == 0.01 else sel_row.price,
+                    'price_currency': sel_row.price_currency,
                     'price_rrp': '' if sel_row.price_rrp == 0 or sel_row.price_rrp == 0.01 else sel_row.price_rrp,
                     'promo': sel_row.promo,
                     'discount': '' if sel_row.discount == 0 else sel_row.discount,
@@ -655,7 +658,6 @@ class Inventories(models.Model):
 
 class Prices(models.Model):
     product = models.ForeignKey(Product, db_index=True, on_delete=models.PROTECT)
-    promo = models.BooleanField(default=False)
     price = models.ForeignKey(Price, on_delete=models.PROTECT)
     currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
     value = models.FloatField(default=0)
@@ -675,6 +677,7 @@ class CustomersPrices(models.Model):
     currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
     discount = models.FloatField(default=0)
     percent = models.FloatField(default=0)
+    promo = models.BooleanField(default=False)
 
     class Meta:
         unique_together = (("product", "customer"),)
@@ -870,8 +873,8 @@ class Order(models.Model):
             'Content-Type': 'application/json'}
 
         try:
-            answer = requests.post(api_url, data=data, headers=params)
-        except requests.exceptions.ConnectionError:
+            answer = requests.post(api_url, data=data, headers=params, timeout=120)
+        except requests.exceptions.RequestException:
             raise self.RequestOrderError
 
         if answer.status_code != 200:
@@ -958,7 +961,8 @@ def get_person(user):
 
 
 class SelectRow:
-    def __init__(self, id, code, name, guid, matrix, image, is_deleted, price, percent, discount, price_rrp, promo,
+    def __init__(self, id, code, name, guid, matrix, image, is_deleted, price, price_currency, percent, discount,
+                 price_rrp, promo,
                  currency_id, currency, quantity, sort_search):
         self.id: int = id
         self.code: str = code
@@ -968,6 +972,7 @@ class SelectRow:
         self.image: str = image
         self.is_deleted: bool = is_deleted
         self.price: float = price
+        self.price_currency: str = price_currency
         self.percent: float = percent
         self.discount: float = discount
         self.price_rrp: float = price_rrp
