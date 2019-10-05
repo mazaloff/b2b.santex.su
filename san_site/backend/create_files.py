@@ -4,7 +4,7 @@ from django.conf import settings
 import os
 
 from openpyxl import Workbook
-from openpyxl.styles import Font, Color, Alignment, Border, Side, colors
+from openpyxl.styles import Font, colors
 from openpyxl.styles import NamedStyle
 
 

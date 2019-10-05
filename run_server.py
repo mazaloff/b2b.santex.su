@@ -8,7 +8,7 @@ import requests
 
 import Project.settings_local as settings
 
-python_bin = sys.executable
+python_exe = settings.PYTHON_EXE
 path_dir = ''
 
 
@@ -49,7 +49,7 @@ def run_server(name_server):
     access_file = open(access_file_path, mode='a+', encoding='utf-8-sig')
     error_file = open(error_file_path, mode='a+', encoding='utf-8-sig')
 
-    process = subprocess.Popen([python_bin, script_file], stdout=access_file, stderr=error_file)
+    process = subprocess.Popen([python_exe, script_file], stdout=access_file, stderr=error_file)
     with open(file_pid, 'w') as file:
         file.write(str(process.pid))
     print('Start server', name_server)
