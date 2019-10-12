@@ -283,7 +283,7 @@
             "index": "pypi",
             "version": "==5.6.3"
         },
-        "psycopg2": {
+        "python3-psycopg2": {
             "hashes": [
                 "sha256:128d0fa910ada0157bba1cb74a9c5f92bb8a1dca77cf91a31eb274d1f889e001",
                 "sha256:227fd46cf9b7255f07687e5bde454d7d67ae39ca77e170097cdef8ebfc30c323",
