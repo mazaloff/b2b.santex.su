@@ -45,5 +45,6 @@ pip = "==19.2.3"
 setuptools = "==41.2.0"
 openpyxl = "*"
 
+
 [requires]
 python_version = "3.7"
