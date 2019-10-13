@@ -170,7 +170,7 @@ API_URL = 'http://localhost:8000/STBase/hs/'
 
 # Celery Data Format
 
-BROKER_URL = 'amqp://guest:guest@localhost:5672/'
+BROKER_URL = 'amqp://guest:guest@localhost:6379/'
 
 CELERY_BROKER_URL = 'redis://localhost:6379'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379'
