@@ -143,7 +143,7 @@ class CatalogView(APIView):
         name_file = f'goods_b2b_santex.{type_file}'
         files = CustomersFiles.objects.filter(customer=customer, type_file=type_file)
         if len(files) > 0:
-            url = resolve_url(f'san_site\\static\\files_for_loading\\{customer.id}\\{name_file}')
+            url = resolve_url(f'san_site/static/files_for_loading/{customer.id}/{name_file}')
             file_path = os.path.join(settings.BASE_DIR, url)
             if not os.path.exists(file_path):
                 return Response({'error': 'Нет файла'}, status=HTTP_404_NOT_FOUND)
