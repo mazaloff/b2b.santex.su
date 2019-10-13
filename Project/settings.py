@@ -169,8 +169,11 @@ URL = 'http://b2b.santex.su'
 API_URL = 'http://localhost:8000/STBase/hs/'
 
 # Celery Data Format
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379'
+
+BROKER_URL = 'amqp://guest:guest@localhost:5672/'
+
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
