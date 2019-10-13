@@ -166,24 +166,22 @@ DEFAULT_FROM_EMAIL = 'mazaloff@bk.ru'
 DEFAULT_TO_EMAIL = 'mazaloff@bk.ru'
 
 URL = 'http://b2b.santex.su'
-API_URL = 'http://localhost:8000/STBase/hs/'
+API_URL = 'http://185.46.154.84:8080/UprTest/hs/'
 
 # Celery Data Format
 
-BROKER_URL = 'amqp://guest:guest@localhost:6379/'
+BROKER_URL = 'amqp://guest:guest@localhost:6379/0'
 
-CELERY_BROKER_URL = 'redis://localhost:6379'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/1'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 
-
 CELERY_NO_SEND_EMAIL = True
 CELERY_NO_CREATE_ORDERS = False
 CELERY_NO_GET_STATUS = True
-
 
 try:
     from .settings_local import *
