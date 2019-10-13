@@ -24,7 +24,7 @@ SECRET_KEY = '=n@+)q7wh@b&)4p5#@wx_34yf616&uluj1d5+56z)f)ln)&8$8'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '192.168.1.51', '192.168.0.133']
+ALLOWED_HOSTS = ['127.0.0.1']
 
 # Application definition
 
@@ -138,10 +138,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'san_site\\static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'san_site/static')
 
 MEDIA_URL = '/media/'
-MEDIA_DIR = os.path.join(BASE_DIR, 'san_site\\media')
+MEDIA_DIR = os.path.join(BASE_DIR, 'san_site/media')
 MEDIA_ROOT = MEDIA_DIR
 
 STATICFILES_FINDERS = [
@@ -166,7 +166,7 @@ DEFAULT_FROM_EMAIL = 'mazaloff@bk.ru'
 DEFAULT_TO_EMAIL = 'mazaloff@bk.ru'
 
 URL = 'http://b2b.santex.su'
-API_URL = 'http://185.46.154.84:8080/UprTest/hs/'
+API_URL = 'http://localhost:8000/STBase/hs/'
 
 # Celery Data Format
 CELERY_ACCEPT_CONTENT = ['application/json']
