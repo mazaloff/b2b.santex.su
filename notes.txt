@@ -29,7 +29,9 @@ clearsessions
 
 # построение дерева зависимостей
 pipdeptree
+
 pipenv graph
+pipenv graph --reverse
 pipenv check
 pipenv lock
 
