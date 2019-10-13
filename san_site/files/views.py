@@ -27,7 +27,7 @@ def create(request):
 
 def inventories(request, **kwargs):
     name_file = kwargs.get('name_file', 0)
-    url = resolve_url(f'san_site\\static\\files_for_loading\\inventories\\{name_file}')
+    url = resolve_url(f'san_site/static/files_for_loading/inventories/{name_file}')
     file_path = os.path.join(settings.BASE_DIR, url)
     if not os.path.exists(file_path):
         raise Http404()
@@ -51,7 +51,7 @@ def static(request, **kwargs):
     name_file = kwargs.get('name_file', 0)
     files = CustomersFiles.objects.filter(name=name_file)
     if len(files) > 0:
-        url = resolve_url(f'san_site\\static\\files_for_loading\\{customer_id}\\{name_file}')
+        url = resolve_url(f'san_site/static/files_for_loading/{customer_id}/{name_file}')
         file_path = os.path.join(settings.BASE_DIR, url)
         if not os.path.exists(file_path):
             raise Http404()
