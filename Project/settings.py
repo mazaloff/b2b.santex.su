@@ -168,15 +168,13 @@ DEFAULT_TO_EMAIL = 'mazaloff@bk.ru'
 URL = 'http://b2b.santex.su'
 API_URL = 'http://localhost:8000/STBase/hs/'
 
-# CELERY SETTINGS
-CELERY_BACKEND = 'redis://localhost:6379/3'
-CELERY_BROKER_URL = 'redis://localhost:6379/4'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/5'
-
+# Celery Data Format
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_ENABLE_UTC = True
+CELERY_TIMEZONE = TIME_ZONE
 
 
 CELERY_NO_SEND_EMAIL = True
