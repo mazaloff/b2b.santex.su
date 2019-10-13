@@ -121,7 +121,7 @@ def create_files(user):
     customer = get_customer(user)
     if not customer:
         return
-    path_files = os.path.join(settings.BASE_DIR, 'san_site\\static\\files_for_loading')
+    path_files = os.path.join(settings.BASE_DIR, 'san_site/static/files_for_loading')
     create_directory(path_files)
     path_files_customer = os.path.join(path_files, str(customer.id))
     create_directory(path_files_customer)
@@ -147,7 +147,7 @@ def create_files(user):
 
 
 def create_files_inventories():
-    path_files = os.path.join(settings.BASE_DIR, 'san_site\\static\\files_for_loading')
+    path_files = os.path.join(settings.BASE_DIR, 'san_site/static/files_for_loading')
     create_directory(path_files)
     path_files_customer = os.path.join(path_files, 'inventories')
     create_directory(path_files_customer)
