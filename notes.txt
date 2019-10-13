@@ -34,6 +34,7 @@ pipenv graph
 pipenv graph --reverse
 pipenv check
 pipenv lock
+pipenv install <> --skip-lock
 
 # выгрузка списка текущих пакетов
 pip freeze -> reg.txt
