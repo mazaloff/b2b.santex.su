@@ -34,7 +34,8 @@ pipenv graph
 pipenv graph --reverse
 pipenv check
 pipenv lock
-pipenv install <> --skip-lock
+pipenv install psycopg2 --skip-lock
+pipenv uninstall --all
 
 # выгрузка списка текущих пакетов
 pip freeze -> reg.txt

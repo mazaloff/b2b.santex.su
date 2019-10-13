@@ -121,7 +121,7 @@ def selection(request):
 
     return HttpResponseAjax(
         section=section_dict,
-        products=render_to_string('goods\goods_table.html', {
+        products=render_to_string('goods/goods_table.html', {
             'goods_list': goods_list,
             'user': request.user,
         })
