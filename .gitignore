@@ -9,8 +9,6 @@ __pycache__/
 *$py.class
 
 /logs/
-
-/Virtualenv/
 /pid/
 
 .idea/
@@ -24,11 +22,4 @@ celerybeat-schedule.dir
 
 *.pid
 /san_site/static/files_for_loading/
-/pid/server_nginx.pid
-/pid/server_api.pid
-/pid/server_beat.pid
-/pid/server_flower.pid
-/pid/server_worker.pid
-/pid/celerybeat.pid
-/media/*
-/media/None/
+/san_site/media/
