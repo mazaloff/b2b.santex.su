@@ -22,4 +22,3 @@ celerybeat-schedule.dir
 
 *.pid
 /san_site/static/files_for_loading/
-/san_site/media/
