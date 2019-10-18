@@ -44,7 +44,9 @@ pillow = "*"
 pip = "==19.2.3"
 setuptools = "==41.2.0"
 openpyxl = "*"
-
+psycopg2-binary = "*"
+gunicorn = "*"
+redis = "*"
 
 [requires]
 python_version = "3.7"
