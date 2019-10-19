@@ -1,21 +1,21 @@
 import datetime
-import pytz
 
+import pytz
+from django.conf import settings
 from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import render
 from django.utils.log import log_response
-from django.conf import settings
 
 from san_site.decorates.decorate import page_not_access
 from san_site.forms import OrderCreateForm, OrdersFilterList
-from san_site.models import Order, Customer, get_customer, get_person
+from san_site.models import Order, get_customer, get_person
 from san_site.tasks import order_request as task_order_request
 
 
 @page_not_access
 def order_create(request):
     if request.method == 'POST':
-        form = OrderCreateForm(request.POST)
+        form = OrderCreateForm(user=request.user, data=request.POST)
         if form.is_valid():
             order_new = None
             try:
@@ -38,15 +38,11 @@ def order_create(request):
             else:
                 return render(request, 'orders/create.html', {'form': form})
     else:
-        form = OrderCreateForm(initial={'delivery':
-                                        datetime.datetime.now().astimezone(tz=pytz.timezone(settings.TIME_ZONE)) +
-                                        datetime.timedelta(days=1),
-                                        'receiver_bills': str(request.user.email)
-                                        }
+        form = OrderCreateForm(user=request.user, initial={
+            'delivery': datetime.datetime.now().astimezone(tz=pytz.timezone(settings.TIME_ZONE)) + datetime.timedelta(
+                days=1), 'receiver_bills': str(request.user.email)
+            }
                                )
-    customers_choices = Customer.get_customers_all_user(request.user)
-    form.fields['customer'].choices = customers_choices
-    form.base_fields['customer'].choices = customers_choices
 
     return render(request, 'orders/create.html', {'form': form})
 

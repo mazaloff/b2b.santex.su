@@ -66,6 +66,12 @@ class OrderCreateForm(forms.ModelForm):
         model = Order
         fields = ['customer', 'shipment', 'delivery', 'payment', 'receiver_bills', 'comment']
 
+    def __init__(self, user, *args, **kwargs):
+        super(OrderCreateForm, self).__init__(*args, **kwargs)
+        customers_choices = Customer.get_customers_all_user(user)
+        self.fields['customer'].choices = customers_choices
+        self.base_fields['customer'].choices = customers_choices
+
     def clean_customer(self):
         guid = self.cleaned_data['customer']
         try:
