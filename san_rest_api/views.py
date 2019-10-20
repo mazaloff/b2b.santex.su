@@ -51,7 +51,7 @@ class ProductListView(APIView):
         str_filter_article = ' TRUE '
         if filter_article != '':
             param += [list(map(lambda x: x.upper(), filter_article.split(','))), ]
-            str_filter_article = 'UPPER(_product.code::text) = ANY(%s)'
+            str_filter_article = 'UPPER(_product.code_brand::text) = ANY(%s)'
 
         str_filter_barcode = ' TRUE '
         if filter_barcode != '':
@@ -71,7 +71,7 @@ class ProductListView(APIView):
             f"""WITH result AS (
                 SELECT _product.id AS id,
                         _product.code AS code_,
-                        _product.code_brand AS code_brand_,
+                        _product.code_brand AS article_,
                         _product.barcode AS barcode_,
                         _product.name AS name_,
                         _product.matrix AS matrix_,

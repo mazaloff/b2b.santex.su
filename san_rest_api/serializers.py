@@ -7,8 +7,8 @@ from san_site.models import Product
 
 
 class ProductSerializer(serializers.ModelSerializer):
+    code = serializers.SerializerMethodField(method_name='calculate_code')
     article = serializers.SerializerMethodField(method_name='calculate_article')
-    article_brand = serializers.SerializerMethodField(method_name='calculate_article_brand')
     barcode = serializers.SerializerMethodField(method_name='calculate_barcode')
     name = serializers.SerializerMethodField(method_name='calculate_name')
     matrix = serializers.SerializerMethodField(method_name='calculate_matrix')
@@ -22,7 +22,7 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = (
-            'article', 'name', 'brand', 'article_brand', 'barcode', 'matrix', 'photo', 'quantity', 'price',
+            'code', 'name', 'brand', 'article', 'barcode', 'matrix', 'photo', 'quantity', 'price',
             'currency', 'rrp')
 
     @staticmethod
@@ -30,7 +30,7 @@ class ProductSerializer(serializers.ModelSerializer):
         return instance.name_
 
     @staticmethod
-    def calculate_article(instance):
+    def calculate_code(instance):
         return instance.code_
 
     @staticmethod
@@ -42,8 +42,8 @@ class ProductSerializer(serializers.ModelSerializer):
         return instance.matrix_
 
     @staticmethod
-    def calculate_article_brand(instance):
-        return instance.code_brand_
+    def calculate_article(instance):
+        return instance.article_
 
     @staticmethod
     def calculate_brand(instance):

@@ -40,12 +40,12 @@
             </ul>
             Получаемые данные в формате JSON:
             <ul>
-                <li><b>article</b> - Строка, артикул товара (отличается для GROHE)</li>
+                <li><b>code</b> - Строка, наш код товара (равен артикулу, но отличается для GROHE)</li>
                 <li><b>name</b> - Строка, наименование товара</li>
-                <li><b>brand</b> - Строка, название Бренда<br>({{ brands }})</li>
-                <li><b>article_brand</b> - Строка, артикул производителя</li>
+                <li><b>brand</b> - Строка, название бренда товара<br>({{ brands }})</li>
+                <li><b>article</b> - Строка, артикул производителя</li>
                 <li><b>barcode</b> - Строка, штрихкод товара</li>
-                <li><b>matrix</b> - Строка, матрица товара (Акция, Вывод, Заказной, Не производится, Основной, Прочее)</li>
+                <li><b>matrix</b> - Строка, ассортиментная матрица товара (Акция, Вывод, Заказной, Не производится, Основной, Прочее)</li>
                 <li><b>image</b> - Строка (Null), ссылка на изображение товара</li>
                 <li><b>quantity</b> - Число, количество на наших складах</li>
                 <li><b>price</b> - Число, цена со скидками</li>
@@ -56,7 +56,7 @@
             <ul>
                 <li><b>filter_article</b> - фильтр по артикулам</li>
                 <li><b>filter_barcode</b> - фильтр по штрихкодам</li>
-                <li><b>filter_brand</b> - фильтр по Брендам<br>({{ brands }})</li>
+                <li><b>filter_brand</b> - фильтр по брендам<br>({{ brands }})</li>
                 <li><b>filter_quantity</b> - фильтр по остаткам (допустимое значение: YES)</li>
             </ul>
             Примеры запросов:
@@ -66,7 +66,7 @@
                 Authorization: Token {{ uid }}<br>
             </code>
             <code class="hljs">
-                GET http://b2b.santex.su/api/v1/products?filter_article=23161000Gr,23336000Gr<br>
+                GET http://b2b.santex.su/api/v1/products?filter_article=23161000,23336000<br>
                 Content-Type: application/json<br>
                 Authorization: Token {{ uid }}<br>
             </code>
@@ -75,10 +75,10 @@
 HTTP/1.1 200 OK
 [
   {
-    "article": "23161000Gr",
+    "code": "23161000Gr",
     "name": "Grohe 23 161 000 BauClassic Смеситель для раковины 64 мм, со сливным гарнитуром",
     "brand": "GROHE",
-    "article_brand": "23161000",
+    "article": "23161000",
     "barcode": "4005176902536",
     "matrix": "Основной",
     "image": "http://b2b.santex.su/media/photos/9af8877d-cdd2-11e6-88f3-20474775d651.png",
