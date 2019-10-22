@@ -43,10 +43,37 @@ class ProductListView(APIView):
                             status=HTTP_403_FORBIDDEN)
 
         param = [current_customer_id]
-        filter_article = request.GET.get('filter_article', '')
-        filter_barcode = request.GET.get('filter_barcode', '')
-        filter_brand = request.GET.get('filter_brand', '')
+
+        filter_code = ''
+
+        for key, value in request.GET.items():
+            if key.startswith('filter_code'):
+                filter_code += f"{'' if filter_code == '' else ','}{value}"
+
+        filter_article = ''
+
+        for key, value in request.GET.items():
+            if key.startswith('filter_article'):
+                filter_article += f"{'' if filter_article == '' else ','}{value}"
+
+        filter_barcode = ''
+
+        for key, value in request.GET.items():
+            if key.startswith('filter_barcode'):
+                filter_barcode += f"{'' if filter_barcode == '' else ','}{value}"
+
+        filter_brand = ''
+
+        for key, value in request.GET.items():
+            if key.startswith('filter_brand'):
+                filter_brand += f"{'' if filter_brand == '' else ','}{value}"
+
         filter_quantity = request.GET.get('filter_quantity', '')
+
+        str_filter_code = ' TRUE '
+        if filter_code != '':
+            param += [list(map(lambda x: x.upper(), filter_code.split(','))), ]
+            str_filter_code = 'UPPER(_product.code::text) = ANY(%s)'
 
         str_filter_article = ' TRUE '
         if filter_article != '':
@@ -91,6 +118,7 @@ class ProductListView(APIView):
                         LEFT JOIN san_site_inventories _inventories ON _product.id = _inventories.product_id
                         LEFT JOIN san_site_brand _brand ON _product.brand_id = _brand.id
                     WHERE _product.is_deleted = FALSE
+                        AND {str_filter_code}
                         AND {str_filter_article}
                         AND {str_filter_brand}
                         AND {str_filter_barcode}
