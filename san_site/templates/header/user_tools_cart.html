@@ -15,7 +15,6 @@
             <a class="order-create header" href="{% url 'order_create' %}">&nbsp;
                 Разместить заказ на сумму <strong>{{ cart.get_total_cost|format:"{0:.2f}" }} руб.</strong>&nbsp;</a>
         {% else %}
-            Текущий заказ пустой.
         {% endif %}
     {% endwith %}
 </div>
