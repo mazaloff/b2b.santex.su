@@ -477,7 +477,7 @@ def update_product(load_list):
             try:
                 brand_obj = Brand.objects.get(guid=element_list['brandGuid'])
             except Brand.DoesNotExist:
-                continue
+                brand_obj = None
             new_object = Product.objects.create(guid=element_list['guid'],
                                                 name=element_list['name'],
                                                 code=element_list['code'],
