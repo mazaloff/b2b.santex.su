@@ -129,7 +129,7 @@ class ProductSerializerV1(serializers.ModelSerializer):
 
     @staticmethod
     def calculate_currency(instance):
-        return 'RUB' if instance.currency == 'руб' else instance.currency.upper()
+        return 'RUB' if instance.currency.lower() == 'руб' else instance.currency.upper()
 
     @staticmethod
     def calculate_price_rub(instance):

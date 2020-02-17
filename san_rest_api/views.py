@@ -331,8 +331,7 @@ def our_api(request):
             file['url'] = f'/api/v1/catalog/?uid={uid}&type={type_file}'
 
     brands = ', '.join([el.name for el in Brand.objects.filter(is_deleted=False).order_by('name')])
-    currencies = ', '.join([el.name for el in Currency.objects.filter(is_deleted=False).order_by('name')])
-    return render(request, 'files_API.html', {'uid': uid, 'files': files, 'brands': brands, 'currencies': currencies})
+    return render(request, 'files_API.html', {'uid': uid, 'files': files, 'brands': brands})
 
 
 @csrf_exempt

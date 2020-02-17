@@ -84,7 +84,7 @@ def write_files(path_files_customer, user=None):
             price = 0 if elem['price'] == '' else elem['price']
             price_rrp = 0 if elem['price_rrp'] == '' else elem['price_rrp']
             discount = 0 if elem['discount'] == '' else elem['discount']
-            currency = elem['currency']
+            currency = 'RUB' if elem['currency'].lower() == 'руб' else elem['currency'].upper()
             course = courses.get(elem['currency_id'], {'course': 1, 'multiplicity': 1})
             price_rub = round(discount * course['course'] / course['multiplicity'], 2)
 
