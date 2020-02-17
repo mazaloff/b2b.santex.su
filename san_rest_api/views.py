@@ -196,7 +196,7 @@ class ProductListViewV1(APIView):
 
         str_filter_id = ' TRUE '
         if filter_id != '':
-            param += [list(map(lambda x: x.upper(), str_filter_id.split(','))), ]
+            param += [list(map(lambda x: x.upper(), filter_id.split(','))), ]
             str_filter_id = 'UPPER(_product.guid::text) = ANY(%s)'
 
         str_filter_code = ' TRUE '
