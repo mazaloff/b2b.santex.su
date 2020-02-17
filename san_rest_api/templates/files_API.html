@@ -40,7 +40,7 @@
             </ul>
             Получаемые данные в формате JSON:
             <ul>
-                <li><b>code</b> - Строка, наш код товара (равен артикулу, но отличается для GROHE)</li>
+                <li><b>id</b> - Строка, идентификатор товара</li>
                 <li><b>name</b> - Строка, наименование товара</li>
                 <li><b>brand</b> - Строка, название бренда товара<br>({{ brands }})</li>
                 <li><b>article</b> - Строка, артикул производителя</li>
@@ -50,11 +50,12 @@
                 <li><b>quantity</b> - Число, количество на наших складах</li>
                 <li><b>price</b> - Число, цена со скидками</li>
                 <li><b>currency</b> - Строка, название валюты товара ({{ currencies }})</li>
-                <li><b>rrp</b> - Число, рекомендованная розничная цена (рубли)</li>
+                <li><b>price_rub</b> - Число, цена со скидками в рублях по тек. курсу ЦБ</li>
+                <li><b>rrp_rub</b> - Число, рекомендованная розничная цена (рубли)</li>
             </ul>
             Допустимые параметры запросов:
             <ul>
-                <li><b>filter_code</b> - фильтр по нашим кодам</li>
+                <li><b>filter_id</b> - фильтр по id</li>
                 <li><b>filter_article</b> - фильтр по артикулам бренда</li>
                 <li><b>filter_barcode</b> - фильтр по штрихкодам</li>
                 <li><b>filter_brand</b> - фильтр по брендам<br>({{ brands }})</li>
@@ -62,12 +63,12 @@
             </ul>
             Примеры запросов:
             <code class="hljs">
-                GET http://b2b.santex.su/api/v1/products?filter_brand=AQWELLA&filter_quantity=YES<br>
+                GET http://b2b.santex.su/api/v1.1/products?filter_brand=AQWELLA&filter_quantity=YES<br>
                 Content-Type: application/json<br>
                 Authorization: Token {{ uid }}<br>
             </code>
             <code class="hljs">
-                GET http://b2b.santex.su/api/v1/products?filter_article=23161000,23336000<br>
+                GET http://b2b.santex.su/api/v1.1/products?filter_article=23161000,23336000<br>
                 Content-Type: application/json<br>
                 Authorization: Token {{ uid }}<br>
             </code>
@@ -76,17 +77,18 @@
 HTTP/1.1 200 OK
 [
   {
-    "code": "23161000Gr",
+    "id": "f44aeeeb-cdd2-11e6-88f3-20474775d651",
+    "article": "23161000",
     "name": "Grohe 23 161 000 BauClassic Смеситель для раковины 64 мм, со сливным гарнитуром",
     "brand": "GROHE",
-    "article": "23161000",
     "barcode": "4005176902536",
     "matrix": "Основной",
     "image": "http://b2b.santex.su/media/photos/9af8877d-cdd2-11e6-88f3-20474775d651.png",
     "quantity": 6,
-    "price": 53.08,
+    "price": 33.08,
     "currency": "eur",
-    "rrp": 0.0
+    "price_rub": 2185.11,
+    "rrp_rub": 2580.00
   },
    ...
 ]
