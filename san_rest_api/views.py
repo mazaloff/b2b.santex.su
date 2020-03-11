@@ -163,31 +163,26 @@ class ProductListViewV1(APIView):
         param = [current_customer_id]
 
         filter_id = ''
-
         for key, value in request.GET.items():
             if key.startswith('filter_id'):
                 filter_id += f"{'' if filter_id == '' else ','}{value}"
 
         filter_code = ''
-
         for key, value in request.GET.items():
             if key.startswith('filter_code'):
                 filter_code += f"{'' if filter_code == '' else ','}{value}"
 
         filter_article = ''
-
         for key, value in request.GET.items():
             if key.startswith('filter_article'):
                 filter_article += f"{'' if filter_article == '' else ','}{value}"
 
         filter_barcode = ''
-
         for key, value in request.GET.items():
             if key.startswith('filter_barcode'):
                 filter_barcode += f"{'' if filter_barcode == '' else ','}{value}"
 
         filter_brand = ''
-
         for key, value in request.GET.items():
             if key.startswith('filter_brand'):
                 filter_brand += f"{'' if filter_brand == '' else ','}{value}"
@@ -238,6 +233,7 @@ class ProductListViewV1(APIView):
                         COALESCE(_customersprices_cur.name, COALESCE(_prices_cur.name, '')) AS currency,
                         COALESCE(_customersprices_cur.id, COALESCE(_prices_cur.id, 0)) AS currency_id,
                         COALESCE(_prices.rrp, 0) AS price_rrp,
+                        COALESCE(_prices.value, 0) AS price_base,
                         SUM(COALESCE(_inventories.quantity, 0)) AS quantity
                     FROM san_site_product _product
                         LEFT JOIN san_site_prices _prices ON _product.id = _prices.product_id

@@ -85,6 +85,7 @@ class ProductSerializerV1(serializers.ModelSerializer):
     photo = serializers.SerializerMethodField(method_name='calculate_photo')
     brand = serializers.SerializerMethodField(method_name='calculate_brand')
     price = serializers.SerializerMethodField(method_name='calculate_price')
+    price_base = serializers.SerializerMethodField(method_name='calculate_price_base')
     currency = serializers.SerializerMethodField(method_name='calculate_currency')
     price_rub = serializers.SerializerMethodField(method_name='calculate_price_rub')
     rrp_rub = serializers.SerializerMethodField(method_name='calculate_rrp_rub')
@@ -92,7 +93,7 @@ class ProductSerializerV1(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = (
-            'id', 'article', 'name', 'brand', 'barcode', 'matrix', 'photo', 'quantity', 'price',
+            'id', 'article', 'name', 'brand', 'barcode', 'matrix', 'photo', 'quantity', 'price', 'price_base',
             'currency', 'price_rub', 'rrp_rub')
 
     @staticmethod
@@ -126,6 +127,10 @@ class ProductSerializerV1(serializers.ModelSerializer):
     @staticmethod
     def calculate_price(instance):
         return instance.price
+
+    @staticmethod
+    def calculate_price_base(instance):
+        return instance.price_base
 
     @staticmethod
     def calculate_currency(instance):
