@@ -49,7 +49,7 @@ def static(request, **kwargs):
     if not customer or get_customer(user) != customer:
         raise Http404()
     name_file = kwargs.get('name_file', 0)
-    files = CustomersFiles.objects.filter(name=name_file)
+    files = CustomersFiles.objects.filter(customer=customer, name=name_file)
     if len(files) > 0:
         url = resolve_url(f'san_site/static/files_for_loading/{customer_id}/{name_file}')
         file_path = os.path.join(settings.BASE_DIR, url)
