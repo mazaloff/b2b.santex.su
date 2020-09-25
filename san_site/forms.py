@@ -55,7 +55,7 @@ class OrderCreateForm(forms.ModelForm):
         widget=forms.DateInput,
         label='Срок поставки')
     shipment = forms.ChoiceField(choices=Order.SHIPMENT_TYPE, required=True,
-                                 initial=Order.SHIPMENT_TYPE[0], label='Способ доставки')
+                                 initial=Order.SHIPMENT_TYPE[1], label='Способ доставки')
     payment = forms.ChoiceField(choices=Order.PAYMENT_FORM, required=True,
                                 initial=Order.PAYMENT_FORM[1], label='Форма оплаты')
     receiver_bills = forms.EmailField(widget=forms.EmailInput, label='Отправить счет e-mail', required=False)
