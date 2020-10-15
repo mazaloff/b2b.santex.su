@@ -17,7 +17,7 @@ from django.utils.safestring import mark_safe
 
 # connection.queries
 
-# JSON section
+# JSON section - test
 
 json.JSONEncoder.default = lambda self, obj: \
     (obj.isoformat() if isinstance(obj, (datetime.datetime, datetime.date)) else None)
