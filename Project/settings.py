@@ -160,7 +160,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.bk.ru'
 EMAIL_PORT = 2525
 EMAIL_HOST_USER = 'mazaloff@bk.ru'
-EMAIL_HOST_PASSWORD = ''
+EMAIL_HOST_PASSWORD = '***'
 
 DEFAULT_FROM_EMAIL = 'mazaloff@bk.ru'
 DEFAULT_TO_EMAIL = 'mazaloff@bk.ru'
