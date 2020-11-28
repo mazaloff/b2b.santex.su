@@ -32,7 +32,7 @@ def date_hook(json_dict):
     return json_dict
 
 
-# MODELS section
+# MODELS section +
 
 
 class SectionManager(models.Manager):
