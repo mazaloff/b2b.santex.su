@@ -886,6 +886,7 @@ def update_users_prices(load_list, value_response):
         filter_object_product = {t.guid: t for t in Product.objects.filter(guid__in=filter_guid)}
 
         if all_clean:
+            CustomersPrices.objects.filter(customer=obj_customer).delete()
             manager_customers_prices.objects.filter(customer=obj_customer).delete()
         else:
             manager_customers_prices.objects.filter(customer=obj_customer) \
