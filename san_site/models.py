@@ -248,11 +248,11 @@ class Section(models.Model):
     def get_data_for_tree(user, only_stock):
         data = []
         current_person = get_person(user)
-        current_person_id = 0
-        current_person_has_restrictions = False
         if current_person:
             current_person_id = current_person.id
             current_person_has_restrictions = current_person.has_restrictions
+        else:
+            return data
 
         with connection.cursor() as cursor:
             if current_person_has_restrictions:
@@ -1129,7 +1129,7 @@ def get_person(user):
         return user
     try:
         person = user.person
-    except Person.DoesNotExist:
+    except (Person.DoesNotExist, AttributeError):
         return
     return person
 
