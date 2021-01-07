@@ -1127,6 +1127,8 @@ def get_customer(user):
 def get_person(user):
     if user is None:
         return user
+    if user.id is None:
+        return
     try:
         person = user.person
     except (Person.DoesNotExist, AttributeError):
