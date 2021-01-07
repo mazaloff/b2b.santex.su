@@ -24,7 +24,7 @@ def get_categories(request):
     except Section.DoesNotExist:
         guid_initially = ''
     return HttpResponseAjax(
-        result=Section.get_data_for_tree(only_stock=only_stock_),
+        result=Section.get_data_for_tree(user=request.user, only_stock=only_stock_),
         guid_initially=guid_initially,
         user_name=request.user.username,
         products=render_to_string('goods.html', {})

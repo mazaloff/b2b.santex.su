@@ -1,8 +1,8 @@
 import datetime
 import json
-import re
 
 import pytz
+import re
 import requests
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -46,6 +46,7 @@ class Customer(models.Model):
     code = models.CharField(max_length=20)
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)
+    suffix = models.CharField(max_length=4, default='')
 
     def __str__(self):
         return self.name
@@ -85,6 +86,7 @@ class Person(models.Model):
     key = models.CharField(max_length=20, default='xxx')
     change_password = models.BooleanField(default=True)
     lock_order = models.BooleanField(default=False)
+    has_restrictions = models.BooleanField(default=False)
 
     class LetterPasswordChangeError(BaseException):
         pass
@@ -243,36 +245,84 @@ class Section(models.Model):
         return request.session.get('id_current_session')
 
     @staticmethod
-    def get_data_for_tree(only_stock):
+    def get_data_for_tree(user, only_stock):
         data = []
+        current_person = get_person(user)
+        current_person_id = 0
+        current_person_has_restrictions = False
+        if current_person:
+            current_person_id = current_person.id
+            current_person_has_restrictions = current_person.has_restrictions
+
         with connection.cursor() as cursor:
-            cursor.execute("""
-            WITH RECURSIVE Bfs AS (
-              SELECT section.id       AS id,
-                     section.name     AS name,
-                     section.group_id AS group_id,
-                     0                AS level
-              FROM san_site_section AS section
-              WHERE section.group_id ISNULL
-                AND section.is_deleted = FALSE
-                AND (%s = FALSE OR section.is_inventories = TRUE)
-              UNION ALL
-              SELECT section.id       AS id,
-                     section.name     AS name,
-                     section.group_id AS group_id,
-                     Bfs.level + 1    AS level
-              FROM san_site_section AS section
-                     JOIN Bfs ON section.group_id = Bfs.id
-                      AND section.is_deleted = FALSE
-                      AND (%s = FALSE OR section.is_inventories = TRUE)
-            )
-            SELECT Bfs.id                    AS id,
-                   Bfs.name                  AS name,
-                   COALESCE(Bfs.group_id, 0) AS group_id,
-                   Bfs.level                 AS level
-            FROM Bfs
-            ORDER BY Bfs.level, Bfs.name;
-            """, [only_stock, only_stock])
+            if current_person_has_restrictions:
+                cursor.execute(f"""
+                WITH RECURSIVE
+                    Bfs_restrictions AS (
+                        SELECT ssp.section_id AS id
+                        FROM san_site_personrestrictions AS ssp
+                        WHERE ssp.person_id = {current_person_id}
+                        UNION ALL
+                        SELECT section.id AS id
+                        FROM san_site_section AS section
+                                 JOIN Bfs_restrictions ON section.group_id = Bfs_restrictions.id
+                    ),
+                    Bfs AS (
+                        SELECT section.id       AS id,
+                               section.name     AS name,
+                               section.group_id AS group_id,
+                               0                AS level
+                        FROM san_site_section AS section
+                                 INNER JOIN Bfs_restrictions ON Bfs_restrictions.id = section.id
+                        WHERE section.group_id ISNULL
+                          AND section.is_deleted = FALSE
+                          AND (FALSE = FALSE OR section.is_inventories = TRUE)
+                        UNION ALL
+                        SELECT section.id       AS id,
+                               section.name     AS name,
+                               section.group_id AS group_id,
+                               Bfs.level + 1    AS level
+                        FROM san_site_section AS section
+                                 INNER JOIN Bfs_restrictions ON Bfs_restrictions.id = section.group_id
+                                 JOIN Bfs ON section.group_id = Bfs.id
+                            AND section.is_deleted = FALSE
+                            AND (FALSE = FALSE OR section.is_inventories = TRUE)
+                    )
+                SELECT Bfs.id                    AS id,
+                       Bfs.name                  AS name,
+                       COALESCE(Bfs.group_id, 0) AS group_id,
+                       Bfs.level                 AS level
+                FROM Bfs
+                ORDER BY Bfs.level, Bfs.name;
+                """, [only_stock, only_stock])
+            else:
+                cursor.execute("""
+                WITH RECURSIVE Bfs AS (
+                  SELECT section.id       AS id,
+                         section.name     AS name,
+                         section.group_id AS group_id,
+                         0                AS level
+                  FROM san_site_section AS section
+                  WHERE section.group_id ISNULL
+                    AND section.is_deleted = FALSE
+                    AND (%s = FALSE OR section.is_inventories = TRUE)
+                  UNION ALL
+                  SELECT section.id       AS id,
+                         section.name     AS name,
+                         section.group_id AS group_id,
+                         Bfs.level + 1    AS level
+                  FROM san_site_section AS section
+                         JOIN Bfs ON section.group_id = Bfs.id
+                          AND section.is_deleted = FALSE
+                          AND (%s = FALSE OR section.is_inventories = TRUE)
+                )
+                SELECT Bfs.id                    AS id,
+                       Bfs.name                  AS name,
+                       COALESCE(Bfs.group_id, 0) AS group_id,
+                       Bfs.level                 AS level
+                FROM Bfs
+                ORDER BY Bfs.level, Bfs.name;
+                """, [only_stock, only_stock])
             rows = cursor.fetchall()
             for row in rows:
                 data.append({'id': row[0], 'parent': '#' if row[2] == 0 else row[2], 'text': row[1], 'href': row[0]})
@@ -307,27 +357,75 @@ class Section(models.Model):
 
         current_customer = get_customer(user)
         current_customer_id = 0
+        current_customer_suffix = ''
         if current_customer:
             current_customer_id = current_customer.id
+            current_customer_suffix = current_customer.suffix
+
+        current_person = get_person(user)
+        current_person_id = 0
+        current_person_has_restrictions = False
+        if current_person:
+            current_person_id = current_person.id
+            current_person_has_restrictions = current_person.has_restrictions
 
         select_request_section = ''
         join_request_section = ''
-        where_request_section = ' TRUE '
         if id_section != 0:
             param.append(id_section)
 
-            select_request_section = """
+            if current_person_has_restrictions:
+                select_request_section = f"""
+                RECURSIVE
+                    Bfs_restrictions AS (
+                        SELECT ssp.section_id AS id
+                        FROM san_site_personrestrictions AS ssp
+                        WHERE ssp.person_id = {current_person_id}
+                        UNION ALL
+                        SELECT section.id AS id
+                        FROM san_site_section AS section
+                                 JOIN Bfs_restrictions ON section.group_id = Bfs_restrictions.id
+                    ),
+                    Bfs AS (
+                        SELECT section.id AS id
+                        FROM san_site_section AS section
+                                INNER JOIN Bfs_restrictions ON Bfs_restrictions.id = section.id
+                        WHERE section.id = %s
+                        UNION ALL
+                        SELECT section.id AS id
+                        FROM san_site_section AS section
+                                 INNER JOIN Bfs_restrictions ON Bfs_restrictions.id = section.group_id
+                                 JOIN Bfs ON section.group_id = Bfs.id AND section.is_deleted = FALSE
+                    ),"""
+            else:
+                select_request_section = """
+                RECURSIVE Bfs AS (
+                  SELECT section.id AS id
+                  FROM san_site_section AS section
+                  WHERE section.id = %s
+                  UNION ALL
+                  SELECT section.id AS id
+                  FROM san_site_section AS section
+                         JOIN Bfs ON section.group_id = Bfs.id AND section.is_deleted = FALSE
+                ),"""
+
+            join_request_section = 'INNER JOIN Bfs ON _product.section_id = Bfs.id'
+
+        elif current_person_has_restrictions:
+
+            select_request_section = f"""
             RECURSIVE Bfs AS (
-              SELECT section.id AS id
-              FROM san_site_section AS section
-              WHERE section.id = %s
-              UNION ALL
-              SELECT section.id AS id
-              FROM san_site_section AS section
-                     JOIN Bfs ON section.group_id = Bfs.id AND section.is_deleted = FALSE
+                SELECT ssp.section_id AS id
+                FROM san_site_personrestrictions AS ssp
+                WHERE ssp.person_id = {current_person_id}
+                UNION ALL
+                SELECT section.id AS id
+                FROM san_site_section AS section
+                         JOIN Bfs ON section.group_id = Bfs.id
+                    AND section.is_deleted = FALSE
             ),"""
-            join_request_section = 'JOIN Bfs ON _product.section_id = Bfs.id'
-            where_request_section = '_product.section_id IN (SELECT Bfs.id FROM Bfs)'
+
+            join_request_section = 'INNER JOIN Bfs ON _product.section_id = Bfs.id'
 
         where_request_search = 'TRUE'
         field_sort_search = "0"
@@ -375,13 +473,12 @@ class Section(models.Model):
                          {join_request_section}
                          LEFT JOIN san_site_prices _prices ON _product.id = _prices.product_id
                             LEFT JOIN san_site_currency _prices_cur ON _prices.currency_id = _prices_cur.id
-                         LEFT JOIN san_site_customersprices _customersprices 
+                         LEFT JOIN san_site_customersprices{current_customer_suffix} _customersprices 
                             ON _customersprices.customer_id = %s AND _product.id = _customersprices.product_id  
                                 LEFT JOIN san_site_currency _customersprices_cur 
                                     ON _customersprices.currency_id = _customersprices_cur.id   
                          LEFT JOIN san_site_inventories _inventories ON _product.id = _inventories.product_id
                     WHERE (%s = FALSE OR _product.is_deleted = FALSE)
-                        AND {where_request_section}
                         AND {where_request_search}
                         AND (%s = FALSE OR COALESCE (_customersprices.promo, FALSE) = TRUE)
                         AND (%s = FALSE OR COALESCE(_inventories.quantity, 0) > 0)        
@@ -571,6 +668,11 @@ class Product(models.Model):
         return dict(price=0, price_ruble=0, currency_name='', currency_id=0)
 
 
+class PersonRestrictions(models.Model):
+    person = models.ForeignKey(Person, db_index=True, on_delete=models.PROTECT)
+    section = models.ForeignKey(Section, db_index=False, on_delete=models.PROTECT)
+
+
 class Store(models.Model):
     guid = models.CharField(max_length=50, db_index=True)
     name = models.CharField(max_length=100)
@@ -672,6 +774,78 @@ class PricesSale(models.Model):
 
 
 class CustomersPrices(models.Model):
+    product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
+    customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
+    discount = models.FloatField(default=0)
+    percent = models.FloatField(default=0)
+    promo = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (("product", "customer"),)
+
+
+class CustomersPrices2020(models.Model):
+    product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
+    customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
+    discount = models.FloatField(default=0)
+    percent = models.FloatField(default=0)
+    promo = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (("product", "customer"),)
+
+
+class CustomersPrices2021(models.Model):
+    product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
+    customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
+    discount = models.FloatField(default=0)
+    percent = models.FloatField(default=0)
+    promo = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (("product", "customer"),)
+
+
+class CustomersPrices2022(models.Model):
+    product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
+    customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
+    discount = models.FloatField(default=0)
+    percent = models.FloatField(default=0)
+    promo = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (("product", "customer"),)
+
+
+class CustomersPrices2023(models.Model):
+    product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
+    customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
+    discount = models.FloatField(default=0)
+    percent = models.FloatField(default=0)
+    promo = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (("product", "customer"),)
+
+
+class CustomersPrices2024(models.Model):
+    product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
+    customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
+    discount = models.FloatField(default=0)
+    percent = models.FloatField(default=0)
+    promo = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (("product", "customer"),)
+
+
+class CustomersPrices2025(models.Model):
     product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
     customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
     currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)

@@ -1,21 +1,22 @@
-import os
 import datetime
 import json
-import base64
-import tempfile
-import dateutil.parser
 
-from django.utils.timezone import make_aware
+import base64
+import dateutil.parser
+import os
+import tempfile
 from django.contrib.auth.models import User
+from django.core.files import File
 from django.http import HttpResponse
 from django.utils import timezone
+from django.utils.timezone import make_aware
 from django.views.decorators.csrf import csrf_exempt
-from django.core.files import File
-
 
 from san_site.models import \
-    Order, Customer, Person, Section, Brand, Product, Store, Price, Currency, Inventories, Prices, CustomersPrices, \
-    Courses, PricesSale, Bill
+    Order, Customer, Person, Section, Brand, Product, Store, Price, Currency, Inventories, Prices, \
+    CustomersPrices, CustomersPrices2020, CustomersPrices2021, CustomersPrices2022, CustomersPrices2023, \
+    CustomersPrices2024, CustomersPrices2025, \
+    Courses, PersonRestrictions, Bill
 
 
 @csrf_exempt
@@ -678,6 +679,7 @@ def update_users(load_list, value_response):
                                                               is_deleted=element_list_customer['is_deleted'],
                                                               )
                 new_object_customer.created_date = timezone.now()
+                new_object_customer.suffix = str(timezone.now().year)
                 new_object_customer.save()
                 filter_object_customer[element_list_customer['guid']] = new_object_customer
 
@@ -716,7 +718,8 @@ def update_users(load_list, value_response):
             if new_object_person.name == element_list['name'] \
                     and new_object_person.code == element_list['code'] \
                     and new_object_person.is_deleted == element_list['is_deleted'] \
-                    and new_object_person.allow_order == element_list['allow_order']:
+                    and new_object_person.allow_order == element_list['allow_order'] \
+                    and new_object_person.has_restrictions == element_list['has_restrictions']:
                 pass
             else:
                 new_object_person.name = element_list['name']
@@ -731,11 +734,20 @@ def update_users(load_list, value_response):
                                                       customer=filter_object_customer[element_list['guidOwner']],
                                                       code=element_list['code'],
                                                       allow_order=element_list['allow_order'],
-                                                      is_deleted=element_list['is_deleted']
+                                                      is_deleted=element_list['is_deleted'],
+                                                      has_restrictions=element_list['has_restrictions']
                                                       )
             new_object_person.created_date = timezone.now()
             new_object_person.save()
             filter_object_person[element_list['guid']] = new_object_person
+
+        PersonRestrictions.objects.filter(person=new_object_person).delete()
+
+        if new_object_person.has_restrictions:
+            filter_guid_section = [element_list_['guid'] for element_list_ in element_list["restrictions"]]
+            filter_object_section = [t for t in Section.objects.filter(guid__in=filter_guid_section)]
+            for element_section in filter_object_section:
+                PersonRestrictions.objects.create(person=new_object_person, section=element_section)
 
         value_response['result'].append(dict(guid=element_list['guid']))
 
@@ -843,10 +855,25 @@ def update_users_prices(load_list, value_response):
 
     list_obj_prices = []
 
+    manager_customers_prices = CustomersPrices
+
     for element_list in load_list:
 
         obj_customer = filter_object.get(element_list['guid'], None)
         all_clean = element_list['allClean']
+
+        if obj_customer.suffix == '2020':
+            manager_customers_prices = CustomersPrices2020
+        elif obj_customer.suffix == '2021':
+            manager_customers_prices = CustomersPrices2021
+        elif obj_customer.suffix == '2022':
+            manager_customers_prices = CustomersPrices2022
+        elif obj_customer.suffix == '2023':
+            manager_customers_prices = CustomersPrices2023
+        elif obj_customer.suffix == '2024':
+            manager_customers_prices = CustomersPrices2024
+        elif obj_customer.suffix == '2025':
+            manager_customers_prices = CustomersPrices2025
 
         if not obj_customer:
             add_error(value_response, code='Customer.DoesNotExist',
@@ -859,9 +886,9 @@ def update_users_prices(load_list, value_response):
         filter_object_product = {t.guid: t for t in Product.objects.filter(guid__in=filter_guid)}
 
         if all_clean:
-            CustomersPrices.objects.filter(customer=obj_customer).delete()
+            manager_customers_prices.objects.filter(customer=obj_customer).delete()
         else:
-            CustomersPrices.objects.filter(customer=obj_customer) \
+            manager_customers_prices.objects.filter(customer=obj_customer) \
                 .filter(product__in=[t for guid, t in filter_object_product.items()]).delete()
 
         for element_list_price in load_list_prices:
@@ -894,15 +921,15 @@ def update_users_prices(load_list, value_response):
 
             if value_discount == 0:
                 continue
-            new_object = CustomersPrices(customer=obj_customer,
-                                         product=obj_product,
-                                         currency=obj_currency,
-                                         discount=value_discount,
-                                         percent=value_percent,
-                                         promo=element_list_price['promo'])
+            new_object = manager_customers_prices(customer=obj_customer,
+                                                  product=obj_product,
+                                                  currency=obj_currency,
+                                                  discount=value_discount,
+                                                  percent=value_percent,
+                                                  promo=element_list_price['promo'])
             list_obj_prices.append(new_object)
 
-    CustomersPrices.objects.bulk_create(list_obj_prices, batch_size=10000)
+    manager_customers_prices.objects.bulk_create(list_obj_prices, batch_size=10000)
 
 
 def update_statuses(load_list, value_response):
