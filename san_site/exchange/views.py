@@ -305,7 +305,8 @@ def api_users_prices(request):
     update_users_prices(list_load, value_response)
 
     value_response['time']['end'] = timezone.now().ctime()
-    return HttpResponse(json.dumps(value_response), content_type="application/json", status=200)
+    return HttpResponse(json.dumps(value_response), content_type="application/json",
+                        status=200 if value_response['success'] else 210)
 
 
 @csrf_exempt
@@ -862,6 +863,11 @@ def update_users_prices(load_list, value_response):
         obj_customer = filter_object.get(element_list['guid'], None)
         all_clean = element_list['allClean']
 
+        if not obj_customer:
+            add_error(value_response, code='Customer.DoesNotExist',
+                      message='no get customer', description=element_list)
+            continue
+
         if obj_customer.suffix == '2020':
             manager_customers_prices = CustomersPrices2020
         elif obj_customer.suffix == '2021':
@@ -874,11 +880,6 @@ def update_users_prices(load_list, value_response):
             manager_customers_prices = CustomersPrices2024
         elif obj_customer.suffix == '2025':
             manager_customers_prices = CustomersPrices2025
-
-        if not obj_customer:
-            add_error(value_response, code='Customer.DoesNotExist',
-                      message='no get customer', description=element_list)
-            continue
 
         load_list_prices = element_list['price']
 
