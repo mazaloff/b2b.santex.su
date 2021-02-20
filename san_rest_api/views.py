@@ -153,8 +153,10 @@ class ProductListViewV1(APIView):
 
         current_customer = get_customer(request.user)
         current_customer_id = None
+        current_customer_suffix = ''
         if current_customer:
             current_customer_id = current_customer.id
+            current_customer_suffix = current_customer.suffix
 
         if current_customer_id is None:
             return Response({'error': 'Не удалось авторизовать пользователя'},
@@ -238,7 +240,7 @@ class ProductListViewV1(APIView):
                     FROM san_site_product _product
                         LEFT JOIN san_site_prices _prices ON _product.id = _prices.product_id
                             LEFT JOIN san_site_currency _prices_cur ON _prices.currency_id = _prices_cur.id
-                        LEFT JOIN san_site_customersprices _customersprices 
+                        LEFT JOIN san_site_customersprices{current_customer_suffix} _customersprices 
                             ON _customersprices.customer_id = %s AND _product.id = _customersprices.product_id  
                                 LEFT JOIN san_site_currency _customersprices_cur 
                                     ON _customersprices.currency_id = _customersprices_cur.id

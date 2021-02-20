@@ -647,7 +647,22 @@ class Product(models.Model):
         if current_customer is None:
             return dict(price=0, price_ruble=0, currency_name='', currency_id=0)
 
-        query_set_price = CustomersPrices.objects. \
+        manager_customers_prices = CustomersPrices
+
+        if current_customer.suffix == '2020':
+            manager_customers_prices = CustomersPrices2020
+        elif current_customer.suffix == '2021':
+            manager_customers_prices = CustomersPrices2021
+        elif current_customer.suffix == '2022':
+            manager_customers_prices = CustomersPrices2022
+        elif current_customer.suffix == '2023':
+            manager_customers_prices = CustomersPrices2023
+        elif current_customer.suffix == '2024':
+            manager_customers_prices = CustomersPrices2024
+        elif current_customer.suffix == '2025':
+            manager_customers_prices = CustomersPrices2025
+
+        query_set_price = manager_customers_prices.objects. \
             filter(customer=current_customer, product=self).select_related('currency')
         if len(query_set_price):
             currency = query_set_price[0].currency
