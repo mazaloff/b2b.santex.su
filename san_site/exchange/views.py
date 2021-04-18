@@ -520,6 +520,9 @@ def update_product(load_list):
         new_object.is_deleted = element_list['is_deleted']
         new_object.save()
 
+        if element_list['is_deleted']:
+            new_object.clear_inventories()
+
 
 def update_store(load_list):
     filter_guid = [element_list['guid'] for element_list in load_list]

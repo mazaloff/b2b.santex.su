@@ -564,12 +564,12 @@ class Product(models.Model):
 
     guid = models.CharField(max_length=50, db_index=True)
     name = models.CharField(max_length=200, db_index=True)
-    code = models.CharField(max_length=30, db_index=True)
+    code = models.CharField(max_length=50, db_index=True)
     code_brand = models.CharField(max_length=50, default='')
     section = models.ForeignKey(Section, db_index=True, on_delete=models.PROTECT)
     brand = models.ForeignKey(Brand, null=True, on_delete=models.PROTECT)
-    matrix = models.CharField(max_length=30, default='Основной')
-    barcode = models.CharField(max_length=30, default='')
+    matrix = models.CharField(max_length=50, default='Основной')
+    barcode = models.CharField(max_length=50, default='')
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False, db_index=True)
     image = models.ImageField(upload_to='photos', default='', blank=True)
@@ -681,6 +681,9 @@ class Product(models.Model):
                 price_ruble = currency.change_ruble(price)
                 return dict(price=price, price_ruble=price_ruble, currency_name=currency_name, currency_id=currency_id)
         return dict(price=0, price_ruble=0, currency_name='', currency_id=0)
+
+    def clear_inventories(self):
+        Inventories.objects.filter(product=self).delete()
 
 
 class PersonRestrictions(models.Model):
