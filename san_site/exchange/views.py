@@ -519,7 +519,6 @@ def update_product(load_list):
         new_object.matrix = matrix
         new_object.is_deleted = element_list['is_deleted']
         new_object.save()
-
         if element_list['is_deleted']:
             new_object.clear_inventories()
 
