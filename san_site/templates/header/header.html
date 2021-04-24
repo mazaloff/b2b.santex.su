@@ -5,7 +5,7 @@
                 Войдите в b2b.santex, чтобы видеть ваши цены и делать заказы
             </a>
         {% else %}
-            Добро пожаловать, <strong>{{ user.get_full_name }}</strong>
+            <strong>{{ user.get_full_name }}</strong>, Добро пожаловать в b2b.santex.
             <span class="control_help_text" style="padding-left: 10px;">Доставки по субботам (подробнее в форме заказа)</span>
         {% endif %}
     </div>
