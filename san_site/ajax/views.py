@@ -387,7 +387,7 @@ def get_help_tip(request):
 @page_not_access_ajax
 def get_orders_list(request):
     try:
-        begin_date = request.GET.get('begin_date')
+        begin_date_str = request.GET.get('begin_date')
     except MultiValueDictKeyError:
         response = HttpResponseAjaxError(code=302, message='no request GET begin_date')
         log_response(
@@ -397,7 +397,7 @@ def get_orders_list(request):
         )
         return response
     try:
-        end_date = request.GET.get('end_date')
+        end_date_str = request.GET.get('end_date')
     except MultiValueDictKeyError:
         response = HttpResponseAjaxError(code=302, message='no request GET end_date')
         log_response(
@@ -407,13 +407,15 @@ def get_orders_list(request):
         )
         return response
 
-    begin_date = datetime.date(int(begin_date.split('.')[2]),
-                               int(begin_date.split('.')[1]),
-                               int(begin_date.split('.')[0]))
+    try:
+        begin_date = datetime.datetime.strptime(begin_date_str, "%d.%m.%Y")
+    except ValueError:
+        begin_date = datetime.datetime.strptime(begin_date_str, "%m/%d/%Y")
 
-    end_date = datetime.date(int(end_date.split('.')[2]),
-                             int(end_date.split('.')[1]),
-                             int(end_date.split('.')[0]))
+    try:
+        end_date = datetime.datetime.strptime(end_date_str, "%d.%m.%Y")
+    except ValueError:
+        end_date = datetime.datetime.strptime(end_date_str, "%d.%m.%Y")
 
     Order.add_current_session(request, begin_date, end_date)
 
