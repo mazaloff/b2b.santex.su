@@ -415,7 +415,7 @@ def get_orders_list(request):
     try:
         end_date = datetime.datetime.strptime(end_date_str, "%d.%m.%Y")
     except ValueError:
-        end_date = datetime.datetime.strptime(end_date_str, "%d.%m.%Y")
+        end_date = datetime.datetime.strptime(end_date_str, "%d/%m/%Y")
 
     Order.add_current_session(request, begin_date, end_date)
 
