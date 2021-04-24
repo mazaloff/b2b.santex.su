@@ -971,6 +971,10 @@ class Order(models.Model):
         json_str = request.session.get('get_current_filters')
         try:
             load_dict = json.loads(json_str, object_hook=date_hook)
+            try:
+                load_dict['begin_date'] = datetime.datetime.strptime(load_dict['begin_date'], "%Y-%m-%dT%H:%M:%S")
+            except ValueError:
+                load_dict['begin_date'] = datetime.date.today()
             # End date of the period is always today
             load_dict['end_date'] = datetime.date.today()
             return load_dict
