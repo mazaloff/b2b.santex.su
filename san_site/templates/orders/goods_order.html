@@ -37,7 +37,7 @@
         </thead>
         {% for goods in order.get_order_list %}
             <tr>
-                <td class="cart_table_8">{{ goods.number }}</td>
+                <td class="cart_table_8">{{ forloop.counter }}</td>
                 <td class="cart_table_1">{{ goods.code }}</td>
                 <td class="cart_table_2">{{ goods.name }}</td>
                 <td class="cart_table_3"> {{ goods.quantity }}</td>
