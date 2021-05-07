@@ -40,6 +40,8 @@ def user_login(request):
             else:
                 messages.error(request, 'Имя пользователя и пароль не совпадают. Попробуйте еще раз.')
                 return render(request, 'account/login.html', {'form': form})
+    elif request.user.is_authenticated:
+        return index(request)
     else:
         form = LoginForm()
     return render(request, 'account/login.html', {'form': form})
