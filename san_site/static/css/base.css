@@ -4,7 +4,7 @@ body {
     font-size: 13px;
     color: #24292e;
 }
-
+control_help_text
 a {
     color: #24292e;
 }
@@ -32,7 +32,7 @@ strong {
 }
 
 input, select  {
-    font-family: "Lucida Sans Unicode";
+    font-family: "Lucida Sans Unicode", sans-serif;
     color: #5a3939;
 }
 
@@ -351,7 +351,7 @@ span.search {
 }
 
 .control_help_text {
-    font-family: Consolas;
+    /*font-family: Consolas;*/
     color: #888888;
 }
 
