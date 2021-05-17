@@ -5,6 +5,7 @@
             <col style="background:#fcffd1;">
             <col>
             <col style="background:#fcffd1">
+            <col style="background:#fcffd1">
         </colgroup>
         <thead style="background: #ffffff;">
         <tr>
@@ -15,7 +16,10 @@
                 <div><span>Наименование товара</span></div>
             </th>
             <th id="goods_table_3">
-                <div><span>Остаток</span></div>
+                <div><span>Свободно</span></div>
+            </th>
+            <th id="goods_table_3">
+                <div><span>Резерв</span></div>
             </th>
             {% if user.is_authenticated and user.person.allow_order %}
                 <th id="goods_table_4">
@@ -47,6 +51,10 @@
                         id="goods_table_3" style="cursor: pointer;">
                         {{ goods.quantity }}
                         <div id="help-tip{{ goods.guid }}" class="help-tip"></div>
+                    </td>
+                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')"
+                        id="goods_table_3" style="cursor: pointer;">
+                        {{ goods.reserve }}
                     </td>
                     <td id="goods_table_4">{{ goods.price|format:"{0:.2f}"|currency:goods.price_currency }}</td>
                     <td id="goods_table_6">{{ goods.percent|format:"{0:.2f}" }}</td>

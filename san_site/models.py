@@ -468,6 +468,7 @@ class Section(models.Model):
                         COALESCE(_customersprices_cur.id, COALESCE(_prices_cur.id, 0)) AS currency_id,
                         COALESCE(_customersprices_cur.name, COALESCE(_prices_cur.name, '')) AS currency,
                         SUM(COALESCE(_inventories.quantity, 0)) AS quantity,
+                        SUM(COALESCE(_inventories.reserve, 0)) AS reserve,
                         {field_sort_search} AS sort_search
                     FROM san_site_product _product
                          {join_request_section}
@@ -481,7 +482,7 @@ class Section(models.Model):
                     WHERE (%s = FALSE OR _product.is_deleted = FALSE)
                         AND {where_request_search}
                         AND (%s = FALSE OR COALESCE (_customersprices.promo, FALSE) = TRUE)
-                        AND (%s = FALSE OR COALESCE(_inventories.quantity, 0) > 0)        
+                        AND (%s = FALSE OR (COALESCE(_inventories.quantity, 0) + COALESCE(_inventories.reserve, 0)) > 0)        
                     GROUP BY _product.id,
                         _product.code,
                         _product.name,
@@ -510,6 +511,7 @@ class Section(models.Model):
 
                 sel_row = SelectRow(*row)
                 quantity = '>10' if row[15] > 10 else '' if row[15] == 0 else row[15]
+                reserve = '>10' if row[16] > 10 else '' if row[16] == 0 else row[16]
 
                 if search != '':
                     match = re.search(search, sel_row.code, flags=flag)
@@ -535,6 +537,7 @@ class Section(models.Model):
                     'is_image': (sel_row.image != ""),
                     'relevant': sel_row.matrix in Product.RELEVANT_MATRIX,
                     'quantity': quantity,
+                    'reserve': reserve,
                     'price': '' if sel_row.price == 0 or sel_row.price == 0.01 else sel_row.price,
                     'price_currency': sel_row.price_currency,
                     'price_rrp': '' if sel_row.price_rrp == 0 or sel_row.price_rrp == 0.01 else sel_row.price_rrp,
@@ -1162,7 +1165,7 @@ def get_person(user):
 class SelectRow:
     def __init__(self, id, code, name, guid, matrix, image, is_deleted, price, price_currency, percent, discount,
                  price_rrp, promo,
-                 currency_id, currency, quantity, sort_search):
+                 currency_id, currency, quantity, reserve, sort_search):
         self.id: int = id
         self.code: str = code
         self.name: str = name
@@ -1179,3 +1182,4 @@ class SelectRow:
         self.currency_id: int = currency_id
         self.currency: str = currency
         self.quantity: int = quantity
+        self.reserve: int = reserve
