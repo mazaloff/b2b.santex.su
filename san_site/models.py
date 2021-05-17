@@ -774,6 +774,7 @@ class Inventories(models.Model):
     product = models.ForeignKey(Product, db_index=True, on_delete=models.PROTECT)
     store = models.ForeignKey(Store, on_delete=models.PROTECT)
     quantity = models.IntegerField(default=0)
+    reserve = models.IntegerField(default=0)
 
 
 class Prices(models.Model):

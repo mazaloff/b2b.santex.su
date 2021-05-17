@@ -787,9 +787,18 @@ def update_inventories(load_list, value_response):
                           message='no int quantity inventories', description=element_list)
                 continue
 
+            try:
+                reserve = int(element_list_stores['reserve'])
+            except ValueError:
+                add_error(value_response, code='Inventories.ValueError',
+                          message='no int reserve inventories', description=element_list)
+                continue
+
             new_object = Inventories(product=obj_product,
                                      store=obj_store,
-                                     quantity=quantity)
+                                     quantity=quantity,
+                                     reserve=reserve)
+
             list_obj.append(new_object)
 
     Inventories.objects.bulk_create(list_obj, batch_size=10000)
