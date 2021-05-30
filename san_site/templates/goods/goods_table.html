@@ -31,10 +31,10 @@
                 <th id="goods_table_7" {% if not is_price_rrp %} class="right-radius"{% endif %}>
                     <div><span>Ваша цена</span></div>
                 </th>
-                <th id="goods_table_8" {% if not is_price_rrp %} class="goods_hide" {% else %} class="right-radius"{% endif %}>
-                    <div><span>РРЦ руб.</span></div>
-                </th>
             {% endif %}
+            <th id="goods_table_8" {% if not is_price_rrp %} class="goods_hide" {% else %} class="right-radius"{% endif %}>
+                <div><span>РРЦ руб.</span></div>
+            </th>
         </tr>
         </thead>
         {% if user.is_authenticated and user.person.allow_order %}
@@ -73,20 +73,8 @@
                     <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.quantity }}
                         <div id="help-tip{{ goods.guid }}" class="help-tip"></div>
                     </td>
-                </tr>
-            {% endfor %}
-        {% else %}
-            {% for goods in goods_list %}
-                <tr id="tr_goods{{ goods.guid }}" class="goods_tr
-                {% if not goods.relevant %} not_relevant{% endif %}{% if goods.promo %} promo{% endif %}">
-                    <td id="goods_table_1">
-                        <div class="goods_code{% if goods.is_image %} img{% endif %}">{{ goods.code }}</div>
-                    </td>
-                    <td id="goods_table_2">{{ goods.name }}</td>
-                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.quantity }}
-                        <div id="help-tip{{ goods.guid }}" class="help-tip"></div>
-                    </td>
-                    <td id="goods_table_4">{{ goods.price|format:"{0:.2f}"|currency:goods.price_currency }}</td>
+                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.reserve }}</td>
+                    <td id="goods_table_8" {% if not is_price_rrp %} class="goods_hide"{% endif %}>{{ goods.price_rrp|format:"{0:.2f}" }}</td>
                 </tr>
             {% endfor %}
         {% endif %}
