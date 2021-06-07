@@ -67,7 +67,7 @@
                 <tr id="tr_goods{{ goods.guid }}" class="goods_tr
                 {% if not goods.relevant %} not_relevant{% endif %}{% if goods.promo %} promo{% endif %}">
                     <td id="goods_table_1">
-                        <div class="goods_code{% if goods.is_image %} img{% endif %}">{{ goods.code }}</div>
+                        <div class="goods_code{% if goods.is_image %} img" onclick="showImage('{{ goods.guid }}');{% endif %}">{{ goods.code }}</div>
                     </td>
                     <td id="goods_table_2">{{ goods.name }}</td>
                     <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.quantity }}
