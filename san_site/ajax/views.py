@@ -103,6 +103,8 @@ def selection(request):
     except MultiValueDictKeyError:
         search = ''
 
+    is_price_rrp = True
+
     section_dict = {}
     if search != '' or only_promo_:
         goods_list = Section.get_goods_list(
@@ -122,6 +124,7 @@ def selection(request):
     return HttpResponseAjax(
         section=section_dict,
         products=render_to_string('goods/goods_table.html', {
+            'is_price_rrp': is_price_rrp,
             'goods_list': goods_list,
             'user': request.user,
         })
