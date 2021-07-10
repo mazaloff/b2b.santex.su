@@ -647,6 +647,7 @@ def update_users(load_list, value_response):
     filter_username = [element_list['username'] for element_list in load_list]
     filter_object = {t.username: t for t in User.objects.filter(username__in=filter_username)}
 
+    filter_object_prices = {t.guid: t for t in Price.objects.all()}
     filter_guid = [element_list['guid'] for element_list in load_list]
     filter_object_person = {t.guid: t for t in Person.objects.filter(guid__in=filter_guid)}
 
@@ -661,18 +662,25 @@ def update_users(load_list, value_response):
 
         element_list_customers = element_list['customers']
         for element_list_customer in element_list_customers:
+            obj_price = filter_object_prices.get(element_list_customer['guidPrice'], None)
+            if not obj_price:
+                add_error(value_response, code='Price.DoesNotExist',
+                          message='no get price', description=element_list)
+                continue
             new_object_customer = filter_object_customer.get(element_list_customer['guid'], None)
             if new_object_customer:
                 if new_object_customer.name == element_list_customer['name'] \
                         and new_object_customer.guid_owner == element_list_customer['guidOwner'] \
                         and new_object_customer.code == element_list_customer['code'] \
-                        and new_object_customer.is_deleted == element_list_customer['is_deleted']:
+                        and new_object_customer.is_deleted == element_list_customer['is_deleted']\
+                        and new_object_customer.price_id == obj_price.id:
                     pass
                 else:
                     new_object_customer.name = element_list_customer['name']
                     new_object_customer.guid_owner = element_list_customer['guidOwner']
                     new_object_customer.code = element_list_customer['code']
                     new_object_customer.is_deleted = element_list_customer['is_deleted']
+                    new_object_customer.price = obj_price
                     new_object_customer.save()
             else:
                 new_object_customer = Customer.objects.create(guid=element_list_customer['guid'],
@@ -680,9 +688,11 @@ def update_users(load_list, value_response):
                                                               name=element_list_customer['name'],
                                                               code=element_list_customer['code'],
                                                               is_deleted=element_list_customer['is_deleted'],
+                                                              price=obj_price
                                                               )
                 new_object_customer.created_date = timezone.now()
                 new_object_customer.suffix = str(timezone.now().year)
+                new_object_customer.price = obj_price
                 new_object_customer.save()
                 filter_object_customer[element_list_customer['guid']] = new_object_customer
 

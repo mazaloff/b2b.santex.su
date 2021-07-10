@@ -39,6 +39,17 @@ class SectionManager(models.Manager):
     pass
 
 
+class Price(models.Model):
+    guid = models.CharField(max_length=50, db_index=True)
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=20)
+    created_date = models.DateTimeField(default=timezone.now)
+    is_deleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
+
+
 class Customer(models.Model):
     guid = models.CharField(max_length=50, db_index=True)
     guid_owner = models.CharField(max_length=50, db_index=True, default='---')
@@ -47,6 +58,7 @@ class Customer(models.Model):
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)
     suffix = models.CharField(max_length=4, default='')
+    price = models.ForeignKey(Price, on_delete=models.PROTECT, default=1)
 
     def __str__(self):
         return self.name
@@ -357,9 +369,11 @@ class Section(models.Model):
 
         current_customer = get_customer(user)
         current_customer_id = 0
+        current_customer_price_id = 0
         current_customer_suffix = ''
         if current_customer:
             current_customer_id = current_customer.id
+            current_customer_price_id = current_customer.price.id
             current_customer_suffix = current_customer.suffix
 
         current_person = get_person(user)
@@ -472,7 +486,8 @@ class Section(models.Model):
                         {field_sort_search} AS sort_search
                     FROM san_site_product _product
                          {join_request_section}
-                         LEFT JOIN san_site_prices _prices ON _product.id = _prices.product_id
+                         LEFT JOIN san_site_prices _prices 
+                                ON _product.id = _prices.product_id AND _prices.price_id = {current_customer_price_id} 
                             LEFT JOIN san_site_currency _prices_cur ON _prices.currency_id = _prices_cur.id
                          LEFT JOIN san_site_customersprices{current_customer_suffix} _customersprices 
                             ON _customersprices.customer_id = %s AND _product.id = _customersprices.product_id  
@@ -706,17 +721,6 @@ class Store(models.Model):
         return self.name
 
 
-class Price(models.Model):
-    guid = models.CharField(max_length=50, db_index=True)
-    name = models.CharField(max_length=100)
-    code = models.CharField(max_length=20)
-    created_date = models.DateTimeField(default=timezone.now)
-    is_deleted = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.name
-
-
 class Currency(models.Model):
     guid = models.CharField(max_length=50, db_index=True)
     name = models.CharField(max_length=50)
@@ -781,11 +785,14 @@ class Inventories(models.Model):
 
 
 class Prices(models.Model):
-    product = models.ForeignKey(Product, db_index=True, on_delete=models.PROTECT)
-    price = models.ForeignKey(Price, on_delete=models.PROTECT)
+    product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
+    price = models.ForeignKey(Price, db_index=False, on_delete=models.PROTECT)
     currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
     value = models.FloatField(default=0)
     rrp = models.FloatField(default=0)
+
+    class Meta:
+        unique_together = (("product", "price"),)
 
 
 class PricesSale(models.Model):

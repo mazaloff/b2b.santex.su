@@ -35,8 +35,12 @@ class ProductListView(APIView):
 
         current_customer = get_customer(request.user)
         current_customer_id = None
+        current_customer_price_id = 0
+        current_customer_suffix = ''
         if current_customer:
             current_customer_id = current_customer.id
+            current_customer_price_id = current_customer.price.id
+            current_customer_suffix = current_customer.suffix
 
         if current_customer_id is None:
             return Response({'error': 'Не удалось авторизовать пользователя'},
@@ -110,9 +114,10 @@ class ProductListView(APIView):
                         COALESCE(_prices.rrp, 0) AS price_rrp,
                         SUM(COALESCE(_inventories.quantity, 0)) AS quantity
                     FROM san_site_product _product
-                        LEFT JOIN san_site_prices _prices ON _product.id = _prices.product_id
+                        LEFT JOIN san_site_prices _prices 
+                                ON _product.id = _prices.product_id AND _prices.price_id = {current_customer_price_id}
                             LEFT JOIN san_site_currency _prices_cur ON _prices.currency_id = _prices_cur.id
-                        LEFT JOIN san_site_customersprices _customersprices 
+                        LEFT JOIN san_site_customersprices{current_customer_suffix} _customersprices 
                             ON _customersprices.customer_id = %s AND _product.id = _customersprices.product_id  
                                 LEFT JOIN san_site_currency _customersprices_cur 
                                     ON _customersprices.currency_id = _customersprices_cur.id
@@ -153,9 +158,11 @@ class ProductListViewV1(APIView):
 
         current_customer = get_customer(request.user)
         current_customer_id = None
+        current_customer_price_id = 0
         current_customer_suffix = ''
         if current_customer:
             current_customer_id = current_customer.id
+            current_customer_price_id = current_customer.price.id
             current_customer_suffix = current_customer.suffix
 
         if current_customer_id is None:
@@ -238,7 +245,8 @@ class ProductListViewV1(APIView):
                         COALESCE(_prices.value, 0) AS price_base,
                         SUM(COALESCE(_inventories.quantity, 0)) AS quantity
                     FROM san_site_product _product
-                        LEFT JOIN san_site_prices _prices ON _product.id = _prices.product_id
+                        LEFT JOIN san_site_prices _prices 
+                                ON _product.id = _prices.product_id AND _prices.price_id = {current_customer_price_id}
                             LEFT JOIN san_site_currency _prices_cur ON _prices.currency_id = _prices_cur.id
                         LEFT JOIN san_site_customersprices{current_customer_suffix} _customersprices 
                             ON _customersprices.customer_id = %s AND _product.id = _customersprices.product_id  
