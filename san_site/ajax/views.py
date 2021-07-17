@@ -5,12 +5,12 @@ from django.template.loader import render_to_string
 from django.utils.datastructures import MultiValueDictKeyError
 from django.utils.log import log_response
 
-from san_site.cart.cart import Cart
-from san_site.models import Section, Product, Order
-from san_site.forms import EnterQuantity, EnterQuantityError
-from san_site.decorates.decorate import page_not_access_ajax
 from san_site.backend.response import HttpResponseAjax, HttpResponseAjaxError
 from san_site.backend.tools import str2bool
+from san_site.cart.cart import Cart
+from san_site.decorates.decorate import page_not_access_ajax
+from san_site.forms import EnterQuantity, EnterQuantityError
+from san_site.models import Section, Product, Order
 
 
 def get_categories(request):
@@ -382,8 +382,18 @@ def get_help_tip(request):
 
     product = get_object_or_404(Product, guid=guid)
 
+    user = request.user
+    if not user:
+        response = HttpResponseAjaxError(code=303, message='you are not authenticated')
+        log_response(
+            '%s : you are not authenticated', request.path,
+            response=response,
+            request=request,
+        )
+
     return HttpResponseAjax(
-        help_tip=render_to_string('goods/help_tip.html', {'ob_goods': product})
+        help_tip=render_to_string('goods/help_tip.html',
+                                  {'ob_goods': product, 'inventories': product.inventories_user(user)})
     )
 
 

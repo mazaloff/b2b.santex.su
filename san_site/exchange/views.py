@@ -16,7 +16,7 @@ from san_site.models import \
     Order, Customer, Person, Section, Brand, Product, Store, Price, Currency, Inventories, Prices, \
     CustomersPrices, CustomersPrices2020, CustomersPrices2021, CustomersPrices2022, CustomersPrices2023, \
     CustomersPrices2024, CustomersPrices2025, \
-    Courses, PersonRestrictions, Bill
+    Courses, PersonRestrictions, PersonStores, Bill
 
 
 @csrf_exempt
@@ -761,6 +761,13 @@ def update_users(load_list, value_response):
             filter_object_section = [t for t in Section.objects.filter(guid__in=filter_guid_section)]
             for element_section in filter_object_section:
                 PersonRestrictions.objects.create(person=new_object_person, section=element_section)
+
+        PersonStores.objects.filter(person=new_object_person).delete()
+
+        filter_guid_stores = [element_list_['guid'] for element_list_ in element_list["stores"]]
+        filter_object_stores = [t for t in Store.objects.filter(guid__in=filter_guid_stores)]
+        for element_store in filter_object_stores:
+            PersonStores.objects.create(person=new_object_person, store=element_store)
 
         value_response['result'].append(dict(guid=element_list['guid']))
 

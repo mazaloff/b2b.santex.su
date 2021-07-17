@@ -20,7 +20,7 @@ from rest_framework.status import (
     HTTP_200_OK
 )
 
-from san_site.models import Brand, Product, Person, CustomersFiles, Currency, get_customer
+from san_site.models import Brand, Product, CustomersFiles, get_customer, get_person
 from san_site.decorates.decorate import page_not_access
 
 from .serializers import ProductSerializer, ProductSerializerV1
@@ -45,6 +45,11 @@ class ProductListView(APIView):
         if current_customer_id is None:
             return Response({'error': 'Не удалось авторизовать пользователя'},
                             status=HTTP_403_FORBIDDEN)
+
+        current_person = get_person(request.user)
+        current_person_id = 0
+        if current_person:
+            current_person_id = current_person.id
 
         param = [current_customer_id]
 
@@ -121,7 +126,10 @@ class ProductListView(APIView):
                             ON _customersprices.customer_id = %s AND _product.id = _customersprices.product_id  
                                 LEFT JOIN san_site_currency _customersprices_cur 
                                     ON _customersprices.currency_id = _customersprices_cur.id
-                        LEFT JOIN san_site_inventories _inventories ON _product.id = _inventories.product_id
+                        LEFT JOIN san_site_personstores _personstores ON _personstores.person_id = {current_person_id}
+                            LEFT JOIN san_site_inventories _inventories 
+                                ON _product.id = _inventories.product_id
+                                    AND _personstores.store_id = _inventories.store_id
                         LEFT JOIN san_site_brand _brand ON _product.brand_id = _brand.id
                     WHERE _product.is_deleted = FALSE
                         AND {str_filter_code}
@@ -168,6 +176,11 @@ class ProductListViewV1(APIView):
         if current_customer_id is None:
             return Response({'error': 'Не удалось авторизовать пользователя'},
                             status=HTTP_403_FORBIDDEN)
+
+        current_person = get_person(request.user)
+        current_person_id = 0
+        if current_person:
+            current_person_id = current_person.id
 
         param = [current_customer_id]
 
@@ -252,7 +265,10 @@ class ProductListViewV1(APIView):
                             ON _customersprices.customer_id = %s AND _product.id = _customersprices.product_id  
                                 LEFT JOIN san_site_currency _customersprices_cur 
                                     ON _customersprices.currency_id = _customersprices_cur.id
-                        LEFT JOIN san_site_inventories _inventories ON _product.id = _inventories.product_id
+                        LEFT JOIN san_site_personstores _personstores ON _personstores.person_id = {current_person_id}
+                            LEFT JOIN san_site_inventories _inventories 
+                                ON _product.id = _inventories.product_id
+                                    AND _personstores.store_id = _inventories.store_id
                         LEFT JOIN san_site_brand _brand ON _product.brand_id = _brand.id
                     WHERE _product.is_deleted = FALSE
                         AND {str_filter_id}

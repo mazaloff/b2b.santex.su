@@ -1,6 +1,6 @@
 {% load format %}
 <div id="help-tip{{ ob_goods.guid }}" class="help-tip">
-    {% for key, value in ob_goods.inventories.items %}
+    {% for key, value in inventories.items %}
         {{ key }}: {{ value|units }} <br>
     {% endfor %}
 </div>

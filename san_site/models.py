@@ -493,7 +493,10 @@ class Section(models.Model):
                             ON _customersprices.customer_id = %s AND _product.id = _customersprices.product_id  
                                 LEFT JOIN san_site_currency _customersprices_cur 
                                     ON _customersprices.currency_id = _customersprices_cur.id   
-                         LEFT JOIN san_site_inventories _inventories ON _product.id = _inventories.product_id
+                         LEFT JOIN san_site_personstores _personstores ON _personstores.person_id = {current_person_id}
+                            LEFT JOIN san_site_inventories _inventories 
+                                ON _product.id = _inventories.product_id
+                                    AND _personstores.store_id = _inventories.store_id
                     WHERE (%s = FALSE OR _product.is_deleted = FALSE)
                         AND {where_request_search}
                         AND (%s = FALSE OR COALESCE (_customersprices.promo, FALSE) = TRUE)
@@ -611,6 +614,15 @@ class Product(models.Model):
             result.update(dict([(element.store.short_name, quantity)]))
         return result
 
+    def inventories_user(self, user):
+        result = {}
+        stores = {t.store: t for t in PersonStores.objects.filter(person=get_person(user))}
+        query_set_inventory = Inventories.objects.filter(product=self, store__in=stores).select_related('store')
+        for element in query_set_inventory:
+            quantity = '>10' if element.quantity > 10 else element.quantity
+            result.update(dict([(element.store.short_name, quantity)]))
+        return result
+
     @classmethod
     def change_relevant_products(cls):
 
@@ -649,11 +661,13 @@ class Product(models.Model):
         Section.change_is_inventories()
 
     def get_inventory(self, cart=None):
-        query_set_inventory = Inventories.objects.filter(product=self)
         inventory = 0
-        for element in query_set_inventory:
-            inventory += element.quantity
-        if cart:
+        if cart is not None:
+            if cart.user:
+                stores = {t.store: t for t in PersonStores.objects.filter(person=get_person(cart.user))}
+                query_set_inventory = Inventories.objects.filter(product=self, store__in=stores)
+                for element in query_set_inventory:
+                    inventory += element.quantity
             quantity = cart.get_quantity_product(self.guid)
             if type(quantity) == int:
                 inventory = max(inventory - quantity, 0)
@@ -721,6 +735,14 @@ class Store(models.Model):
         return self.name
 
 
+class PersonStores(models.Model):
+    person = models.ForeignKey(Person, db_index=True, on_delete=models.PROTECT)
+    store = models.ForeignKey(Store, db_index=False, on_delete=models.PROTECT)
+
+    class Meta:
+        unique_together = (("person", "store"),)
+
+
 class Currency(models.Model):
     guid = models.CharField(max_length=50, db_index=True)
     name = models.CharField(max_length=50)
@@ -779,9 +801,12 @@ class Currency(models.Model):
 
 class Inventories(models.Model):
     product = models.ForeignKey(Product, db_index=True, on_delete=models.PROTECT)
-    store = models.ForeignKey(Store, on_delete=models.PROTECT)
+    store = models.ForeignKey(Store, db_index=False, on_delete=models.PROTECT)
     quantity = models.IntegerField(default=0)
     reserve = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = (("product", "store"),)
 
 
 class Prices(models.Model):
