@@ -461,6 +461,16 @@ class Section(models.Model):
 
         param += [only_promo, only_stock]
 
+        join_inventories = """LEFT JOIN san_site_inventories _inventories 
+                                ON _product.id = _inventories.product_id"""
+        if current_person_id != 0:
+            join_inventories = f"""
+            LEFT JOIN san_site_personstores _personstores ON _personstores.person_id = {current_person_id}
+                            LEFT JOIN san_site_inventories _inventories 
+                                ON _product.id = _inventories.product_id
+                                    AND _personstores.store_id = _inventories.store_id
+            """
+
         with connection.cursor() as cursor:
             cursor.execute(
                 f""" WITH {select_request_section} result AS (
@@ -493,10 +503,7 @@ class Section(models.Model):
                             ON _customersprices.customer_id = %s AND _product.id = _customersprices.product_id  
                                 LEFT JOIN san_site_currency _customersprices_cur 
                                     ON _customersprices.currency_id = _customersprices_cur.id   
-                         LEFT JOIN san_site_personstores _personstores ON _personstores.person_id = {current_person_id}
-                            LEFT JOIN san_site_inventories _inventories 
-                                ON _product.id = _inventories.product_id
-                                    AND _personstores.store_id = _inventories.store_id
+                         {join_inventories}
                     WHERE (%s = FALSE OR _product.is_deleted = FALSE)
                         AND {where_request_search}
                         AND (%s = FALSE OR COALESCE (_customersprices.promo, FALSE) = TRUE)
