@@ -39,7 +39,7 @@ def create_files_customers(arg):
 @app.task
 def change_relevant_products(arg):
     from san_site.models import Product
-    # Product.change_relevant_products()
+    Product.change_relevant_products()
 
 
 @app.task

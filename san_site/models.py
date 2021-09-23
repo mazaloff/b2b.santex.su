@@ -633,6 +633,11 @@ class Product(models.Model):
     @classmethod
     def change_relevant_products(cls):
 
+        Section.change_is_deleted()
+        Section.change_is_inventories()
+
+        return
+
         sections = Section.objects.filter(group__isnull=True)
         for obj_section in sections:
             goods_list = obj_section.get_goods_list_section(only_available=False)
@@ -663,9 +668,6 @@ class Product(models.Model):
                         if cur_object:
                             cur_object.is_deleted = True
                             cur_object.save()
-
-        Section.change_is_deleted()
-        Section.change_is_inventories()
 
     def get_inventory(self, cart=None):
         inventory = 0
