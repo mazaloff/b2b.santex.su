@@ -741,15 +741,15 @@ def update_users(load_list, value_response):
                 new_object_person.is_deleted = element_list['is_deleted']
                 new_object_person.save()
         else:
-            new_object_person = Person.objects.create(guid=element_list['guid'],
-                                                      name=element_list['name'],
-                                                      user=new_object,
-                                                      customer=filter_object_customer[element_list['guidOwner']],
-                                                      code=element_list['code'],
-                                                      allow_order=element_list['allow_order'],
-                                                      is_deleted=element_list['is_deleted'],
-                                                      has_restrictions=element_list['has_restrictions']
-                                                      )
+            new_object_person = Person.objects.get_or_create(guid=element_list['guid'],
+                                                             name=element_list['name'],
+                                                             user=new_object,
+                                                             customer=filter_object_customer[element_list['guidOwner']],
+                                                             code=element_list['code'],
+                                                             allow_order=element_list['allow_order'],
+                                                             is_deleted=element_list['is_deleted'],
+                                                             has_restrictions=element_list['has_restrictions']
+                                                             )
             new_object_person.created_date = timezone.now()
             new_object_person.save()
             filter_object_person[element_list['guid']] = new_object_person
