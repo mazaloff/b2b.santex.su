@@ -727,6 +727,8 @@ def update_users(load_list, value_response):
             filter_object[element_list['username']] = new_object
 
         new_object_person = filter_object_person.get(element_list['guid'], None)
+        if not new_object_person:
+            new_object_person = Person.objects.get(user=new_object)
         if new_object_person:
             if new_object_person.name == element_list['name'] \
                     and new_object_person.code == element_list['code'] \
