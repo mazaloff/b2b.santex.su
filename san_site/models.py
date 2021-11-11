@@ -87,7 +87,7 @@ class Customer(models.Model):
 
 
 class Person(models.Model):
-    user = models.OneToOneField(User, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
     guid = models.CharField(max_length=50, db_index=True)
     name = models.CharField(max_length=200)
