@@ -11,6 +11,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.timezone import make_aware
 from django.views.decorators.csrf import csrf_exempt
+from django.db import IntegrityError
 
 from san_site.models import \
     Order, Customer, Person, Section, Brand, Product, Store, Price, Currency, Inventories, Prices, \
@@ -732,6 +733,7 @@ def update_users(load_list, value_response):
                     and new_object_person.code == element_list['code'] \
                     and new_object_person.is_deleted == element_list['is_deleted'] \
                     and new_object_person.allow_order == element_list['allow_order'] \
+                    and new_object_person.user == (None if element_list['is_deleted'] else new_object) \
                     and new_object_person.has_restrictions == element_list['has_restrictions']:
                 pass
             else:
@@ -739,8 +741,15 @@ def update_users(load_list, value_response):
                 new_object_person.code = element_list['code']
                 new_object_person.allow_order = element_list['allow_order']
                 new_object_person.is_deleted = element_list['is_deleted']
+                new_object_person.user = (None if element_list['is_deleted'] else new_object)
                 new_object_person.save()
         else:
+            qs_persons = Person.objects.filter(user=new_object)
+            for each in qs_persons:
+                each.user = None
+                each.is_deleted = True
+                each.save()
+
             new_object_person = Person.objects.create(guid=element_list['guid'],
                                                       name=element_list['name'],
                                                       user=new_object,
@@ -915,7 +924,6 @@ def update_users_prices(load_list, value_response):
         filter_object_product = {t.guid: t for t in Product.objects.filter(guid__in=filter_guid)}
 
         if all_clean:
-            CustomersPrices.objects.filter(customer=obj_customer).delete()
             manager_customers_prices.objects.filter(customer=obj_customer).delete()
         else:
             manager_customers_prices.objects.filter(customer=obj_customer) \
@@ -959,7 +967,11 @@ def update_users_prices(load_list, value_response):
                                                   promo=element_list_price['promo'])
             list_obj_prices.append(new_object)
 
-    manager_customers_prices.objects.bulk_create(list_obj_prices, batch_size=10000)
+    try:
+        manager_customers_prices.objects.bulk_create(list_obj_prices, batch_size=10000)
+    except IntegrityError as e:
+        add_error(value_response, code='CustomersPrices.ValueError',
+                  message='error bulk_create', description=str(e))
 
 
 def update_statuses(load_list, value_response):
