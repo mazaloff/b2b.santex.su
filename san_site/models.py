@@ -775,10 +775,12 @@ class Currency(models.Model):
         return currency.id
 
     def get_today_course(self, update_cache=False):
-        json_str = cache.get(f'today_course_{self.id}')
+        json_str = cache.get(f'today_course_{self.id}{str(datetime.date.today())}')
         if json_str is not None and not update_cache:
             try:
-                return json.loads(json_str)
+                value = json.loads(json_str)
+                if isinstance(json.loads(json_str), dict):
+                    return value
             except TypeError:
                 pass
         from django.db.models import Max
@@ -786,13 +788,13 @@ class Currency(models.Model):
         if not dict_max_date['max_date'] is None:
             set_course = Courses.objects.filter(currency=self).filter(date=dict_max_date['max_date'])
             if len(set_course) > 0:
-                cache.set(f'today_course_{self.id}',
+                cache.set(f'today_course_{self.id}{str(datetime.date.today())}',
                           json.dumps(
                               {'course': set_course[0].course,
                                'multiplicity': set_course[0].multiplicity}
-                          ), 3600)
+                          ), 7200)
                 return {'course': set_course[0].course, 'multiplicity': set_course[0].multiplicity}
-        cache.set(f'today_course_{self.id}', json.dumps({'course': 1, 'multiplicity': 1}), 3600)
+        cache.set(f'today_course_{self.id}{str(datetime.date.today())}', json.dumps({'course': 1, 'multiplicity': 1}), 3600)
         return {'course': 1, 'multiplicity': 1}
 
     def change_ruble(self, value):

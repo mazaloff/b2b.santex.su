@@ -1,14 +1,19 @@
+import json
+import datetime
+
 from django.shortcuts import resolve_url
 from django.conf import settings
+from django.core.cache import cache
 
 from rest_framework import serializers
 
-from san_site.models import Product, Currency
+from san_site.models import Product, Currency, Courses
 
-courses = {}
-currency = Currency.objects.all()
-for elem in currency:
-    courses[elem.id] = elem.get_today_course()
+
+# courses = {}
+# currency = Currency.objects.all()
+# for elem in currency:
+#     courses[elem.id] = elem.get_today_course(True)
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -138,7 +143,8 @@ class ProductSerializerV1(serializers.ModelSerializer):
 
     @staticmethod
     def calculate_price_rub(instance):
-        course = courses.get(instance.currency_id, {'course': 1, 'multiplicity': 1})
+        courses = get_currency()
+        course = courses.get(str(instance.currency_id), {'course': 1, 'multiplicity': 1})
         return round(instance.price * course['course'] / course['multiplicity'], 2)
 
     @staticmethod
@@ -148,3 +154,21 @@ class ProductSerializerV1(serializers.ModelSerializer):
     @staticmethod
     def calculate_photo(instance):
         return '' if instance.image.name == '' else settings.URL + resolve_url(instance.image.url)
+
+
+def get_currency():
+    json_str = cache.get(f'api_currency{str(datetime.date.today())}')
+    if json_str is not None:
+        try:
+            value = json.loads(json_str)
+            if isinstance(json.loads(json_str), dict):
+                return value
+        except TypeError:
+            pass
+    courses = {}
+    currency = Currency.objects.all()
+    for elem in currency:
+        courses[str(elem.id)] = elem.get_today_course(True)
+    cache.set(f'api_currency{str(datetime.date.today())}',
+              json.dumps(courses), 7200)
+    return courses
