@@ -157,7 +157,7 @@ class OrderSerializer(serializers.HyperlinkedModelSerializer):
     person = serializers.SerializerMethodField(method_name='person_guid')
     shipment = serializers.CharField()
     payment = serializers.CharField()
-    delivery = serializers.CharField()
+    delivery = serializers.DateTimeField()
     status = serializers.CharField()
     receiver_bills = serializers.CharField()
     comment = serializers.CharField()
