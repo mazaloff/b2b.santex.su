@@ -1,29 +1,26 @@
 import os
-
-from django.contrib.auth import authenticate
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.datastructures import MultiValueDictKeyError
-from django.shortcuts import resolve_url, render
-from django.http import HttpResponse
 from django.conf import settings
-
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
+from django.http import HttpResponse
+from django.shortcuts import resolve_url, render
+from django.utils.datastructures import MultiValueDictKeyError
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.authentication import TokenAuthentication, SessionAuthentication
-from rest_framework.permissions import AllowAny
+from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_200_OK
 )
+from rest_framework.views import APIView
 
-from san_site.models import Brand, Product, CustomersFiles, get_customer, get_person
 from san_site.decorates.decorate import page_not_access
-
-from .serializers import ProductSerializer, ProductSerializerV1
+from san_site.models import Brand, Product, Customer, Order, CustomersFiles, get_customer, get_person
+from .serializers import ProductSerializer, ProductSerializerV1, OrderSerializer
 
 
 class ProductListView(APIView):
@@ -295,6 +292,31 @@ class ProductListViewV1(APIView):
                 FROM result
                 ORDER BY result.code_;""", param)
         serializer = ProductSerializerV1(queryset, many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+
+class OrderListView(APIView):
+    authentication_classes = ()
+
+    @staticmethod
+    @api_view(('GET',))
+    def get(request):
+
+        customer_guid = ''
+        for key, value in request.GET.items():
+            if key.startswith('customer_guid'):
+                customer_guid += f"{'' if customer_guid == '' else ','}{value}"
+        if customer_guid == '':
+            return Response({'error': 'Не определен покупатель (customer_guid)'},
+                            status=HTTP_200_OK)
+
+        qr = Customer.objects.filter(guid=customer_guid)
+        if len(qr) == 0:
+            return Response({'error': 'Не определен покупатель (customer_guid)'},
+                            status=HTTP_200_OK)
+        customer = qr[0]
+
+        serializer = OrderSerializer(Order.objects.filter(customer=customer).all(), many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
 

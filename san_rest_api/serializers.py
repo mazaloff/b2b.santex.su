@@ -1,19 +1,12 @@
-import json
 import datetime
+import json
 
-from django.shortcuts import resolve_url
 from django.conf import settings
 from django.core.cache import cache
-
+from django.shortcuts import resolve_url
 from rest_framework import serializers
 
-from san_site.models import Product, Currency, Courses
-
-
-# courses = {}
-# currency = Currency.objects.all()
-# for elem in currency:
-#     courses[elem.id] = elem.get_today_course(True)
+from san_site.models import Product, Currency, Order, OrderItem
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -154,6 +147,61 @@ class ProductSerializerV1(serializers.ModelSerializer):
     @staticmethod
     def calculate_photo(instance):
         return '' if instance.image.name == '' else settings.URL + resolve_url(instance.image.url)
+
+
+class OrderSerializer(serializers.HyperlinkedModelSerializer):
+    id = serializers.IntegerField()
+    guid = serializers.CharField()
+    date = serializers.DateTimeField()
+    customer = serializers.SerializerMethodField(method_name='customer_guid')
+    person = serializers.SerializerMethodField(method_name='person_guid')
+    shipment = serializers.CharField()
+    payment = serializers.CharField()
+    delivery = serializers.CharField()
+    status = serializers.CharField()
+    receiver_bills = serializers.CharField()
+    comment = serializers.CharField()
+    items = serializers.SerializerMethodField(method_name='get_items')
+
+    class Meta:
+        model = Order
+        fields = (
+            'id', 'guid', 'date', 'customer', 'person', 'shipment', 'payment', 'delivery', 'status', 'receiver_bills',
+            'comment', 'items')
+
+    @staticmethod
+    def customer_guid(instance):
+        return instance.customer.guid
+
+    @staticmethod
+    def person_guid(instance):
+        return instance.person.guid
+
+    @staticmethod
+    def get_items(instance):
+        return OrderItemSerializer(OrderItem.objects.filter(order_id=instance.id).all(), many=True).data
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    product = serializers.SerializerMethodField(method_name='product_guid')
+    quantity = serializers.IntegerField()
+    price = serializers.FloatField()
+    currency = serializers.SerializerMethodField(method_name='currency_code')
+    price_ruble = serializers.FloatField()
+
+    class Meta:
+        model = OrderItem
+        fields = (
+            'product', 'quantity', 'price', 'currency', 'price_ruble')
+
+    @staticmethod
+    def product_guid(instance):
+        return instance.product.guid
+
+    @staticmethod
+    def currency_code(instance):
+        value = Currency.objects.get(id=instance.currency_id)
+        return value.code
 
 
 def get_currency():
