@@ -95,6 +95,7 @@ class Person(models.Model):
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False)
     allow_order = models.BooleanField(default=False)
+    allow_prices = models.BooleanField(default=True)
     key = models.CharField(max_length=20, default='xxx')
     change_password = models.BooleanField(default=True)
     lock_order = models.BooleanField(default=False)

@@ -21,7 +21,8 @@
             <th id="goods_table_3">
                 <div><span>Резерв</span></div>
             </th>
-            {% if user.is_authenticated and user.person.allow_order %}
+            {% if user.is_authenticated and user.person.allow_prices %}
+                {% if user.person.allow_order %}
                 <th id="goods_table_4">
                     <div><span>Цена</span></div>
                 </th>
@@ -31,10 +32,11 @@
                 <th id="goods_table_7" {% if not is_price_rrp %} class="right-radius"{% endif %}>
                     <div><span>Ваша цена</span></div>
                 </th>
+                {% endif %}
+                <th id="goods_table_8" {% if not is_price_rrp %} class="goods_hide" {% else %} class="right-radius"{% endif %}>
+                    <div><span>РРЦ руб.</span></div>
+                </th>
             {% endif %}
-            <th id="goods_table_8" {% if not is_price_rrp %} class="goods_hide" {% else %} class="right-radius"{% endif %}>
-                <div><span>РРЦ руб.</span></div>
-            </th>
         </tr>
         </thead>
         {% if user.is_authenticated and user.person.allow_order %}
@@ -74,7 +76,9 @@
                         <div id="help-tip{{ goods.guid }}" class="help-tip"></div>
                     </td>
                     <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.reserve }}</td>
-                    <td id="goods_table_8" {% if not is_price_rrp %} class="goods_hide"{% endif %}>{{ goods.price_rrp|format:"{0:.2f}" }}</td>
+                    {% if user.person.allow_prices %}
+                        <td id="goods_table_8" {% if not is_price_rrp %} class="goods_hide"{% endif %}>{{ goods.price_rrp|format:"{0:.2f}" }}</td>
+                    {% endif %}
                 </tr>
             {% endfor %}
         {% endif %}
