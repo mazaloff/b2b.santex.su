@@ -1,4 +1,6 @@
 import os
+from datetime import datetime
+
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.http import HttpResponse
@@ -327,6 +329,30 @@ class OrderListView(APIView):
                                 status=HTTP_200_OK)
             person = qr[0]
             objects = objects.filter(person=person)
+
+        data_start_str = ''
+        for key, value in request.GET.items():
+            if key.startswith('start'):
+                data_start_str += f"{'' if data_start_str == '' else ','}{value}"
+        if data_start_str != '':
+            try:
+                data_start = datetime.strptime(data_start_str, "%Y-%m-%d")
+                objects = objects.filter(date__gte=data_start)
+            except TypeError:
+                return Response({'error': 'Не верная дата (start)'},
+                                status=HTTP_200_OK)
+
+        data_end_str = ''
+        for key, value in request.GET.items():
+            if key.startswith('end'):
+                data_end_str += f"{'' if data_end_str == '' else ','}{value}"
+        if data_end_str != '':
+            try:
+                data_end = datetime.strptime(data_end_str, "%Y-%m-%d")
+                objects = objects.filter(date__lte=data_end)
+            except TypeError:
+                return Response({'error': 'Не верная дата (end)'},
+                                status=HTTP_200_OK)
 
         serializer = OrderSerializer(objects.all(), many=True)
         return Response(serializer.data, status=HTTP_200_OK)
