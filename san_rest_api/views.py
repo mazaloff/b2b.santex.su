@@ -19,7 +19,7 @@ from rest_framework.status import (
 from rest_framework.views import APIView
 
 from san_site.decorates.decorate import page_not_access
-from san_site.models import Brand, Product, Customer, Order, CustomersFiles, get_customer, get_person
+from san_site.models import Brand, Product, Customer, Person, Order, CustomersFiles, get_customer, get_person
 from .serializers import ProductSerializer, ProductSerializerV1, OrderSerializer
 
 
@@ -302,21 +302,33 @@ class OrderListView(APIView):
     @api_view(('GET',))
     def get(request):
 
+        objects = Order.objects
+
         customer_guid = ''
         for key, value in request.GET.items():
             if key.startswith('customer_guid'):
                 customer_guid += f"{'' if customer_guid == '' else ','}{value}"
-        if customer_guid == '':
-            return Response({'error': 'Не определен покупатель (customer_guid)'},
-                            status=HTTP_200_OK)
+        if customer_guid != '':
+            qr = Customer.objects.filter(guid=customer_guid)
+            if len(qr) == 0:
+                return Response({'error': 'Не определен покупатель (customer_guid)'},
+                                status=HTTP_200_OK)
+            customer = qr[0]
+            objects = objects.filter(customer=customer)
 
-        qr = Customer.objects.filter(guid=customer_guid)
-        if len(qr) == 0:
-            return Response({'error': 'Не определен покупатель (customer_guid)'},
-                            status=HTTP_200_OK)
-        customer = qr[0]
+        person_guid = ''
+        for key, value in request.GET.items():
+            if key.startswith('person_guid'):
+                person_guid += f"{'' if person_guid == '' else ','}{value}"
+        if person_guid != '':
+            qr = Person.objects.filter(guid=person_guid)
+            if len(qr) == 0:
+                return Response({'error': 'Не определен юзер (person_guid)'},
+                                status=HTTP_200_OK)
+            person = qr[0]
+            objects = objects.filter(person=person)
 
-        serializer = OrderSerializer(Order.objects.filter(customer=customer).all(), many=True)
+        serializer = OrderSerializer(objects.all(), many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
 
