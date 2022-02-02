@@ -72,6 +72,15 @@ class Customer(models.Model):
             list_customers.append((elem.guid, elem.name))
         return list_customers
 
+    @staticmethod
+    def get_customers(user):
+        customer = get_customer(user)
+        list_customers = []
+        customers_all = Customer.objects.filter(guid_owner=customer.guid_owner)
+        for elem in customers_all:
+            list_customers.append(elem)
+        return list_customers
+
     def get_files(self):
         customers_files = CustomersFiles.objects.filter(customer=self)
         files = []
@@ -100,12 +109,13 @@ class Person(models.Model):
     change_password = models.BooleanField(default=True)
     lock_order = models.BooleanField(default=False)
     has_restrictions = models.BooleanField(default=False)
+    permit_all_orders = models.BooleanField(default=False)
 
     class LetterPasswordChangeError(BaseException):
         pass
 
     def __str__(self):
-        return self.name
+        return f'{self.name} ({self.user.username})'
 
     def letter_password_change(self, url):
         new_key = self.make_new_key()
@@ -1043,7 +1053,10 @@ class Order(models.Model):
         set_person = Person.objects.filter(user=user)
         if len(set_person) == 0:
             return []
-        orders = Order.objects.filter(person=set_person[0])
+        if set_person[0].permit_all_orders:
+            orders = Order.objects.filter(customer__in=Customer.get_customers(user))
+        else:
+            orders = Order.objects.filter(person=set_person[0])
         if begin_date and end_date:
             try:
                 begin_datetime = datetime.datetime(begin_date.year, begin_date.month, begin_date.day, 0, 0, 0) \
@@ -1053,9 +1066,14 @@ class Order(models.Model):
                 orders = orders.filter(date__range=(begin_datetime, end_datetime))
             except AttributeError:
                 pass
-        orders = orders.select_related('customer').prefetch_related(
-            Prefetch("order_bills", Bill.objects.filter(person=set_person[0]))
-        ).order_by('-date')
+        if set_person[0].permit_all_orders:
+            orders = orders.select_related('customer').prefetch_related(
+                Prefetch("order_bills", Bill.objects.filter(customer__in=Customer.get_customers(user)))
+            ).order_by('-date')
+        else:
+            orders = orders.select_related('customer').prefetch_related(
+                Prefetch("order_bills", Bill.objects.filter(person=set_person[0]))
+            ).order_by('-date')
         result_list = []
         for elem in orders:
             is_bill = False
@@ -1067,6 +1085,7 @@ class Order(models.Model):
                                     id=elem.id,
                                     date=elem.date,
                                     customer=elem.customer,
+                                    person=elem.person,
                                     get_total_cost=elem.get_total_cost,
                                     shipment=elem.shipment,
                                     delivery=elem.delivery,
