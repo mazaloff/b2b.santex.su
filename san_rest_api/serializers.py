@@ -222,6 +222,7 @@ class BillSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.IntegerField()
     guid = serializers.CharField()
     date = serializers.DateTimeField()
+    order = serializers.SerializerMethodField(method_name='order_id')
     customer = serializers.SerializerMethodField(method_name='customer_guid')
     person = serializers.SerializerMethodField(method_name='person_guid')
     comment = serializers.CharField()
@@ -231,7 +232,7 @@ class BillSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Order
         fields = (
-            'id', 'guid', 'date', 'customer', 'person', 'comment', 'total', 'file')
+            'id', 'guid', 'date', 'order', 'customer', 'person', 'comment', 'total', 'file')
 
     @staticmethod
     def customer_guid(instance):
@@ -240,6 +241,10 @@ class BillSerializer(serializers.HyperlinkedModelSerializer):
     @staticmethod
     def person_guid(instance):
         return instance.person.guid
+
+    @staticmethod
+    def order_id(instance):
+        return instance.order.id
 
 
 def get_currency():
