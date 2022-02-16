@@ -218,11 +218,12 @@ class Base64ImageField(serializers.ImageField):
         return super(Base64ImageField, self).to_internal_value(data)
 
 
-class BillSerializer(serializers.HyperlinkedModelSerializer):
+class BillSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
     guid = serializers.CharField()
     date = serializers.DateTimeField()
-    order = serializers.SerializerMethodField(method_name='order_id')
+    order_id = serializers.SerializerMethodField(method_name='get_order_id')
+    order_guid = serializers.SerializerMethodField(method_name='get_order_guid')
     customer = serializers.SerializerMethodField(method_name='customer_guid')
     person = serializers.SerializerMethodField(method_name='person_guid')
     comment = serializers.CharField()
@@ -233,7 +234,7 @@ class BillSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Order
         fields = (
-            'id', 'guid', 'date', 'order', 'customer', 'person', 'comment', 'total', 'currency', 'file')
+            'id', 'guid', 'date', 'order_id', 'order_guid', 'customer', 'person', 'comment', 'total', 'currency', 'file')
 
     @staticmethod
     def customer_guid(instance):
@@ -244,8 +245,12 @@ class BillSerializer(serializers.HyperlinkedModelSerializer):
         return instance.person.guid
 
     @staticmethod
-    def order_id(instance):
+    def get_order_id(instance):
         return instance.order.id
+
+    @staticmethod
+    def get_order_guid(instance):
+        return instance.order.guid
 
     @staticmethod
     def currency_code(instance):
