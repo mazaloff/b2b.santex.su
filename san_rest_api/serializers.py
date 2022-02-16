@@ -227,12 +227,13 @@ class BillSerializer(serializers.HyperlinkedModelSerializer):
     person = serializers.SerializerMethodField(method_name='person_guid')
     comment = serializers.CharField()
     total = serializers.DecimalField(15, 2)
+    currency = serializers.SerializerMethodField(method_name='currency_code')
     file = Base64ImageField()
 
     class Meta:
         model = Order
         fields = (
-            'id', 'guid', 'date', 'order', 'customer', 'person', 'comment', 'total', 'file')
+            'id', 'guid', 'date', 'order', 'customer', 'person', 'comment', 'total', 'currency', 'file')
 
     @staticmethod
     def customer_guid(instance):
@@ -245,6 +246,11 @@ class BillSerializer(serializers.HyperlinkedModelSerializer):
     @staticmethod
     def order_id(instance):
         return instance.order.id
+
+    @staticmethod
+    def currency_code(instance):
+        value = Currency.objects.get(id=instance.currency_id)
+        return value.code
 
 
 def get_currency():
