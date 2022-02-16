@@ -21,8 +21,8 @@ from rest_framework.status import (
 from rest_framework.views import APIView
 
 from san_site.decorates.decorate import page_not_access
-from san_site.models import Brand, Product, Customer, Person, Order, CustomersFiles, get_customer, get_person
-from .serializers import ProductSerializer, ProductSerializerV1, OrderSerializer
+from san_site.models import Brand, Product, Customer, Person, Order, Bill, CustomersFiles, get_customer, get_person
+from .serializers import ProductSerializer, ProductSerializerV1, OrderSerializer, BillSerializer
 
 
 class ProductListView(APIView):
@@ -355,6 +355,67 @@ class OrderListView(APIView):
                                 status=HTTP_200_OK)
 
         serializer = OrderSerializer(objects.all(), many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+
+class BillListView(APIView):
+    authentication_classes = ()
+
+    @staticmethod
+    @api_view(('GET',))
+    def get(request):
+
+        objects = Bill.objects
+
+        customer_guid = ''
+        for key, value in request.GET.items():
+            if key.startswith('customer_guid'):
+                customer_guid += f"{'' if customer_guid == '' else ','}{value}"
+        if customer_guid != '':
+            qr = Customer.objects.filter(guid=customer_guid)
+            if len(qr) == 0:
+                return Response({'error': 'Не определен покупатель (customer_guid)'},
+                                status=HTTP_200_OK)
+            customer = qr[0]
+            objects = objects.filter(customer=customer)
+
+        person_guid = ''
+        for key, value in request.GET.items():
+            if key.startswith('person_guid'):
+                person_guid += f"{'' if person_guid == '' else ','}{value}"
+        if person_guid != '':
+            qr = Person.objects.filter(guid=person_guid)
+            if len(qr) == 0:
+                return Response({'error': 'Не определен юзер (person_guid)'},
+                                status=HTTP_200_OK)
+            person = qr[0]
+            objects = objects.filter(person=person)
+
+        data_start_str = ''
+        for key, value in request.GET.items():
+            if key.startswith('start'):
+                data_start_str += f"{'' if data_start_str == '' else ','}{value}"
+        if data_start_str != '':
+            try:
+                data_start = datetime.strptime(data_start_str, "%Y-%m-%d")
+                objects = objects.filter(date__gte=data_start)
+            except TypeError:
+                return Response({'error': 'Не верная дата (start)'},
+                                status=HTTP_200_OK)
+
+        data_end_str = ''
+        for key, value in request.GET.items():
+            if key.startswith('end'):
+                data_end_str += f"{'' if data_end_str == '' else ','}{value}"
+        if data_end_str != '':
+            try:
+                data_end = datetime.strptime(data_end_str, "%Y-%m-%d")
+                objects = objects.filter(date__lte=data_end)
+            except TypeError:
+                return Response({'error': 'Не верная дата (end)'},
+                                status=HTTP_200_OK)
+
+        serializer = BillSerializer(objects.all(), many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
 

@@ -5,8 +5,10 @@ from django.conf import settings
 from django.core.cache import cache
 from django.shortcuts import resolve_url
 from rest_framework import serializers
+import base64, uuid
+from django.core.files.base import ContentFile
 
-from san_site.models import Product, Currency, Order, OrderItem
+from san_site.models import Product, Currency, Order, OrderItem, Bill
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -202,6 +204,42 @@ class OrderItemSerializer(serializers.ModelSerializer):
     def currency_code(instance):
         value = Currency.objects.get(id=instance.currency_id)
         return value.code
+
+
+# Custom image field - handles base 64 encoded images
+class Base64ImageField(serializers.ImageField):
+    def to_internal_value(self, data):
+        if isinstance(data, str) and data.startswith('data:image'):
+            # base64 encoded image - decode
+            format, imgstr = data.split(';base64,') # format ~= data:image/X,
+            ext = format.split('/')[-1] # guess file extension
+            id = uuid.uuid4()
+            data = ContentFile(base64.b64decode(imgstr), name=id.urn[9:] + '.' + ext)
+        return super(Base64ImageField, self).to_internal_value(data)
+
+
+class BillSerializer(serializers.HyperlinkedModelSerializer):
+    id = serializers.IntegerField()
+    guid = serializers.CharField()
+    date = serializers.DateTimeField()
+    customer = serializers.SerializerMethodField(method_name='customer_guid')
+    person = serializers.SerializerMethodField(method_name='person_guid')
+    comment = serializers.CharField()
+    total = serializers.DecimalField(15, 2)
+    file = Base64ImageField()
+
+    class Meta:
+        model = Order
+        fields = (
+            'id', 'guid', 'date', 'customer', 'person', 'comment', 'total', 'file')
+
+    @staticmethod
+    def customer_guid(instance):
+        return instance.customer.guid
+
+    @staticmethod
+    def person_guid(instance):
+        return instance.person.guid
 
 
 def get_currency():
