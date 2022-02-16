@@ -221,6 +221,7 @@ class Base64ImageField(serializers.ImageField):
 class BillSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
     guid = serializers.CharField()
+    number = serializers.CharField()
     date = serializers.DateTimeField()
     order_id = serializers.SerializerMethodField(method_name='get_order_id')
     order_guid = serializers.SerializerMethodField(method_name='get_order_guid')
@@ -234,7 +235,7 @@ class BillSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = (
-            'id', 'guid', 'date', 'order_id', 'order_guid', 'customer', 'person', 'comment', 'total', 'currency', 'file')
+            'id', 'guid', 'number', 'date', 'order_id', 'order_guid', 'customer', 'person', 'comment', 'total', 'currency', 'file')
 
     @staticmethod
     def customer_guid(instance):
