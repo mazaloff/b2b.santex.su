@@ -82,6 +82,7 @@ class ProductSerializerV1(serializers.ModelSerializer):
     name = serializers.SerializerMethodField(method_name='calculate_name')
     matrix = serializers.SerializerMethodField(method_name='calculate_matrix')
     quantity = serializers.SerializerMethodField(method_name='calculate_quantity')
+    stores = serializers.SerializerMethodField(method_name='get_stores')
     photo = serializers.SerializerMethodField(method_name='calculate_photo')
     brand = serializers.SerializerMethodField(method_name='calculate_brand')
     price = serializers.SerializerMethodField(method_name='calculate_price')
@@ -93,8 +94,18 @@ class ProductSerializerV1(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = (
-            'id', 'article', 'name', 'brand', 'barcode', 'matrix', 'photo', 'quantity', 'price', 'price_base',
+            'id', 'article', 'name', 'brand', 'barcode', 'matrix', 'photo', 'quantity', 'stores', 'price', 'price_base',
             'currency', 'price_rub', 'rrp_rub')
+
+    def _user(self):
+        request = self.context.get('request', None)
+        if request:
+            return request.user
+
+    def _inventories(self):
+        inventories = self.context.get('inventories', None)
+        if inventories:
+            return inventories
 
     @staticmethod
     def calculate_name(instance):
@@ -149,6 +160,23 @@ class ProductSerializerV1(serializers.ModelSerializer):
     @staticmethod
     def calculate_photo(instance):
         return '' if instance.image.name == '' else settings.URL + resolve_url(instance.image.url)
+
+    def get_stores(self, instance):
+        inventories = self._inventories()
+        if inventories.get(instance.guid_) is None:
+            return StoreItemSerializer(list(), many=True).data
+        else:
+            return StoreItemSerializer(inventories[instance.guid_], many=True).data
+
+
+class StoreItemSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    name = serializers.CharField()
+    quantity = serializers.IntegerField()
+
+    class Meta:
+        fields = (
+            'id', 'name', 'quantity')
 
 
 class OrderSerializer(serializers.HyperlinkedModelSerializer):

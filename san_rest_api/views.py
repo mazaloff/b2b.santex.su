@@ -1,8 +1,9 @@
-import os
 from datetime import datetime
 
+import os
 from django.conf import settings
 from django.contrib.auth import authenticate
+from django.db import connection
 from django.http import HttpResponse
 from django.shortcuts import resolve_url, render
 from django.utils.datastructures import MultiValueDictKeyError
@@ -21,7 +22,8 @@ from rest_framework.status import (
 from rest_framework.views import APIView
 
 from san_site.decorates.decorate import page_not_access
-from san_site.models import Brand, Product, Customer, Person, Order, Bill, CustomersFiles, get_customer, get_person
+from san_site.models import Brand, Product, Customer, Person, Order, Bill, PersonStores, CustomersFiles, get_customer, \
+    get_person
 from .serializers import ProductSerializer, ProductSerializerV1, OrderSerializer, BillSerializer
 
 
@@ -293,7 +295,53 @@ class ProductListViewV1(APIView):
                 SELECT *
                 FROM result
                 ORDER BY result.code_;""", param)
-        serializer = ProductSerializerV1(queryset, many=True)
+        inventories = dict()
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""SELECT _product.guid AS guid_,
+                                    COALESCE(_store.guid, '') AS store_id,
+                                    COALESCE(_store.short_name, '') AS store_name,
+                                    COALESCE(_inventories.quantity, 0) AS quantity
+                                FROM san_site_product _product
+                                    LEFT JOIN san_site_prices _prices 
+                                            ON _product.id = _prices.product_id 
+                                                AND _prices.price_id = {current_customer_price_id}
+                                        LEFT JOIN san_site_currency _prices_cur ON _prices.currency_id = _prices_cur.id
+                                    LEFT JOIN san_site_customersprices{current_customer_suffix} _customersprices 
+                                        ON _customersprices.customer_id = %s 
+                                                AND _product.id = _customersprices.product_id  
+                                            LEFT JOIN san_site_currency _customersprices_cur 
+                                                ON _customersprices.currency_id = _customersprices_cur.id
+                                    LEFT JOIN san_site_personstores _personstores 
+                                                ON _personstores.person_id = {current_person_id}
+                                        LEFT JOIN san_site_inventories _inventories 
+                                            ON _product.id = _inventories.product_id
+                                                AND _personstores.store_id = _inventories.store_id
+                                            LEFT JOIN san_site_store _store ON _inventories.store_id = _store.id
+                                    LEFT JOIN san_site_brand _brand ON _product.brand_id = _brand.id
+                                WHERE _product.is_deleted = FALSE
+                                    AND {str_filter_id}
+                                    AND {str_filter_code}
+                                    AND {str_filter_article}
+                                    AND {str_filter_brand}
+                                    AND {str_filter_barcode}
+                                    AND {str_filter_quantity}
+                                GROUP BY _product.guid,
+                                    COALESCE(_store.guid, ''),
+                                    COALESCE(_store.short_name, ''),
+                                    COALESCE(_inventories.quantity, 0)""", param)
+            rows = cursor.fetchall()
+            for row in rows:
+                if row[1] != '':
+                    row_ = SelectRow(*row)
+                    if inventories.get(row[0]) is None:
+                        inventories[row[0]] = list()
+                    inventories[row[0]].append(row_)
+        serializer = ProductSerializerV1(queryset,
+                                         context={
+                                             'request': request,
+                                             'inventories': inventories,
+                                         }, many=True)
         return Response(serializer.data, status=HTTP_200_OK)
 
 
@@ -493,3 +541,11 @@ def login(request):
     token, _ = Token.objects.get_or_create(user=user)
     return Response({'token': token.key},
                     status=HTTP_200_OK)
+
+
+class SelectRow:
+    def __init__(self, guid, store_id, store_name, quantity):
+        quantity_ = 10 if quantity > 10 else quantity
+        self.id: str = store_id
+        self.name: str = store_name
+        self.quantity: int = quantity_
