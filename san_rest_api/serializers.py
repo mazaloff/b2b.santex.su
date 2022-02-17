@@ -163,7 +163,9 @@ class ProductSerializerV1(serializers.ModelSerializer):
 
     def get_stores(self, instance):
         inventories = self._inventories()
-        if inventories.get(instance.guid_) is None:
+        if inventories is None:
+            return StoreItemSerializer(list(), many=True).data
+        elif inventories.get(instance.guid_) is None:
             return StoreItemSerializer(list(), many=True).data
         else:
             return StoreItemSerializer(inventories[instance.guid_], many=True).data
