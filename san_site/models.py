@@ -367,7 +367,7 @@ class Section(models.Model):
         user = kwargs.get('user', None)
         id_section = kwargs.get('id_section', 0)
         search = kwargs.get('search', '')
-        search = search.replace('\\', '')
+        search = re.escape(search.replace('\\', ''))
 
         only_stock = kwargs.get('only_stock', False)
         only_promo = kwargs.get('only_promo', False)
