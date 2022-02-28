@@ -16,11 +16,11 @@
                 <div><span>Наименование товара</span></div>
             </th>
             <th id="goods_table_3">
-                <div><span>Свободно</span></div>
+                <div><span>Остаток</span></div>
             </th>
-            <th id="goods_table_3">
-                <div><span>Резерв</span></div>
-            </th>
+{#            <th id="goods_table_3">#}
+{#                <div><span>Резерв</span></div>#}
+{#            </th>#}
             {% if user.is_authenticated and user.person.allow_prices %}
                 {% if user.person.allow_order %}
                 <th id="goods_table_4">
@@ -54,14 +54,16 @@
                         {{ goods.quantity }}
                         <div id="help-tip{{ goods.guid }}" class="help-tip"></div>
                     </td>
-                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')"
-                        id="goods_table_3" style="cursor: pointer;">
-                        {{ goods.reserve }}
-                    </td>
+{#                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')"#}
+{#                        id="goods_table_3" style="cursor: pointer;">#}
+{#                        {{ goods.reserve }}#}
+{#                    </td>#}
+                    {% if user.person.allow_prices %}
                     <td id="goods_table_4">{{ goods.price|format:"{0:.2f}"|currency:goods.price_currency }}</td>
                     <td id="goods_table_6">{{ goods.percent|format:"{0:.2f}" }}</td>
                     <td id="goods_table_7">{{ goods.discount|format:"{0:.2f}"|currency:goods.currency }}</td>
                     <td id="goods_table_8" {% if not is_price_rrp %} class="goods_hide"{% endif %}>{{ goods.price_rrp|format:"{0:.2f}" }}</td>
+                    {% endif %}
                 </tr>
             {% endfor %}
         {% elif user.is_authenticated %}
@@ -75,7 +77,7 @@
                     <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.quantity }}
                         <div id="help-tip{{ goods.guid }}" class="help-tip"></div>
                     </td>
-                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.reserve }}</td>
+{#                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.reserve }}</td>#}
                     {% if user.person.allow_prices %}
                         <td id="goods_table_8" {% if not is_price_rrp %} class="goods_hide"{% endif %}>{{ goods.price_rrp|format:"{0:.2f}" }}</td>
                     {% endif %}
