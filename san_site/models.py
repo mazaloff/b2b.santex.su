@@ -853,7 +853,7 @@ class PricesSale(models.Model):
 
 
 class CustomersPrices(models.Model):
-    # id = models.BigAutoField(primary_key=True)
+    id = models.BigAutoField(primary_key=True)
     product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
     customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
     currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
