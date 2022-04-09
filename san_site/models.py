@@ -823,7 +823,7 @@ class Currency(models.Model):
 
 
 class Inventories(models.Model):
-    id = models.BigAutoField(primary_key=True)
+    # id = models.BigAutoField(primary_key=True)
     product = models.ForeignKey(Product, db_index=True, on_delete=models.PROTECT)
     store = models.ForeignKey(Store, db_index=False, on_delete=models.PROTECT)
     quantity = models.IntegerField(default=0)
@@ -834,7 +834,7 @@ class Inventories(models.Model):
 
 
 class Prices(models.Model):
-    id = models.BigAutoField(primary_key=True)
+    # id = models.BigAutoField(primary_key=True)
     product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
     price = models.ForeignKey(Price, db_index=False, on_delete=models.PROTECT)
     currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
@@ -853,7 +853,7 @@ class PricesSale(models.Model):
 
 
 class CustomersPrices(models.Model):
-    id = models.BigAutoField(primary_key=True)
+    # id = models.BigAutoField(primary_key=True)
     product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
     customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
     currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
@@ -866,7 +866,7 @@ class CustomersPrices(models.Model):
 
 
 class CustomersPrices2020(models.Model):
-    id = models.BigAutoField(primary_key=True)
+    # id = models.BigAutoField(primary_key=True)
     product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
     customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
     currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
