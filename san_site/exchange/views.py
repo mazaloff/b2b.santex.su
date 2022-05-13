@@ -966,6 +966,8 @@ def update_users_prices(load_list, value_response):
 
             if value_discount == 0:
                 continue
+            if value_percent == 0:
+                continue
             new_object = manager_customers_prices(customer=obj_customer,
                                                   product=obj_product,
                                                   currency=obj_currency,

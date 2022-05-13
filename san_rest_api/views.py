@@ -114,8 +114,11 @@ class ProductListView(APIView):
                         _product.name AS name_,
                         _product.matrix AS matrix_,
                         _product.image AS image,
+                        COALESCE(_customersprices.percent, 0) AS percent,
                         COALESCE(_brand.name, '') AS brand_name_,
-                        COALESCE(_customersprices.discount, COALESCE(_prices.value, 0)) AS price,
+                        CASE WHEN COALESCE(_customersprices.percent, 0) = 0 THEN COALESCE(_prices.value, 0)
+                            ELSE COALESCE(_customersprices.discount, COALESCE(_prices.value, 0)) 
+                            END AS price,
                         COALESCE(_customersprices_cur.name, COALESCE(_prices_cur.name, '')) AS currency,
                         COALESCE(_prices.rrp, 0) AS price_rrp,
                         SUM(COALESCE(_inventories.quantity, 0)) AS quantity
@@ -147,6 +150,7 @@ class ProductListView(APIView):
                         _product.image,
                         COALESCE(_brand.name, ''),
                         COALESCE(_prices.value, 0),
+                        COALESCE(_customersprices.percent, 0),
                         COALESCE(_customersprices.discount, COALESCE(_prices.value, 0)),
                         COALESCE(_customersprices_cur.name, COALESCE(_prices_cur.name, '')),
                         COALESCE(_prices.rrp, 0)
@@ -252,7 +256,10 @@ class ProductListViewV1(APIView):
                         _product.matrix AS matrix_,
                         _product.image AS image,
                         COALESCE(_brand.name, '') AS brand_name_,
-                        COALESCE(_customersprices.discount, COALESCE(_prices.value, 0)) AS price,
+                        COALESCE(_customersprices.percent, 0) AS percent,
+                        CASE WHEN COALESCE(_customersprices.percent, 0) = 0 THEN COALESCE(_prices.value, 0)
+                            ELSE COALESCE(_customersprices.discount, COALESCE(_prices.value, 0)) 
+                            END AS price,
                         COALESCE(_customersprices_cur.name, COALESCE(_prices_cur.name, '')) AS currency,
                         COALESCE(_customersprices_cur.id, COALESCE(_prices_cur.id, 0)) AS currency_id,
                         COALESCE(_prices.rrp, 0) AS price_rrp,
@@ -287,6 +294,7 @@ class ProductListViewV1(APIView):
                         _product.image,
                         COALESCE(_brand.name, ''),
                         COALESCE(_prices.value, 0),
+                        COALESCE(_customersprices.percent, 0),
                         COALESCE(_customersprices.discount, COALESCE(_prices.value, 0)),
                         COALESCE(_customersprices_cur.name, COALESCE(_prices_cur.name, '')),
                         COALESCE(_customersprices_cur.id, COALESCE(_prices_cur.id, 0)),

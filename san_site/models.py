@@ -498,7 +498,9 @@ class Section(models.Model):
                         COALESCE(_prices.value, 0) AS price,
                         COALESCE(_prices_cur.name, '') AS price_currency,
                         COALESCE(_customersprices.percent, 0) AS percent,
-                        COALESCE(_customersprices.discount, COALESCE(_prices.value, 0)) AS discount,
+                        CASE WHEN COALESCE(_customersprices.percent, 0) = 0 THEN COALESCE(_prices.value, 0)
+                            ELSE COALESCE(_customersprices.discount, COALESCE(_prices.value, 0)) 
+                            END AS discount,
                         COALESCE(_prices.rrp, 0) AS price_rrp,
                         COALESCE(_customersprices.promo, FALSE) AS promo,
                         COALESCE(_customersprices_cur.id, COALESCE(_prices_cur.id, 0)) AS currency_id,
@@ -718,15 +720,16 @@ class Product(models.Model):
         query_set_price = manager_customers_prices.objects. \
             filter(customer=current_customer, product=self).select_related('currency')
         if len(query_set_price):
-            currency = query_set_price[0].currency
-            currency_name = query_set_price[0].currency.name
-            currency_id = query_set_price[0].currency.id
-            price = query_set_price[0].discount
-            price_ruble = currency.change_ruble(price)
-            return dict(price=price, price_ruble=price_ruble, currency_name=currency_name, currency_id=currency_id)
-        else:
-            query_set_price = Prices.objects.filter(product=self)
-            if len(query_set_price):
+            if query_set_price[0].percent != 0:
+                currency = query_set_price[0].currency
+                currency_name = query_set_price[0].currency.name
+                currency_id = query_set_price[0].currency.id
+                price = query_set_price[0].discount
+                price_ruble = currency.change_ruble(price)
+                return dict(price=price, price_ruble=price_ruble, currency_name=currency_name, currency_id=currency_id)
+
+        query_set_price = Prices.objects.filter(product=self)
+        if len(query_set_price):
                 currency = query_set_price[0].currency
                 currency_name = query_set_price[0].currency.name
                 currency_id = query_set_price[0].currency.id
