@@ -736,6 +736,7 @@ def update_users(load_list, value_response):
                     and new_object_person.allow_prices == element_list['allow_prices'] \
                     and new_object_person.permit_all_orders == element_list['permit_all_orders'] \
                     and new_object_person.user == (None if element_list['is_deleted'] else new_object) \
+                    and new_object_person.customer == filter_object_customer[element_list['guidOwner']] \
                     and new_object_person.has_restrictions == element_list['has_restrictions']:
                 pass
             else:
@@ -747,6 +748,7 @@ def update_users(load_list, value_response):
                 new_object_person.is_deleted = element_list['is_deleted']
                 new_object_person.has_restrictions = element_list['has_restrictions']
                 new_object_person.user = (None if element_list['is_deleted'] else new_object)
+                new_object_person.customer = filter_object_customer[element_list['guidOwner']]
                 new_object_person.save()
         else:
             qs_persons = Person.objects.filter(user=new_object)
