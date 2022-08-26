@@ -22,6 +22,7 @@ from rest_framework.status import (
 from rest_framework.views import APIView
 
 from san_site.decorates.decorate import page_not_access
+from san_site.files.views import create as create_files
 from san_site.models import Brand, Product, Customer, Person, Order, Bill, PersonStores, CustomersFiles, get_customer, \
     get_person
 from .serializers import ProductSerializer, ProductSerializerV1, OrderSerializer, BillSerializer
@@ -499,6 +500,8 @@ class CatalogView(APIView):
             type_file = request.GET.get('type')
         except MultiValueDictKeyError:
             type_file = 'csv'
+
+        create_files(user)
 
         name_file = f'goods_b2b_santex.{type_file}'
         files = CustomersFiles.objects.filter(customer=customer, type_file=type_file)
