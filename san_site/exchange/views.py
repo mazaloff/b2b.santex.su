@@ -7,11 +7,11 @@ import os
 import tempfile
 from django.contrib.auth.models import User
 from django.core.files import File
+from django.db import IntegrityError
 from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.timezone import make_aware
 from django.views.decorators.csrf import csrf_exempt
-from django.db import IntegrityError
 
 from san_site.models import \
     Order, Customer, Person, Section, Brand, Product, Store, Price, Currency, Inventories, Prices, \
@@ -900,11 +900,10 @@ def update_users_prices(load_list, value_response):
 
     filter_object_currency = {t.guid: t for t in Currency.objects.all()}
 
-    list_obj_prices = []
-
-    manager_customers_prices = CustomersPrices
-
     for element_list in load_list:
+
+        list_obj_prices = []
+        manager_customers_prices = CustomersPrices
 
         obj_customer = filter_object.get(element_list['guid'], None)
         all_clean = element_list['allClean']
@@ -978,11 +977,11 @@ def update_users_prices(load_list, value_response):
                                                   promo=element_list_price['promo'])
             list_obj_prices.append(new_object)
 
-    try:
-        manager_customers_prices.objects.bulk_create(list_obj_prices, batch_size=10000)
-    except IntegrityError as e:
-        add_error(value_response, code='CustomersPrices.ValueError',
-                  message='error bulk_create', description=str(e))
+        try:
+            manager_customers_prices.objects.bulk_create(list_obj_prices, batch_size=10000)
+        except IntegrityError as e:
+            add_error(value_response, code='CustomersPrices.ValueError', message='error bulk_create',
+                      description=str(e))
 
 
 def update_statuses(load_list, value_response):
