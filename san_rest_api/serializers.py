@@ -9,6 +9,8 @@ import base64, uuid
 from django.core.files.base import ContentFile
 
 from san_site.models import Product, Currency, Order, OrderItem, Bill
+from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -263,7 +265,7 @@ class BillSerializer(serializers.ModelSerializer):
     file = Base64ImageField()
 
     class Meta:
-        model = Order
+        model = Bill
         fields = (
             'id', 'guid', 'number', 'date', 'order_id', 'order_guid', 'customer', 'person', 'comment', 'total', 'currency', 'file')
 
@@ -287,6 +289,26 @@ class BillSerializer(serializers.ModelSerializer):
     def currency_code(instance):
         value = Currency.objects.get(id=instance.currency_id)
         return value.code
+
+
+class UserSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()
+    username = serializers.CharField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    email = serializers.CharField()
+    is_active = serializers.BooleanField()
+    token = serializers.SerializerMethodField(method_name='get_token')
+
+    class Meta:
+        model = User
+        fields = (
+            'id', 'username', 'first_name', 'last_name', 'email', 'is_active', 'token')
+
+    @staticmethod
+    def get_token(instance):
+        uid, _ = Token.objects.get_or_create(user=User.objects.get(id=instance.id))
+        return str(uid)
 
 
 def get_currency():
