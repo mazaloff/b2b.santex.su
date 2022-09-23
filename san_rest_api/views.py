@@ -486,16 +486,29 @@ class UserListView(APIView):
 
         objects = User.objects
 
+        user = None
+
         username = ''
         for key, value in request.GET.items():
             if key.startswith('username'):
                 username += f"{'' if username == '' else ','}{value}"
-        if username == '':
+        if username != '':
             qr = User.objects.filter(username=username)
-            if len(qr) == 0:
-                return Response({'error': 'Не определен user (username)'},
-                                status=HTTP_200_OK)
-        objects = objects.filter(username=username)
+            if len(qr) > 0:
+                user = qr[0]
+        guid = ''
+        for key, value in request.GET.items():
+            if key.startswith('guid'):
+                guid += f"{'' if guid == '' else ','}{value}"
+        if guid != '':
+            qr = Person.objects.filter(guid=guid)
+            if len(qr) > 0:
+                user = qr[0].user
+
+        if user is None:
+            return Response({'error': 'Не определен user (guid or username)'},
+                            status=HTTP_200_OK)
+        objects = objects.filter(id=user.id)
 
         serializer = UserSerializer(objects.all(), many=True)
         return Response(serializer.data, status=HTTP_200_OK)
@@ -546,7 +559,6 @@ class CatalogView(APIView):
 
 @page_not_access
 def our_api(request):
-
     customer = get_customer(request.user)
     uid, _ = Token.objects.get_or_create(user=request.user)
     if not customer:
