@@ -6,7 +6,7 @@ import os
 from openpyxl import Workbook
 from openpyxl.styles import Font, colors
 from openpyxl.styles import NamedStyle
-
+from os
 
 def create_directory(path):
     if os.path.exists(path) and not os.path.isdir(path):
@@ -29,8 +29,11 @@ def write_files(path_files_customer, user=None):
     path_file_xls = os.path.join(path_files_customer, 'goods_b2b_santex.xlsx')
     sections = Section.objects.filter(group__isnull=True).order_by('name')
 
-    if os.path.exists(path_file_xls):
-        os.remove(path_file_xls)
+    if os.path.exists(path_file_xls) and os.path.isfile(path_file_xls):
+        try:
+            os.remove(path_file_xls)
+        except FileNotFoundError:
+            pass
 
     if user:
         list_str = ['Артикул;Название;Остаток;Базовая цена;Валюта;Цена руб. ЦБ;РРЦ руб.' + '\n']
