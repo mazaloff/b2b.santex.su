@@ -6,7 +6,7 @@ import os
 from openpyxl import Workbook
 from openpyxl.styles import Font, colors
 from openpyxl.styles import NamedStyle
-from os
+
 
 def create_directory(path):
     if os.path.exists(path) and not os.path.isdir(path):
