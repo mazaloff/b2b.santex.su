@@ -23,14 +23,14 @@
 {#            </th>#}
             {% if user.is_authenticated and user.person.allow_prices %}
                 {% if user.person.allow_order %}
-                <th id="goods_table_4">
-                    <div><span>Цена</span></div>
-                </th>
-                <th id="goods_table_6">
-                    <div><span>%</span></div>
-                </th>
+{#                <th id="goods_table_4">#}
+{#                    <div><span>Цена</span></div>#}
+{#                </th>#}
+{#                <th id="goods_table_6">#}
+{#                    <div><span>%</span></div>#}
+{#                </th>#}
                 <th id="goods_table_7" {% if not is_price_rrp %} class="right-radius"{% endif %}>
-                    <div><span>Ваша цена</span></div>
+                    <div><span>Цена руб.</span></div>
                 </th>
                 {% endif %}
                 <th id="goods_table_8" {% if not is_price_rrp %} class="goods_hide" {% else %} class="right-radius"{% endif %}>
@@ -44,7 +44,9 @@
                 <tr id="tr_goods{{ goods.guid }}" class="goods_tr
                 {% if not goods.relevant %} not_relevant{% endif %}{% if goods.promo %} promo{% endif %}">
                     <td id="goods_table_1">
-                        <div class="goods_code{% if goods.is_image %} img" onclick="showImage('{{ goods.guid }}');{% endif %}">{{ goods.code }}</div>
+                        <div class="goods_code{% if goods.is_image %} img" onclick="showImage('{{ goods.guid }}');{% endif %}">{{ goods.code }}
+{#                            <img alt="" style="max-width: 55px; max-height: 45px;" src="{{ goods.image }}">#}
+                        </div>
                     </td>
                     <td title="Добавить позицию в текущий заказ" onclick="addCart('{{ goods.guid }}')" id="goods_table_2" style="cursor: pointer;">
                         {{ goods.name }}
@@ -59,9 +61,9 @@
 {#                        {{ goods.reserve }}#}
 {#                    </td>#}
                     {% if user.person.allow_prices %}
-                    <td id="goods_table_4">{{ goods.price|format:"{0:.2f}"|currency:goods.price_currency }}</td>
-                    <td id="goods_table_6">{{ goods.percent|format:"{0:.2f}" }}</td>
-                    <td id="goods_table_7">{{ goods.discount|format:"{0:.2f}"|currency:goods.currency }}</td>
+{#                    <td id="goods_table_4">{{ goods.price|format:"{0:.2f}"|currency:goods.price_currency }}</td>#}
+{#                    <td id="goods_table_6">{{ goods.percent|format:"{0:.2f}" }}</td>#}
+                    <td id="goods_table_7">{{ goods.discount_rub|format:"{0:.2f}"}}</td>
                     <td id="goods_table_8" {% if not is_price_rrp %} class="goods_hide"{% endif %}>{{ goods.price_rrp|format:"{0:.2f}" }}</td>
                     {% endif %}
                 </tr>

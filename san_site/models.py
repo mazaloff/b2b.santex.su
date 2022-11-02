@@ -546,11 +546,16 @@ class Section(models.Model):
             rows = cursor.fetchall()
             flag = (0 if search.isdigit() else re.IGNORECASE)
 
+            courses = get_currency()
+
             for row in rows:
 
                 sel_row = SelectRow(*row)
                 quantity = '>10' if row[15] > 10 else '' if row[15] == 0 else row[15]
                 reserve = '>10' if row[16] > 10 else '' if row[16] == 0 else row[16]
+
+                course = courses.get(str(sel_row.currency_id), {'course': 1, 'multiplicity': 1})
+                discount_rub = round(sel_row.discount * course['course'] / course['multiplicity'], 2)
 
                 if search != '':
                     match = re.search(search, sel_row.code, flags=flag)
@@ -582,6 +587,7 @@ class Section(models.Model):
                     'price_rrp': '' if sel_row.price_rrp == 0 or sel_row.price_rrp == 0.01 else sel_row.price_rrp,
                     'promo': sel_row.promo,
                     'discount': '' if sel_row.discount == 0 else sel_row.discount,
+                    'discount_rub': discount_rub,
                     'currency': sel_row.currency,
                     'currency_id': sel_row.currency_id,
                     'percent': '' if sel_row.percent == 0 else sel_row.percent}
@@ -1236,6 +1242,24 @@ def get_person(user):
     except (Person.DoesNotExist, AttributeError):
         return
     return person
+
+
+def get_currency():
+    json_str = cache.get(f'api_currency{str(datetime.date.today())}')
+    if json_str is not None:
+        try:
+            value = json.loads(json_str)
+            if isinstance(json.loads(json_str), dict):
+                return value
+        except TypeError:
+            pass
+    courses = {}
+    currency = Currency.objects.all()
+    for elem in currency:
+        courses[str(elem.id)] = elem.get_today_course(True)
+    cache.set(f'api_currency{str(datetime.date.today())}',
+              json.dumps(courses), 7200)
+    return courses
 
 
 class SelectRow:
