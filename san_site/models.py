@@ -1155,7 +1155,7 @@ class Order(models.Model):
             'Content-Type': 'application/json'}
 
         try:
-            answer = requests.post(api_url, data=data, headers=params, timeout=10)
+            answer = requests.post(api_url, data=data, headers=params, timeout=20)
         except requests.exceptions.RequestException:
             raise self.RequestOrderError
 
