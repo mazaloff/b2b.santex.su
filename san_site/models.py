@@ -491,6 +491,7 @@ class Section(models.Model):
                         _product.name AS name,
                         _product.guid AS guid,
                         _product.matrix AS matrix,
+                        COALESCE(_brand.name, '') AS brand,
                         CASE WHEN _product.image = '' THEN ''
                             ELSE 'media/' || _product.image 
                             END AS image,
@@ -510,6 +511,7 @@ class Section(models.Model):
                         {field_sort_search} AS sort_search
                     FROM san_site_product _product
                          {join_request_section}
+                         LEFT JOIN san_site_brand _brand ON _product.brand_id = _brand.id
                          LEFT JOIN san_site_prices _prices 
                                 ON _product.id = _prices.product_id AND _prices.price_id = {current_customer_price_id} 
                             LEFT JOIN san_site_currency _prices_cur ON _prices.currency_id = _prices_cur.id
@@ -528,6 +530,7 @@ class Section(models.Model):
                         _product.guid,
                         _product.matrix,
                         _product.is_deleted,
+                        COALESCE(_brand.name, ''),
                         COALESCE(_prices.value, 0),
                         COALESCE(_prices_cur.name, ''),
                         COALESCE(_customersprices.percent, 0),
@@ -551,8 +554,8 @@ class Section(models.Model):
             for row in rows:
 
                 sel_row = SelectRow(*row)
-                quantity = '>10' if row[15] > 10 else '' if row[15] == 0 else row[15]
-                reserve = '>10' if row[16] > 10 else '' if row[16] == 0 else row[16]
+                quantity = '>10' if row[16] > 10 else '' if row[15] == 0 else row[16]
+                reserve = '>10' if row[17] > 10 else '' if row[16] == 0 else row[17]
 
                 course = courses.get(str(sel_row.currency_id), {'course': 1, 'multiplicity': 1})
                 discount_rub = round(sel_row.discount * course['course'] / course['multiplicity'], 2)
@@ -580,6 +583,7 @@ class Section(models.Model):
                     'image': sel_row.image,
                     'is_image': (sel_row.image != ""),
                     'relevant': sel_row.matrix in Product.RELEVANT_MATRIX,
+                    'brand': sel_row.brand,
                     'quantity': quantity,
                     'reserve': reserve,
                     'price': '' if sel_row.price == 0 or sel_row.price == 0.01 else sel_row.price,
@@ -1263,7 +1267,7 @@ def get_currency():
 
 
 class SelectRow:
-    def __init__(self, id, code, name, guid, matrix, image, is_deleted, price, price_currency, percent, discount,
+    def __init__(self, id, code, name, guid, matrix, brand, image, is_deleted, price, price_currency, percent, discount,
                  price_rrp, promo,
                  currency_id, currency, quantity, reserve, sort_search):
         self.id: int = id
@@ -1271,6 +1275,7 @@ class SelectRow:
         self.name: str = name
         self.guid: str = guid
         self.matrix: str = matrix
+        self.brand: str = brand
         self.image: str = image
         self.is_deleted: bool = is_deleted
         self.price: float = price
