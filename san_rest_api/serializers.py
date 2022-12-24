@@ -135,7 +135,7 @@ class ProductSerializerV1(serializers.ModelSerializer):
 
     @staticmethod
     def calculate_quantity(instance):
-        return 10 if instance.quantity > 10 else instance.quantity
+        return instance.quantity
 
     @staticmethod
     def calculate_price(instance):
