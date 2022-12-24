@@ -593,7 +593,6 @@ def login(request):
 
 class SelectRow:
     def __init__(self, guid, store_id, store_name, quantity):
-        quantity_ = 10 if quantity > 10 else quantity
         self.id: str = store_id
         self.name: str = store_name
-        self.quantity: int = quantity_
+        self.quantity: int = quantity
