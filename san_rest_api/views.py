@@ -3,6 +3,7 @@ from datetime import datetime
 import os
 from django.conf import settings
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
 from django.db import connection
 from django.http import HttpResponse
 from django.shortcuts import resolve_url, render
@@ -25,7 +26,7 @@ from san_site.decorates.decorate import page_not_access
 from san_site.files.views import create_files
 from san_site.models import Brand, Product, Customer, Person, Order, Bill, PersonStores, CustomersFiles, get_customer, \
     get_person
-from .serializers import ProductSerializer, ProductSerializerV1, OrderSerializer, BillSerializer
+from .serializers import ProductSerializer, ProductSerializerV1, OrderSerializer, BillSerializer, UserSerializer
 
 
 class ProductListView(APIView):
@@ -476,6 +477,43 @@ class BillListView(APIView):
         return Response(serializer.data, status=HTTP_200_OK)
 
 
+class UserListView(APIView):
+    authentication_classes = ()
+
+    @staticmethod
+    @api_view(('GET',))
+    def get(request):
+
+        objects = User.objects
+
+        user = None
+
+        username = ''
+        for key, value in request.GET.items():
+            if key.startswith('username'):
+                username += f"{'' if username == '' else ','}{value}"
+        if username != '':
+            qr = User.objects.filter(username=username)
+            if len(qr) > 0:
+                user = qr[0]
+        guid = ''
+        for key, value in request.GET.items():
+            if key.startswith('guid'):
+                guid += f"{'' if guid == '' else ','}{value}"
+        if guid != '':
+            qr = Person.objects.filter(guid=guid)
+            if len(qr) > 0:
+                user = qr[0].user
+
+        if user is None:
+            return Response({'error': 'Не определен user (guid or username)'},
+                            status=HTTP_200_OK)
+        objects = objects.filter(id=user.id)
+
+        serializer = UserSerializer(objects.all(), many=True)
+        return Response(serializer.data, status=HTTP_200_OK)
+
+
 class CatalogView(APIView):
 
     @staticmethod
@@ -521,7 +559,6 @@ class CatalogView(APIView):
 
 @page_not_access
 def our_api(request):
-
     customer = get_customer(request.user)
     uid, _ = Token.objects.get_or_create(user=request.user)
     if not customer:
@@ -556,7 +593,6 @@ def login(request):
 
 class SelectRow:
     def __init__(self, guid, store_id, store_name, quantity):
-        quantity_ = 10 if quantity > 10 else quantity
         self.id: str = store_id
         self.name: str = store_name
-        self.quantity: int = quantity_
+        self.quantity: int = quantity
