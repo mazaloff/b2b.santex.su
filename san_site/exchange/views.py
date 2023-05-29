@@ -472,7 +472,13 @@ def update_product(load_list):
                     and new_object.is_deleted == element_list['is_deleted'] \
                     and (not new_object.is_image or (new_object.is_image == element_list['is_image'])):
                 continue
+            if element_list['is_deleted']:
+                new_object.is_deleted = element_list['is_deleted']
+                new_object.save()
+                new_object.clear_inventories()
         else:
+            if element_list['is_deleted']:
+                continue
             try:
                 section_obj = Section.objects.get(guid=element_list['sectionGuid'])
             except Section.DoesNotExist:
