@@ -80,6 +80,12 @@ class ProductListView(APIView):
             if key.startswith('filter_brand'):
                 filter_brand += f"{'' if filter_brand == '' else ','}{value}"
 
+        filter_matrix = ''
+
+        for key, value in request.GET.items():
+            if key.startswith('filter_matrix'):
+                filter_matrix += f"{'' if filter_matrix == '' else ','}{value}"
+
         filter_quantity = request.GET.get('filter_quantity', '')
 
         str_filter_code = ' TRUE '
@@ -101,6 +107,11 @@ class ProductListView(APIView):
         if filter_brand != '':
             param += [list(map(lambda x: x.upper(), filter_brand.split(','))), ]
             str_filter_brand = 'UPPER(_brand.name::text) = ANY(%s)'
+
+        str_filter_matrix = ' TRUE '
+        if filter_matrix != '':
+            param += [list(map(lambda x: x.upper(), filter_matrix.split(','))), ]
+            str_filter_matrix = 'UPPER(_product.matrix::text) = ANY(%s)'
 
         str_filter_quantity = ' TRUE '
         if filter_quantity != '' and filter_quantity.upper() == 'YES':
@@ -140,8 +151,9 @@ class ProductListView(APIView):
                     WHERE _product.is_deleted = FALSE
                         AND {str_filter_code}
                         AND {str_filter_article}
-                        AND {str_filter_brand}
                         AND {str_filter_barcode}
+                        AND {str_filter_brand}
+                        AND {str_filter_matrix}
                         AND {str_filter_quantity}
                     GROUP BY _product.id,
                         _product.code,
@@ -216,6 +228,12 @@ class ProductListViewV1(APIView):
             if key.startswith('filter_brand'):
                 filter_brand += f"{'' if filter_brand == '' else ','}{value}"
 
+        filter_matrix = ''
+
+        for key, value in request.GET.items():
+            if key.startswith('filter_matrix'):
+                filter_matrix += f"{'' if filter_matrix == '' else ','}{value}"
+
         filter_quantity = request.GET.get('filter_quantity', '')
 
         str_filter_id = ' TRUE '
@@ -242,6 +260,11 @@ class ProductListViewV1(APIView):
         if filter_brand != '':
             param += [list(map(lambda x: x.upper(), filter_brand.split(','))), ]
             str_filter_brand = 'UPPER(_brand.name::text) = ANY(%s)'
+
+        str_filter_matrix = ' TRUE '
+        if filter_matrix != '':
+            param += [list(map(lambda x: x.upper(), filter_matrix.split(','))), ]
+            str_filter_matrix = 'UPPER(_product.matrix::text) = ANY(%s)'
 
         str_filter_quantity = ' TRUE '
         if filter_quantity != '' and filter_quantity.upper() == 'YES':
@@ -284,8 +307,9 @@ class ProductListViewV1(APIView):
                         AND {str_filter_id}
                         AND {str_filter_code}
                         AND {str_filter_article}
-                        AND {str_filter_brand}
                         AND {str_filter_barcode}
+                        AND {str_filter_brand}
+                        AND {str_filter_matrix}
                         AND {str_filter_quantity}
                     GROUP BY _product.id,
                         _product.code,
@@ -333,8 +357,9 @@ class ProductListViewV1(APIView):
                                     AND {str_filter_id}
                                     AND {str_filter_code}
                                     AND {str_filter_article}
-                                    AND {str_filter_brand}
                                     AND {str_filter_barcode}
+                                    AND {str_filter_brand}
+                                    AND {str_filter_matrix}
                                     AND {str_filter_quantity}
                                 GROUP BY _product.guid,
                                     COALESCE(_store.guid, ''),
