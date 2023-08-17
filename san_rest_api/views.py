@@ -266,7 +266,7 @@ class ProductListViewV1(APIView):
         if filter_quantity != '' and filter_quantity.upper() == 'YES':
             str_filter_quantity = 'COALESCE(_inventories.quantity, 0) > 0'
 
-        filter_matrix = ('Не производится','Прочее')
+        filter_matrix = 'Не производится,Прочее'
         str_filter_actual = ' TRUE '
         if filter_actual != '' and filter_actual.upper() == 'YES':
             param += [list(map(lambda x: x.upper(), filter_matrix.split(','))), ]
