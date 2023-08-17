@@ -234,6 +234,7 @@ class ProductListViewV1(APIView):
             if key.startswith('filter_matrix'):
                 filter_matrix += f"{'' if filter_matrix == '' else ','}{value}"
 
+        filter_actual = request.GET.get('filter_actual', '')
         filter_quantity = request.GET.get('filter_quantity', '')
 
         str_filter_id = ' TRUE '
@@ -261,14 +262,15 @@ class ProductListViewV1(APIView):
             param += [list(map(lambda x: x.upper(), filter_brand.split(','))), ]
             str_filter_brand = 'UPPER(_brand.name::text) = ANY(%s)'
 
-        str_filter_matrix = ' TRUE '
-        if filter_matrix != '':
-            param += [list(map(lambda x: x.upper(), filter_matrix.split(','))), ]
-            str_filter_matrix = 'UPPER(_product.matrix::text) = ANY(%s)'
-
         str_filter_quantity = ' TRUE '
         if filter_quantity != '' and filter_quantity.upper() == 'YES':
             str_filter_quantity = 'COALESCE(_inventories.quantity, 0) > 0'
+
+        filter_matrix = ('Не производится','Прочее')
+        str_filter_actual = ' TRUE '
+        if filter_actual != '' and filter_actual.upper() == 'YES':
+            param += [list(map(lambda x: x.upper(), filter_matrix.split(','))), ]
+            str_filter_actual = 'UPPER(_product.matrix::text) <> ANY(%s)'
 
         queryset = Product.objects.raw(
             f"""WITH result AS (
@@ -309,7 +311,7 @@ class ProductListViewV1(APIView):
                         AND {str_filter_article}
                         AND {str_filter_barcode}
                         AND {str_filter_brand}
-                        AND {str_filter_matrix}
+                        AND {str_filter_actual}
                         AND {str_filter_quantity}
                     GROUP BY _product.id,
                         _product.code,
@@ -359,7 +361,7 @@ class ProductListViewV1(APIView):
                                     AND {str_filter_article}
                                     AND {str_filter_barcode}
                                     AND {str_filter_brand}
-                                    AND {str_filter_matrix}
+                                    AND {str_filter_actual}
                                     AND {str_filter_quantity}
                                 GROUP BY _product.guid,
                                     COALESCE(_store.guid, ''),
