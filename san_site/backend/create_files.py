@@ -241,7 +241,7 @@ def create_files(user):
     path_files_customer = os.path.join(path_files, str(customer.id))
     create_directory(path_files_customer)
 
-    with_reserve = customer.guid in ('3d6cc921-66fb-11ec-bc76-ac1f6bd6c231', '3d6cc921-66fb-11ec-bc76-ac1f6bd6c231',
+    with_reserve = customer.guid in ('9d35a321-ce59-11e6-88f3-20474775d651', '443ca233-ce5a-11e6-88f3-20474775d651',
                                      '3d6cc921-66fb-11ec-bc76-ac1f6bd6c231')
 
     if with_reserve:
