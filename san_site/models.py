@@ -508,6 +508,7 @@ class Section(models.Model):
                         COALESCE(_customersprices_cur.name, COALESCE(_prices_cur.name, '')) AS currency,
                         SUM(COALESCE(_inventories.quantity, 0)) AS quantity,
                         SUM(COALESCE(_inventories.reserve, 0)) AS reserve,
+                        _product.barcode AS barcode,
                         {field_sort_search} AS sort_search
                     FROM san_site_product _product
                          {join_request_section}
@@ -526,6 +527,7 @@ class Section(models.Model):
                         AND (%s = FALSE OR (COALESCE(_inventories.quantity, 0) + COALESCE(_inventories.reserve, 0)) > 0)        
                     GROUP BY _product.id,
                         _product.code,
+                        _product.barcode,
                         _product.name,
                         _product.guid,
                         _product.matrix,
@@ -579,6 +581,7 @@ class Section(models.Model):
                     'product': sel_row,
                     'guid': sel_row.guid,
                     'code': sel_row_code,
+                    'barcode': sel_row.barcode,
                     'name': sel_row_name,
                     'image': sel_row.image,
                     'is_image': (sel_row.image != ""),
@@ -1269,7 +1272,7 @@ def get_currency():
 class SelectRow:
     def __init__(self, id, code, name, guid, matrix, brand, image, is_deleted, price, price_currency, percent, discount,
                  price_rrp, promo,
-                 currency_id, currency, quantity, reserve, sort_search):
+                 currency_id, currency, quantity, reserve, barcode, sort_search):
         self.id: int = id
         self.code: str = code
         self.name: str = name
@@ -1288,3 +1291,4 @@ class SelectRow:
         self.currency: str = currency
         self.quantity: int = quantity
         self.reserve: int = reserve
+        self.barcode: str = barcode

@@ -35,9 +35,9 @@ def write_files(path_files_customer, user=None):
             pass
 
     if user:
-        list_str = ['Артикул;Название;Бренд;Остаток;Базовая цена;Валюта;Цена руб. ЦБ;РРЦ руб.' + '\n']
+        list_str = ['Артикул;Название;Бренд;Штрихкод;Остаток;Базовая цена;Валюта;Цена руб. ЦБ;РРЦ руб.' + '\n']
     else:
-        list_str = ['Артикул;Название;Бренд;Остаток' + '\n']
+        list_str = ['Артикул;Название;Бренд;Штрихкод;Остаток' + '\n']
 
     workbook = Workbook()
     sheet = workbook.active
@@ -51,22 +51,24 @@ def write_files(path_files_customer, user=None):
     sheet.column_dimensions[str(chr(64 + 1))].width = 15
     sheet.column_dimensions[str(chr(64 + 2))].width = 65
     sheet.column_dimensions[str(chr(64 + 3))].width = 15
-    sheet.column_dimensions[str(chr(64 + 4))].width = 10
+    sheet.column_dimensions[str(chr(64 + 4))].width = 15
+    sheet.column_dimensions[str(chr(64 + 5))].width = 10
     if user:
-        sheet.column_dimensions[str(chr(64 + 5))].width = 13
-        sheet.column_dimensions[str(chr(64 + 6))].width = 7
-        sheet.column_dimensions[str(chr(64 + 7))].width = 13
+        sheet.column_dimensions[str(chr(64 + 6))].width = 13
+        sheet.column_dimensions[str(chr(64 + 7))].width = 7
         sheet.column_dimensions[str(chr(64 + 8))].width = 13
+        sheet.column_dimensions[str(chr(64 + 9))].width = 13
 
     sheet['A1'] = 'Артикул'
     sheet['B1'] = 'Название'
     sheet['C1'] = 'Бренд'
-    sheet['D1'] = 'Остаток'
+    sheet['D1'] = 'Бренд'
+    sheet['E1'] = 'Остаток'
     if user:
-        sheet['E1'] = 'База цена'
-        sheet['F1'] = 'Вал.'
-        sheet['G1'] = 'Цена руб.'
-        sheet['H1'] = 'РРЦ руб.'
+        sheet['F1'] = 'База цена'
+        sheet['G1'] = 'Вал.'
+        sheet['H1'] = 'Цена руб.'
+        sheet['I1'] = 'РРЦ руб.'
 
     header_row = sheet[1]
     for cell in header_row:
@@ -84,6 +86,7 @@ def write_files(path_files_customer, user=None):
 
         for elem in goods_list:
             code = elem['code'].replace(';', '').replace('"', '')
+            barcode = elem['barcode'].replace(';', '').replace('"', '')
             name = elem['name'].replace(';', '').replace('"', '')
             brand = elem['brand'].replace(';', '').replace('"', '')
             quantity = str(0 if elem['quantity'] == '' else elem['quantity']).replace('>', '')
@@ -96,20 +99,21 @@ def write_files(path_files_customer, user=None):
 
             # for csv
             if user:
-                list_str.append(f'{code};{name};{brand};{quantity};{price};{currency};{price_rub};{price_rrp}' + '\n')
+                list_str.append(f'{code};{name};{brand};{barcode};{quantity};{price};{currency};{price_rub};{price_rrp}' + '\n')
             else:
-                list_str.append(f'{code};{name};{brand};{quantity}' + '\n')
+                list_str.append(f'{code};{name};{brand};{barcode};{quantity}' + '\n')
 
             # for excel
             sheet[f'A{row}'] = code
             sheet[f'B{row}'] = name
             sheet[f'C{row}'] = brand
-            sheet[f'D{row}'] = int(quantity)
+            sheet[f'D{row}'] = barcode
+            sheet[f'E{row}'] = int(quantity)
             if user:
-                sheet[f'E{row}'] = price
-                sheet[f'F{row}'] = currency
-                sheet[f'G{row}'] = price_rub
-                sheet[f'H{row}'] = price_rrp
+                sheet[f'F{row}'] = price
+                sheet[f'G{row}'] = currency
+                sheet[f'H{row}'] = price_rub
+                sheet[f'I{row}'] = price_rrp
             row += 1
 
     sheet.title = 'stocks'
