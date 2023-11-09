@@ -62,7 +62,7 @@ def write_files(path_files_customer, user=None):
     sheet['A1'] = 'Артикул'
     sheet['B1'] = 'Название'
     sheet['C1'] = 'Бренд'
-    sheet['D1'] = 'Бренд'
+    sheet['D1'] = 'Штрихкод'
     sheet['E1'] = 'Остаток'
     if user:
         sheet['F1'] = 'База цена'
