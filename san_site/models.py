@@ -475,13 +475,13 @@ class Section(models.Model):
 
         join_inventories = """LEFT JOIN san_site_inventories _inventories 
                                 ON _product.id = _inventories.product_id"""
-        if current_person_id != 0:
-            join_inventories = f"""
-            LEFT JOIN san_site_personstores _personstores ON _personstores.person_id = {current_person_id}
-                            LEFT JOIN san_site_inventories _inventories 
-                                ON _product.id = _inventories.product_id
-                                    AND _personstores.store_id = _inventories.store_id
-            """
+        # if current_person_id != 0:
+        #     join_inventories = f"""
+        #     LEFT JOIN san_site_personstores _personstores ON _personstores.person_id = {current_person_id}
+        #                     LEFT JOIN san_site_inventories _inventories
+        #                         ON _product.id = _inventories.product_id
+        #                             AND _personstores.store_id = _inventories.store_id
+        #     """
 
         with connection.cursor() as cursor:
             cursor.execute(
@@ -506,8 +506,27 @@ class Section(models.Model):
                         COALESCE(_customersprices.promo, FALSE) AS promo,
                         COALESCE(_customersprices_cur.id, COALESCE(_prices_cur.id, 0)) AS currency_id,
                         COALESCE(_customersprices_cur.name, COALESCE(_prices_cur.name, '')) AS currency,
-                        SUM(COALESCE(_inventories.quantity, 0)) AS quantity,
-                        SUM(COALESCE(_inventories.reserve, 0)) AS reserve,
+                        SUM(
+                            CASE WHEN _inventories.store_id <> 4 
+                                    AND _inventories.store_id <> 5
+                                THEN COALESCE(_inventories.quantity, 0)
+                                ELSE 0
+                                END
+                        ) AS quantity,
+                        SUM(
+                            CASE WHEN _inventories.store_id <> 4 
+                                    AND _inventories.store_id <> 5
+                                THEN COALESCE(_inventories.reserve, 0)
+                                ELSE 0
+                                END
+                        ) AS reserve,
+                        SUM(
+                            CASE WHEN COALESCE(_inventories.store_id, 0) = 4 
+                                    OR COALESCE(_inventories.store_id, 0) = 5
+                                THEN COALESCE(_inventories.quantity, 0)
+                                ELSE 0
+                                END
+                        ) AS inway,
                         _product.barcode AS barcode,
                         {field_sort_search} AS sort_search
                     FROM san_site_product _product
@@ -556,8 +575,9 @@ class Section(models.Model):
             for row in rows:
 
                 sel_row = SelectRow(*row)
-                quantity = '>10' if row[16] > 10 else '' if row[15] == 0 else row[16]
-                reserve = '>10' if row[17] > 10 else '' if row[16] == 0 else row[17]
+                quantity = '>10' if row[16] > 10 else '' if row[16] == 0 else row[16]
+                reserve = '>10' if row[17] > 10 else '' if row[17] == 0 else row[17]
+                inway = '>10' if row[18] > 10 else '' if row[18] == 0 else row[18]
 
                 course = courses.get(str(sel_row.currency_id), {'course': 1, 'multiplicity': 1})
                 discount_rub = round(sel_row.discount * course['course'] / course['multiplicity'], 2)
@@ -589,6 +609,7 @@ class Section(models.Model):
                     'brand': sel_row.brand,
                     'quantity': quantity,
                     'reserve': reserve,
+                    'inway': inway,
                     'price': '' if sel_row.price == 0 or sel_row.price == 0.01 else sel_row.price,
                     'price_currency': sel_row.price_currency,
                     'price_rrp': '' if sel_row.price_rrp == 0 or sel_row.price_rrp == 0.01 else sel_row.price_rrp,
@@ -1272,7 +1293,7 @@ def get_currency():
 class SelectRow:
     def __init__(self, id, code, name, guid, matrix, brand, image, is_deleted, price, price_currency, percent, discount,
                  price_rrp, promo,
-                 currency_id, currency, quantity, reserve, barcode, sort_search):
+                 currency_id, currency, quantity, reserve, inway, barcode, sort_search):
         self.id: int = id
         self.code: str = code
         self.name: str = name
@@ -1291,4 +1312,5 @@ class SelectRow:
         self.currency: str = currency
         self.quantity: int = quantity
         self.reserve: int = reserve
+        self.inway: int = inway
         self.barcode: str = barcode

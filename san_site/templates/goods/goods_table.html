@@ -5,7 +5,9 @@
             <col style="background:#fcffd1;">
             <col>
             <col style="background:#fcffd1">
+            <col>
             <col style="background:#fcffd1">
+{#            <col style="background:#fcffd1">#}
         </colgroup>
         <thead style="background: #ffffff;">
         <tr>
@@ -16,8 +18,14 @@
                 <div><span>Наименование товара</span></div>
             </th>
             <th id="goods_table_3">
-                <div><span>Остаток</span></div>
+                <div><span>В наличии</span></div>
             </th>
+            <th id="goods_table_3">
+                <div><span>Еще</span></div>
+            </th>
+{#            <th id="goods_table_3">#}
+{#                <div><span>В пути</span></div>#}
+{#            </th>#}
 {#            <th id="goods_table_3">#}
 {#                <div><span>Резерв</span></div>#}
 {#            </th>#}
@@ -56,6 +64,16 @@
                         {{ goods.quantity }}
                         <div id="help-tip{{ goods.guid }}" class="help-tip"></div>
                     </td>
+                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')"
+                        id="goods_table_3" style="cursor: pointer;">
+                        {{ goods.inway }}
+{#                        <div id="help-tip{{ goods.guid }}" class="help-tip"></div>#}
+                    </td>
+{#                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')"#}
+{#                        id="goods_table_3" style="cursor: pointer;">#}
+{#                        {{ goods.inway }}#}
+{#                        <div id="help-tip{{ goods.guid }}" class="help-tip"></div>#}
+{#                    </td>#}
 {#                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')"#}
 {#                        id="goods_table_3" style="cursor: pointer;">#}
 {#                        {{ goods.reserve }}#}
@@ -79,6 +97,12 @@
                     <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.quantity }}
                         <div id="help-tip{{ goods.guid }}" class="help-tip"></div>
                     </td>
+                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.inway }}
+{#                        <div id="help-tip{{ goods.guid }}" class="help-tip"></div>#}
+                    </td>
+{#                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.inway }}#}
+{#                        <div id="help-tip{{ goods.guid }}" class="help-tip"></div>#}
+{#                    </td>#}
 {#                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.reserve }}</td>#}
                     {% if user.person.allow_prices %}
                         <td id="goods_table_8" {% if not is_price_rrp %} class="goods_hide"{% endif %}>{{ goods.price_rrp|format:"{0:.2f}" }}</td>

@@ -117,7 +117,7 @@ th.left-radius div {
 
 #goods_table th#goods_table_3 div {
     padding-right: 3px;
-    text-align: right;
+    /*text-align: right;*/
 }
 
 #goods_table th#goods_table_4 div {
