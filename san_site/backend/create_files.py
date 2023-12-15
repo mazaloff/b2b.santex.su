@@ -35,9 +35,9 @@ def write_files(path_files_customer, user=None):
             pass
 
     if user:
-        list_str = ['Артикул;Название;Бренд;Штрихкод;Остаток;Базовая цена;Валюта;Цена руб. ЦБ;РРЦ руб.' + '\n']
+        list_str = ['Артикул;Название;Бренд;Штрихкод;Остаток;Базовая цена;Валюта;Цена руб;РРЦ руб;Уд.склад;В пути' + '\n']
     else:
-        list_str = ['Артикул;Название;Бренд;Штрихкод;Остаток' + '\n']
+        list_str = ['Артикул;Название;Бренд;Штрихкод;Остаток;Уд.склад;В пути' + '\n']
 
     workbook = Workbook()
     sheet = workbook.active
@@ -58,6 +58,11 @@ def write_files(path_files_customer, user=None):
         sheet.column_dimensions[str(chr(64 + 7))].width = 7
         sheet.column_dimensions[str(chr(64 + 8))].width = 13
         sheet.column_dimensions[str(chr(64 + 9))].width = 13
+        sheet.column_dimensions[str(chr(64 + 5))].width = 10
+        sheet.column_dimensions[str(chr(64 + 5))].width = 10
+    else:
+        sheet.column_dimensions[str(chr(64 + 5))].width = 10
+        sheet.column_dimensions[str(chr(64 + 5))].width = 10
 
     sheet['A1'] = 'Артикул'
     sheet['B1'] = 'Название'
@@ -69,6 +74,11 @@ def write_files(path_files_customer, user=None):
         sheet['G1'] = 'Вал.'
         sheet['H1'] = 'Цена руб.'
         sheet['I1'] = 'РРЦ руб.'
+        sheet['J1'] = 'Уд.склад'
+        sheet['K1'] = 'В пути'
+    else:
+        sheet['F1'] = 'Уд.склад'
+        sheet['G1'] = 'В пути'
 
     header_row = sheet[1]
     for cell in header_row:
@@ -90,6 +100,8 @@ def write_files(path_files_customer, user=None):
             name = elem['name'].replace(';', '').replace('"', '')
             brand = elem['brand'].replace(';', '').replace('"', '')
             quantity = str(0 if elem['quantity'] == '' else elem['quantity']).replace('>', '')
+            remote = str(0 if elem['remote'] == '' else elem['remote']).replace('>', '')
+            inway = str(0 if elem['inway'] == '' else elem['inway']).replace('>', '')
             price = 0 if elem['price'] == '' else elem['price']
             price_rrp = 0 if elem['price_rrp'] == '' else elem['price_rrp']
             discount = 0 if elem['discount'] == '' else elem['discount']
@@ -99,9 +111,9 @@ def write_files(path_files_customer, user=None):
 
             # for csv
             if user:
-                list_str.append(f'{code};{name};{brand};{barcode};{quantity};{price};{currency};{price_rub};{price_rrp}' + '\n')
+                list_str.append(f'{code};{name};{brand};{barcode};{quantity};{price};{currency};{price_rub};{price_rrp};{remote};{inway}' + '\n')
             else:
-                list_str.append(f'{code};{name};{brand};{barcode};{quantity}' + '\n')
+                list_str.append(f'{code};{name};{brand};{barcode};{quantity};{remote};{inway}' + '\n')
 
             # for excel
             sheet[f'A{row}'] = code
@@ -114,6 +126,11 @@ def write_files(path_files_customer, user=None):
                 sheet[f'G{row}'] = currency
                 sheet[f'H{row}'] = price_rub
                 sheet[f'I{row}'] = price_rrp
+                sheet[f'J{row}'] = int(remote)
+                sheet[f'K{row}'] = int(inway)
+            else:
+                sheet[f'F{row}'] = int(remote)
+                sheet[f'G{row}'] = int(inway)
             row += 1
 
     sheet.title = 'stocks'

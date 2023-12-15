@@ -521,12 +521,23 @@ class Section(models.Model):
                                 END
                         ) AS reserve,
                         SUM(
-                            CASE WHEN COALESCE(_inventories.store_id, 0) = 4 
-                                    OR COALESCE(_inventories.store_id, 0) = 5
+                            CASE WHEN COALESCE(_inventories.store_id, 0) = 4
+                                THEN COALESCE(_inventories.quantity, 0)
+                                ELSE 0
+                                END
+                        ) AS remote,
+                        SUM(
+                            CASE WHEN COALESCE(_inventories.store_id, 0) = 5 
                                 THEN COALESCE(_inventories.quantity, 0)
                                 ELSE 0
                                 END
                         ) AS inway,
+                        SUM(
+                            CASE WHEN COALESCE(_inventories.store_id, 0) = 4 OR COALESCE(_inventories.store_id, 0) = 5 
+                                THEN COALESCE(_inventories.quantity, 0)
+                                ELSE 0
+                                END
+                        ) AS quantity_else,
                         _product.barcode AS barcode,
                         {field_sort_search} AS sort_search
                     FROM san_site_product _product
@@ -577,7 +588,9 @@ class Section(models.Model):
                 sel_row = SelectRow(*row)
                 quantity = '>10' if row[16] > 10 else '' if row[16] == 0 else row[16]
                 reserve = '>10' if row[17] > 10 else '' if row[17] == 0 else row[17]
-                inway = '>10' if row[18] > 10 else '' if row[18] == 0 else row[18]
+                remote = '>10' if row[18] > 10 else '' if row[18] == 0 else row[18]
+                inway = '>10' if row[19] > 10 else '' if row[19] == 0 else row[19]
+                quantity_else = '>10' if row[20] > 10 else '' if row[20] == 0 else row[20]
 
                 course = courses.get(str(sel_row.currency_id), {'course': 1, 'multiplicity': 1})
                 discount_rub = round(sel_row.discount * course['course'] / course['multiplicity'], 2)
@@ -609,7 +622,9 @@ class Section(models.Model):
                     'brand': sel_row.brand,
                     'quantity': quantity,
                     'reserve': reserve,
+                    'remote': remote,
                     'inway': inway,
+                    'quantity_else': quantity_else,
                     'price': '' if sel_row.price == 0 or sel_row.price == 0.01 else sel_row.price,
                     'price_currency': sel_row.price_currency,
                     'price_rrp': '' if sel_row.price_rrp == 0 or sel_row.price_rrp == 0.01 else sel_row.price_rrp,
@@ -1293,7 +1308,7 @@ def get_currency():
 class SelectRow:
     def __init__(self, id, code, name, guid, matrix, brand, image, is_deleted, price, price_currency, percent, discount,
                  price_rrp, promo,
-                 currency_id, currency, quantity, reserve, inway, barcode, sort_search):
+                 currency_id, currency, quantity, reserve, remote, inway, quantity_else, barcode, sort_search):
         self.id: int = id
         self.code: str = code
         self.name: str = name
@@ -1312,5 +1327,7 @@ class SelectRow:
         self.currency: str = currency
         self.quantity: int = quantity
         self.reserve: int = reserve
+        self.remote: int = remote
         self.inway: int = inway
+        self.quantity_else: int = quantity_else
         self.barcode: str = barcode

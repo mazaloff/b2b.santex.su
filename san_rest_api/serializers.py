@@ -84,6 +84,8 @@ class ProductSerializerV1(serializers.ModelSerializer):
     name = serializers.SerializerMethodField(method_name='calculate_name')
     matrix = serializers.SerializerMethodField(method_name='calculate_matrix')
     quantity = serializers.SerializerMethodField(method_name='calculate_quantity')
+    remote = serializers.SerializerMethodField(method_name='calculate_remote')
+    inway = serializers.SerializerMethodField(method_name='calculate_inway')
     stores = serializers.SerializerMethodField(method_name='get_stores')
     photo = serializers.SerializerMethodField(method_name='calculate_photo')
     brand = serializers.SerializerMethodField(method_name='calculate_brand')
@@ -96,7 +98,7 @@ class ProductSerializerV1(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = (
-            'id', 'article', 'name', 'brand', 'barcode', 'matrix', 'photo', 'quantity', 'stores', 'price', 'price_base',
+            'id', 'article', 'name', 'brand', 'barcode', 'matrix', 'photo', 'quantity', 'remote', 'inway', 'stores', 'price', 'price_base',
             'currency', 'price_rub', 'rrp_rub')
 
     def _user(self):
@@ -136,6 +138,14 @@ class ProductSerializerV1(serializers.ModelSerializer):
     @staticmethod
     def calculate_quantity(instance):
         return instance.quantity
+
+    @staticmethod
+    def calculate_remote(instance):
+        return instance.remote
+
+    @staticmethod
+    def calculate_inway(instance):
+        return instance.inway
 
     @staticmethod
     def calculate_price(instance):
