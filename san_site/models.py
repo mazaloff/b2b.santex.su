@@ -594,7 +594,7 @@ class Section(models.Model):
 
                 course = courses.get(str(sel_row.currency_id), {'course': 1, 'multiplicity': 1})
                 discount_rub = round(sel_row.discount * course['course'] / course['multiplicity'], 2)
-
+                # ----
                 if search != '':
                     match = re.search(search, sel_row.code, flags=flag)
                     sel_row_code = sel_row.code if match is None else mark_safe(sel_row.code.replace(
