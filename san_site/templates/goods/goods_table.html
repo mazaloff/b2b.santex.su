@@ -7,7 +7,7 @@
             <col style="background:#fcffd1">
             <col>
             <col style="background:#fcffd1">
-{#            <col style="background:#fcffd1">#}
+            <col>
         </colgroup>
         <thead style="background: #ffffff;">
         <tr>
@@ -21,7 +21,10 @@
                 <div><span>В наличии</span></div>
             </th>
             <th id="goods_table_3">
-                <div><span>Еще</span></div>
+                <div><span>В пути</span></div>
+            </th>
+            <th id="goods_table_3">
+                <div><span>Поставщик</span></div>
             </th>
 {#            <th id="goods_table_3">#}
 {#                <div><span>В пути</span></div>#}
@@ -66,7 +69,12 @@
                     </td>
                     <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')"
                         id="goods_table_3" style="cursor: pointer;">
-                        {{ goods.quantity_else }}
+                        {{ goods.inway }}
+{#                        <div id="help-tip{{ goods.guid }}" class="help-tip"></div>#}
+                    </td>
+                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')"
+                        id="goods_table_3" style="cursor: pointer;">
+                        {{ goods.remote }}
 {#                        <div id="help-tip{{ goods.guid }}" class="help-tip"></div>#}
                     </td>
 {#                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')"#}
@@ -97,7 +105,10 @@
                     <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.quantity }}
                         <div id="help-tip{{ goods.guid }}" class="help-tip"></div>
                     </td>
-                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.quantity_else }}
+                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.inway }}
+{#                        <div id="help-tip{{ goods.guid }}" class="help-tip"></div>#}
+                    </td>
+                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.remote }}
 {#                        <div id="help-tip{{ goods.guid }}" class="help-tip"></div>#}
                     </td>
 {#                    <td title="Показать остатки по складам" onclick="helpQuantity('{{ goods.guid }}')" id="goods_table_3">{{ goods.inway }}#}
