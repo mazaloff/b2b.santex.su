@@ -578,6 +578,7 @@ class Section(models.Model):
                 """, param
             )
 
+
             rows = cursor.fetchall()
             flag = (0 if search.isdigit() else re.IGNORECASE)
 
