@@ -737,9 +737,15 @@ class Product(models.Model):
         inventory = 0
         if cart is not None:
             if cart.user:
+                query_set_in_way = Store.objects.filter(guid='a89033f7-d445-11e6-8b45-00c026a31509')
+                store_in_way = None
+                if len(query_set_in_way) > 0:
+                    store_in_way = query_set_in_way[0]
                 stores = {t.store: t for t in PersonStores.objects.filter(person=get_person(cart.user))}
                 query_set_inventory = Inventories.objects.filter(product=self, store__in=stores)
                 for element in query_set_inventory:
+                    if element.store == store_in_way:
+                        continue
                     inventory += element.quantity
             quantity = cart.get_quantity_product(self.guid)
             if type(quantity) == int:
