@@ -16,7 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 from san_site.models import \
     Order, Customer, Person, Section, Brand, Product, Store, Price, Currency, Inventories, Prices, \
     CustomersPrices, CustomersPrices2020, CustomersPrices2021, CustomersPrices2022, CustomersPrices2023, \
-    CustomersPrices2024, CustomersPrices2025, \
+    CustomersPrices2024, CustomersPrices2025, CustomersPrices2026, CustomersPrices2027, \
     Courses, PersonRestrictions, PersonStores, Bill
 
 
@@ -931,6 +931,10 @@ def update_users_prices(load_list, value_response):
             manager_customers_prices = CustomersPrices2024
         elif obj_customer.suffix == '2025':
             manager_customers_prices = CustomersPrices2025
+        elif obj_customer.suffix == '2026':
+            manager_customers_prices = CustomersPrices2026
+        elif obj_customer.suffix == '2027':
+            manager_customers_prices = CustomersPrices2027
 
         load_list_prices = element_list['price']
 

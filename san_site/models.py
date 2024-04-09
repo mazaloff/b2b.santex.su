@@ -772,6 +772,10 @@ class Product(models.Model):
             manager_customers_prices = CustomersPrices2024
         elif current_customer.suffix == '2025':
             manager_customers_prices = CustomersPrices2025
+        elif current_customer.suffix == '2026':
+            manager_customers_prices = CustomersPrices2026
+        elif current_customer.suffix == '2027':
+            manager_customers_prices = CustomersPrices2027
 
         query_set_price = manager_customers_prices.objects. \
             filter(customer=current_customer, product=self).select_related('currency')
@@ -893,7 +897,7 @@ class Inventories(models.Model):
 
 
 class Prices(models.Model):
-    # id = models.BigAutoField(primary_key=True)
+    id = models.BigAutoField(primary_key=True)
     product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
     price = models.ForeignKey(Price, db_index=False, on_delete=models.PROTECT)
     currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
@@ -990,6 +994,31 @@ class CustomersPrices2024(models.Model):
 
 
 class CustomersPrices2025(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
+    customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
+    discount = models.FloatField(default=0)
+    percent = models.FloatField(default=0)
+    promo = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (("product", "customer"),)
+
+class CustomersPrices2026(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
+    customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
+    discount = models.FloatField(default=0)
+    percent = models.FloatField(default=0)
+    promo = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (("product", "customer"),)
+
+
+class CustomersPrices2027(models.Model):
     id = models.BigAutoField(primary_key=True)
     product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
     customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
