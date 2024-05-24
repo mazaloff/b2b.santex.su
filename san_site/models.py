@@ -475,13 +475,13 @@ class Section(models.Model):
 
         join_inventories = """LEFT JOIN san_site_inventories _inventories 
                                 ON _product.id = _inventories.product_id"""
-        # if current_person_id != 0:
-        #     join_inventories = f"""
-        #     LEFT JOIN san_site_personstores _personstores ON _personstores.person_id = {current_person_id}
-        #                     LEFT JOIN san_site_inventories _inventories
-        #                         ON _product.id = _inventories.product_id
-        #                             AND _personstores.store_id = _inventories.store_id
-        #     """
+        if current_person_id != 0:
+            join_inventories = f"""
+            LEFT JOIN san_site_personstores _personstores ON _personstores.person_id = {current_person_id}
+                            LEFT JOIN san_site_inventories _inventories
+                                ON _product.id = _inventories.product_id
+                                    AND _personstores.store_id = _inventories.store_id
+            """
 
         with connection.cursor() as cursor:
             cursor.execute(
@@ -554,7 +554,7 @@ class Section(models.Model):
                     WHERE (%s = FALSE OR _product.is_deleted = FALSE)
                         AND {where_request_search}
                         AND (%s = FALSE OR COALESCE (_customersprices.promo, FALSE) = TRUE)
-                        AND (%s = FALSE OR (COALESCE(_inventories.quantity, 0) + COALESCE(_inventories.reserve, 0)) > 0)        
+                        AND (%s = FALSE OR COALESCE(_inventories.quantity, 0) > 0)        
                     GROUP BY _product.id,
                         _product.code,
                         _product.barcode,
