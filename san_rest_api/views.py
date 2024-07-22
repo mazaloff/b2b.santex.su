@@ -157,7 +157,7 @@ class ProductListView(APIView):
                         AND {str_filter_quantity}
                     GROUP BY _product.id,
                         _product.code,
-                        _product.code_brand,
+                        _product.article,
                         _product.barcode,
                         _product.name,
                         _product.matrix,
@@ -333,7 +333,7 @@ class ProductListViewV1(APIView):
                         AND {str_filter_quantity}
                     GROUP BY _product.id,
                         _product.code,
-                        _product.code_brand,
+                        _product.article,
                         _product.barcode,
                         _product.name,
                         _product.matrix,
