@@ -122,7 +122,7 @@ class ProductListView(APIView):
                 SELECT _product.id AS id,
                         _product.code AS code_,
                         _product.guid AS guid_,
-                        _product.article AS article_,
+                        _product.code AS article_,
                         _product.barcode AS barcode_,
                         _product.name AS name_,
                         _product.matrix AS matrix_,
@@ -157,7 +157,6 @@ class ProductListView(APIView):
                         AND {str_filter_quantity}
                     GROUP BY _product.id,
                         _product.code,
-                        _product.article,
                         _product.barcode,
                         _product.name,
                         _product.matrix,
@@ -277,7 +276,7 @@ class ProductListViewV1(APIView):
                 SELECT _product.id AS id,
                         _product.code AS code_,
                         _product.guid AS guid_,
-                        _product.article AS article_,
+                        _product.code AS article_,
                         _product.barcode AS barcode_,
                         _product.name AS name_,
                         _product.matrix AS matrix_,
@@ -333,7 +332,6 @@ class ProductListViewV1(APIView):
                         AND {str_filter_quantity}
                     GROUP BY _product.id,
                         _product.code,
-                        _product.article,
                         _product.barcode,
                         _product.name,
                         _product.matrix,
