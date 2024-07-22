@@ -277,7 +277,7 @@ class ProductListViewV1(APIView):
                 SELECT _product.id AS id,
                         _product.code AS code_,
                         _product.guid AS guid_,
-                        _product.code_brand AS article_,
+                        _product.article AS article_,
                         _product.barcode AS barcode_,
                         _product.name AS name_,
                         _product.matrix AS matrix_,
