@@ -110,6 +110,7 @@ class Person(models.Model):
     change_password = models.BooleanField(default=True)
     lock_order = models.BooleanField(default=False)
     has_restrictions = models.BooleanField(default=False)
+    has_blok = models.BooleanField(default=False)
     permit_all_orders = models.BooleanField(default=False)
 
     class LetterPasswordChangeError(BaseException):
@@ -578,7 +579,6 @@ class Section(models.Model):
                 """, param
             )
 
-
             rows = cursor.fetchall()
             flag = (0 if search.isdigit() else re.IGNORECASE)
 
@@ -790,12 +790,12 @@ class Product(models.Model):
 
         query_set_price = Prices.objects.filter(product=self)
         if len(query_set_price):
-                currency = query_set_price[0].currency
-                currency_name = query_set_price[0].currency.name
-                currency_id = query_set_price[0].currency.id
-                price = query_set_price[0].value
-                price_ruble = currency.change_ruble(price)
-                return dict(price=price, price_ruble=price_ruble, currency_name=currency_name, currency_id=currency_id)
+            currency = query_set_price[0].currency
+            currency_name = query_set_price[0].currency.name
+            currency_id = query_set_price[0].currency.id
+            price = query_set_price[0].value
+            price_ruble = currency.change_ruble(price)
+            return dict(price=price, price_ruble=price_ruble, currency_name=currency_name, currency_id=currency_id)
         return dict(price=0, price_ruble=0, currency_name='', currency_id=0)
 
     def clear_inventories(self):
@@ -869,7 +869,8 @@ class Currency(models.Model):
                                'multiplicity': set_course[0].multiplicity}
                           ), 7200)
                 return {'course': set_course[0].course, 'multiplicity': set_course[0].multiplicity}
-        cache.set(f'today_course_{self.id}{str(datetime.date.today())}', json.dumps({'course': 1, 'multiplicity': 1}), 3600)
+        cache.set(f'today_course_{self.id}{str(datetime.date.today())}', json.dumps({'course': 1, 'multiplicity': 1}),
+                  3600)
         return {'course': 1, 'multiplicity': 1}
 
     def change_ruble(self, value):
@@ -1004,6 +1005,7 @@ class CustomersPrices2025(models.Model):
 
     class Meta:
         unique_together = (("product", "customer"),)
+
 
 class CustomersPrices2026(models.Model):
     id = models.BigAutoField(primary_key=True)
