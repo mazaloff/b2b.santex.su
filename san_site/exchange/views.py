@@ -743,7 +743,8 @@ def update_users(load_list, value_response):
                     and new_object_person.permit_all_orders == element_list['permit_all_orders'] \
                     and new_object_person.user == (None if element_list['is_deleted'] else new_object) \
                     and new_object_person.customer == filter_object_customer[element_list['guidOwner']] \
-                    and new_object_person.has_restrictions == element_list['has_restrictions']:
+                    and new_object_person.has_restrictions == element_list['has_restrictions']\
+                    and new_object_person.has_blok == element_list['has_blok']:
                 pass
             else:
                 new_object_person.name = element_list['name']
@@ -753,6 +754,7 @@ def update_users(load_list, value_response):
                 new_object_person.permit_all_orders = element_list['permit_all_orders']
                 new_object_person.is_deleted = element_list['is_deleted']
                 new_object_person.has_restrictions = element_list['has_restrictions']
+                new_object_person.has_blok = element_list['has_blok']
                 new_object_person.user = (None if element_list['is_deleted'] else new_object)
                 new_object_person.customer = filter_object_customer[element_list['guidOwner']]
                 new_object_person.save()
@@ -772,7 +774,8 @@ def update_users(load_list, value_response):
                                                       allow_prices=element_list['allow_prices'],
                                                       permit_all_orders=element_list['permit_all_orders'],
                                                       is_deleted=element_list['is_deleted'],
-                                                      has_restrictions=element_list['has_restrictions']
+                                                      has_restrictions=element_list['has_restrictions'],
+                                                      has_blok=element_list['has_blok']
                                                       )
             new_object_person.created_date = timezone.now()
             new_object_person.save()
