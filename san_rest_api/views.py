@@ -308,7 +308,8 @@ class ProductListViewV1(APIView):
                                 THEN COALESCE(_inventories.quantity, 0)
                                 ELSE 0
                                 END
-                        ) AS inway
+                        ) AS inway,
+                        COALESCE(_prices_cur.name, '') AS price_currency
                     FROM san_site_product _product
                         LEFT JOIN san_site_prices _prices 
                                 ON _product.id = _prices.product_id AND _prices.price_id = {current_customer_price_id}
@@ -342,7 +343,8 @@ class ProductListViewV1(APIView):
                         COALESCE(_customersprices.discount, COALESCE(_prices.value, 0)),
                         COALESCE(_customersprices_cur.name, COALESCE(_prices_cur.name, '')),
                         COALESCE(_customersprices_cur.id, COALESCE(_prices_cur.id, 0)),
-                        COALESCE(_prices.rrp, 0)
+                        COALESCE(_prices.rrp, 0),
+                        COALESCE(_prices_cur.name, '')
                     )
                 SELECT *
                 FROM result

@@ -92,14 +92,15 @@ class ProductSerializerV1(serializers.ModelSerializer):
     price = serializers.SerializerMethodField(method_name='calculate_price')
     price_base = serializers.SerializerMethodField(method_name='calculate_price_base')
     currency = serializers.SerializerMethodField(method_name='calculate_currency')
+    currency_base = serializers.SerializerMethodField(method_name='calculate_currency_base')
     price_rub = serializers.SerializerMethodField(method_name='calculate_price_rub')
     rrp_rub = serializers.SerializerMethodField(method_name='calculate_rrp_rub')
 
     class Meta:
         model = Product
         fields = (
-            'id', 'article', 'name', 'brand', 'barcode', 'matrix', 'photo', 'quantity', 'remote', 'inway', 'stores', 'price', 'price_base',
-            'currency', 'price_rub', 'rrp_rub')
+            'id', 'article', 'name', 'brand', 'barcode', 'matrix', 'photo', 'quantity', 'remote', 'inway', 'stores', 'price', 'currency', 'price_base',
+            'currency_base', 'price_rub', 'rrp_rub')
 
     def _user(self):
         request = self.context.get('request', None)
@@ -158,6 +159,10 @@ class ProductSerializerV1(serializers.ModelSerializer):
     @staticmethod
     def calculate_currency(instance):
         return 'RUB' if instance.currency.lower() == 'руб' else instance.currency.upper()
+
+    @staticmethod
+    def calculate_currency_base(instance):
+        return 'RUB' if instance.price_currency.lower() == 'руб' else instance.price_currency.upper()
 
     @staticmethod
     def calculate_price_rub(instance):
