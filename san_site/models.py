@@ -788,7 +788,7 @@ class Product(models.Model):
                 price_ruble = currency.change_ruble(price)
                 return dict(price=price, price_ruble=price_ruble, currency_name=currency_name, currency_id=currency_id)
 
-        query_set_price = Prices.objects.filter(product=self)
+        query_set_price = Prices.objects.filter(product=self, price_id=current_customer.price_id)
         if len(query_set_price):
             currency = query_set_price[0].currency
             currency_name = query_set_price[0].currency.name
