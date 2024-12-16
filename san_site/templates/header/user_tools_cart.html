@@ -4,7 +4,7 @@
     {% if user.person.allow_order %}
         <a href="{% url 'order_list' %}">Документы</a> |
     {% endif %}
-    <a href="{% url 'files_for_loading' %}">Материалы</a> |
+{#    <a href="{% url 'files_for_loading' %}">Материалы</a> |#}
     <a href="{% url 'our_api' %}">API</a> |
     <a href="{% url 'account_password_change' %}">Поменять пароль</a> |
     <a href="{% url 'account_logout' %}" style="margin-right: 10px">Выйти</a>
