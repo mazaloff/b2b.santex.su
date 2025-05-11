@@ -168,6 +168,8 @@ DEFAULT_TO_EMAIL = 'mazaloff@bk.ru'
 URL = 'http://b2b.santex.su'
 API_URL = 'http://185.46.154.84:8080/UprTest/hs/'
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 # Celery Data Format
 
 BROKER_URL = 'amqp://guest:guest@localhost:6379'
