@@ -24,7 +24,7 @@ from rest_framework.views import APIView
 
 from san_site.decorates.decorate import page_not_access
 from san_site.files.views import create_files
-from san_site.models import Brand, Product, Customer, Person, Order, Bill, PersonStores, CustomersFiles, get_customer, \
+from san_site.models import Brand, Category, Product, Customer, Person, Order, Bill, PersonStores, CustomersFiles, get_customer, \
     get_person
 from .serializers import ProductSerializer, ProductSerializerV1, OrderSerializer, BillSerializer, UserSerializer
 
@@ -227,6 +227,11 @@ class ProductListViewV1(APIView):
             if key.startswith('filter_brand'):
                 filter_brand += f"{'' if filter_brand == '' else ','}{value}"
 
+        filter_category = ''
+        for key, value in request.GET.items():
+            if key.startswith('filter_category'):
+                filter_category += f"{'' if filter_category == '' else ','}{value}"
+
         filter_matrix = ''
 
         for key, value in request.GET.items():
@@ -261,6 +266,11 @@ class ProductListViewV1(APIView):
             param += [list(map(lambda x: x.upper(), filter_brand.split(','))), ]
             str_filter_brand = 'UPPER(_brand.name::text) = ANY(%s)'
 
+        str_filter_category = ' TRUE '
+        if filter_category != '':
+            param += [list(map(lambda x: x.upper(), filter_category.split(','))), ]
+            str_filter_category = 'UPPER(_category.name::text) = ANY(%s)'
+
         str_filter_quantity = ' TRUE '
         if filter_quantity != '' and filter_quantity.upper() == 'YES':
             str_filter_quantity = 'COALESCE(_inventories.quantity, 0) > 0'
@@ -282,6 +292,7 @@ class ProductListViewV1(APIView):
                         _product.matrix AS matrix_,
                         _product.image AS image,
                         COALESCE(_brand.name, '') AS brand_name_,
+                        COALESCE(_category.name, '') AS category_name_,
                         COALESCE(_customersprices.percent, 0) AS percent,
                         CASE WHEN COALESCE(_customersprices.percent, 0) = 0 THEN COALESCE(_prices.value, 0)
                             ELSE COALESCE(_customersprices.discount, COALESCE(_prices.value, 0)) 
@@ -323,12 +334,14 @@ class ProductListViewV1(APIView):
                                 ON _product.id = _inventories.product_id
                                     AND _personstores.store_id = _inventories.store_id
                         LEFT JOIN san_site_brand _brand ON _product.brand_id = _brand.id
+                        LEFT JOIN san_site_category _category ON _product.category_id = _category.id
                     WHERE _product.is_deleted = FALSE
                         AND {str_filter_id}
                         AND {str_filter_code}
                         AND {str_filter_article}
                         AND {str_filter_barcode}
                         AND {str_filter_brand}
+                        AND {str_filter_category}
                         AND {str_filter_actual}
                         AND {str_filter_quantity}
                     GROUP BY _product.id,
@@ -338,6 +351,7 @@ class ProductListViewV1(APIView):
                         _product.matrix,
                         _product.image,
                         COALESCE(_brand.name, ''),
+                        COALESCE(_category.name, ''),
                         COALESCE(_prices.value, 0),
                         COALESCE(_customersprices.percent, 0),
                         COALESCE(_customersprices.discount, COALESCE(_prices.value, 0)),
@@ -373,12 +387,14 @@ class ProductListViewV1(APIView):
                                                 AND _personstores.store_id = _inventories.store_id
                                             LEFT JOIN san_site_store _store ON _inventories.store_id = _store.id
                                     LEFT JOIN san_site_brand _brand ON _product.brand_id = _brand.id
+                                    LEFT JOIN san_site_category _category ON _product.category_id = _category.id
                                 WHERE _product.is_deleted = FALSE
                                     AND {str_filter_id}
                                     AND {str_filter_code}
                                     AND {str_filter_article}
                                     AND {str_filter_barcode}
                                     AND {str_filter_brand}
+                                    AND {str_filter_category}
                                     AND {str_filter_actual}
                                     AND {str_filter_quantity}
                                 GROUP BY _product.guid,
@@ -615,7 +631,8 @@ def our_api(request):
             file['url'] = f'/api/v1/catalog/?uid={uid}&type={type_file}'
 
     brands = ', '.join([el.name for el in Brand.objects.filter(is_deleted=False).order_by('name')])
-    return render(request, 'files_API.html', {'uid': uid, 'files': files, 'brands': brands})
+    categories = ', '.join([el.name for el in Category.objects.filter(is_deleted=False).order_by('name')])
+    return render(request, 'files_API.html', {'uid': uid, 'files': files, 'brands': brands, 'categories': categories})
 
 
 @csrf_exempt

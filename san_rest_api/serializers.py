@@ -88,6 +88,7 @@ class ProductSerializerV1(serializers.ModelSerializer):
     inway = serializers.SerializerMethodField(method_name='calculate_inway')
     stores = serializers.SerializerMethodField(method_name='get_stores')
     photo = serializers.SerializerMethodField(method_name='calculate_photo')
+    category = serializers.SerializerMethodField(method_name='calculate_category')
     brand = serializers.SerializerMethodField(method_name='calculate_brand')
     price = serializers.SerializerMethodField(method_name='calculate_price')
     price_base = serializers.SerializerMethodField(method_name='calculate_price_base')
@@ -99,7 +100,7 @@ class ProductSerializerV1(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = (
-            'id', 'article', 'name', 'brand', 'barcode', 'matrix', 'photo', 'quantity', 'remote', 'inway', 'stores', 'price', 'currency', 'price_base',
+            'id', 'article', 'name', 'brand', 'category', 'barcode', 'matrix', 'photo', 'quantity', 'remote', 'inway', 'stores', 'price', 'currency', 'price_base',
             'currency_base', 'price_rub', 'rrp_rub')
 
     def _user(self):
@@ -135,6 +136,10 @@ class ProductSerializerV1(serializers.ModelSerializer):
     @staticmethod
     def calculate_brand(instance):
         return instance.brand_name_
+
+    @staticmethod
+    def calculate_category(instance):
+        return instance.category_name_
 
     @staticmethod
     def calculate_quantity(instance):
