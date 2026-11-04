@@ -180,6 +180,17 @@ class Brand(models.Model):
         return self.name
 
 
+class Category(models.Model):
+    guid = models.CharField(max_length=50, db_index=True)
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=20)
+    created_date = models.DateTimeField(default=timezone.now)
+    is_deleted = models.BooleanField(default=False, db_index=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Section(models.Model):
     guid = models.CharField(max_length=50, db_index=True)
     name = models.CharField(max_length=200)
@@ -659,9 +670,10 @@ class Product(models.Model):
     code = models.CharField(max_length=50, db_index=True)
     code_brand = models.CharField(max_length=50, default='')
     section = models.ForeignKey(Section, db_index=True, on_delete=models.PROTECT)
-    brand = models.ForeignKey(Brand, null=True, on_delete=models.PROTECT)
+    brand = models.ForeignKey(Brand, null=True, db_index=True, on_delete=models.PROTECT)
     matrix = models.CharField(max_length=50, default='Основной')
-    barcode = models.CharField(max_length=50, default='')
+    barcode = models.CharField(max_length=50, default='', db_index=True)
+    category = models.ForeignKey(Category, null=True, db_index=True, on_delete=models.PROTECT)
     created_date = models.DateTimeField(default=timezone.now)
     is_deleted = models.BooleanField(default=False, db_index=True)
     image = models.ImageField(upload_to='photos', default='', blank=True)
@@ -1021,6 +1033,84 @@ class CustomersPrices2026(models.Model):
 
 
 class CustomersPrices2027(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
+    customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
+    discount = models.FloatField(default=0)
+    percent = models.FloatField(default=0)
+    promo = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (("product", "customer"),)
+
+
+class CustomersPrices2028(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
+    customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
+    discount = models.FloatField(default=0)
+    percent = models.FloatField(default=0)
+    promo = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (("product", "customer"),)
+
+
+class CustomersPrices2029(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
+    customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
+    discount = models.FloatField(default=0)
+    percent = models.FloatField(default=0)
+    promo = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (("product", "customer"),)
+
+
+class CustomersPrices2030(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
+    customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
+    discount = models.FloatField(default=0)
+    percent = models.FloatField(default=0)
+    promo = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (("product", "customer"),)
+
+
+class CustomersPrices2031(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
+    customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
+    discount = models.FloatField(default=0)
+    percent = models.FloatField(default=0)
+    promo = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (("product", "customer"),)
+
+
+class CustomersPrices2032(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
+    customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)
+    currency = models.ForeignKey(Currency, on_delete=models.PROTECT, db_index=False)
+    discount = models.FloatField(default=0)
+    percent = models.FloatField(default=0)
+    promo = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (("product", "customer"),)
+
+
+class CustomersPrices2033(models.Model):
     id = models.BigAutoField(primary_key=True)
     product = models.ForeignKey(Product, db_index=False, on_delete=models.PROTECT)
     customer = models.ForeignKey(Customer, db_index=False, on_delete=models.PROTECT)

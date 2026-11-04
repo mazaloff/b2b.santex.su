@@ -14,7 +14,7 @@ from django.utils.timezone import make_aware
 from django.views.decorators.csrf import csrf_exempt
 
 from san_site.models import \
-    Order, Customer, Person, Section, Brand, Product, Store, Price, Currency, Inventories, Prices, \
+    Order, Customer, Person, Section, Brand, Category, Product, Store, Price, Currency, Inventories, Prices, \
     CustomersPrices, CustomersPrices2020, CustomersPrices2021, CustomersPrices2022, CustomersPrices2023, \
     CustomersPrices2024, CustomersPrices2025, CustomersPrices2026, CustomersPrices2027, \
     Courses, PersonRestrictions, PersonStores, Bill
@@ -53,6 +53,11 @@ def api_main(request):
                   message='json is not brands', description='')
         return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
 
+    if 'categories' not in dict_load is None:
+        add_error(value_response, code='json.ValueError',
+                  message='json is not categories', description='')
+        return HttpResponse(json.dumps(value_response), content_type="application/json", status=401)
+
     if 'products' not in dict_load is None:
         add_error(value_response, code='json.ValueError',
                   message='json is not products', description='')
@@ -75,6 +80,7 @@ def api_main(request):
 
     update_section(dict_load['sections'])
     update_brand(dict_load['brands'])
+    update_category(dict_load['categories'])
     update_product(dict_load['products'])
     update_store(dict_load['stores'])
     update_price(dict_load['priceTypes'])
@@ -397,6 +403,35 @@ def update_brand(load_list):
             filter_object[element_list['guid']] = new_object
 
 
+def update_category(load_list):
+    filter_guid = [element_list['guid'] for element_list in load_list]
+    filter_object = {t.guid: t for t in Category.objects.filter(guid__in=filter_guid)}
+
+    for element_list in load_list:
+
+        new_object = filter_object.get(element_list['guid'], None)
+        if new_object:
+            if new_object.name == element_list['name'] \
+                    and new_object.code == element_list['code'] \
+                    and new_object.is_deleted == element_list['is_deleted']:
+                pass
+            else:
+                new_object.name = element_list['name']
+                new_object.code = element_list['code']
+                new_object.is_deleted = element_list['is_deleted']
+                new_object.save()
+            filter_object[element_list['guid']] = new_object
+        else:
+            new_object = Category.objects.create(guid=element_list['guid'],
+                                              name=element_list['name'],
+                                              code=element_list['code'],
+                                              is_deleted=element_list['is_deleted'],
+                                              )
+            new_object.created_date = timezone.now()
+            new_object.save()
+            filter_object[element_list['guid']] = new_object
+
+
 def update_section(load_list):
     filter_guid = [element_list['guid'] for element_list in load_list]
     filter_object = {t.guid: t for t in Section.objects.filter(guid__in=filter_guid)}
@@ -449,7 +484,7 @@ def update_section(load_list):
 def update_product(load_list):
     filter_guid = [element_list['guid'] for element_list in load_list]
     filter_object = {t.guid: t for t in Product.objects.filter(
-        guid__in=filter_guid).select_related('section').select_related('brand')}
+        guid__in=filter_guid).select_related('section').select_related('brand').select_related('category')}
 
     i = 0
     for element_list in load_list:
@@ -460,6 +495,7 @@ def update_product(load_list):
 
         guid_section = '' if new_object is None or new_object.section is None else new_object.section.guid
         guid_brand = '' if new_object is None or new_object.brand is None else new_object.brand.guid
+        guid_category = '' if new_object is None or new_object.category is None else new_object.category.guid
 
         if new_object:
             if new_object.name == element_list['name'] \
@@ -469,6 +505,7 @@ def update_product(load_list):
                     and new_object.barcode == element_list['barcode'] \
                     and guid_section == element_list['sectionGuid'] \
                     and guid_brand == element_list['brandGuid'] \
+                    and guid_category == element_list['categoryGuid'] \
                     and new_object.is_deleted == element_list['is_deleted'] \
                     and (not new_object.is_image or (new_object.is_image == element_list['is_image'])):
                 continue
@@ -487,6 +524,10 @@ def update_product(load_list):
                 brand_obj = Brand.objects.get(guid=element_list['brandGuid'])
             except Brand.DoesNotExist:
                 brand_obj = None
+            try:
+                category_obj = Brand.objects.get(guid=element_list['categoryGuid'])
+            except Category.DoesNotExist:
+                category_obj = None
             new_object = Product.objects.create(guid=element_list['guid'],
                                                 name=element_list['name'],
                                                 code=element_list['code'],
@@ -495,6 +536,7 @@ def update_product(load_list):
                                                 barcode=element_list['barcode'],
                                                 section=section_obj,
                                                 brand=brand_obj,
+                                                category=category_obj,
                                                 is_deleted=element_list['is_deleted'],
                                                 )
             new_object.created_date = timezone.now()
@@ -515,6 +557,13 @@ def update_product(load_list):
             except Brand.DoesNotExist:
                 continue
             new_object.brand = brand_obj
+
+        if guid_category != element_list['categoryGuid']:
+            try:
+                category_obj = Category.objects.get(guid=element_list['categoryGuid'])
+            except Category.DoesNotExist:
+                continue
+            new_object.category = category_obj
 
         if new_object.is_image and new_object.is_image != element_list['is_image']:
             new_object.image.delete(False)
